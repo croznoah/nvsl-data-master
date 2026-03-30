@@ -1,0 +1,444 @@
+{
+    "1": {
+        "Tuckahoe": {
+            "id": 356,
+            "abr": "T"
+        },
+        "Chesterbrook": {
+            "id": 271,
+            "abr": "CB"
+        },
+        "Overlee": {
+            "id": 328,
+            "abr": "O"
+        },
+        "Old Keene Mill": {
+            "id": 326,
+            "abr": "OKM"
+        },
+        "Highlands Swim": {
+            "id": 297,
+            "abr": "HS"
+        },
+        "Donaldson Run": {
+            "id": 278,
+            "abr": "DR"
+        }
+    },
+    "2": {
+        "Oakton": {
+            "id": 325,
+            "abr": "OAK"
+        },
+        "Wakefield Chapel": {
+            "id": 363,
+            "abr": "WC"
+        },
+        "Langley": {
+            "id": 310,
+            "abr": "L"
+        },
+        "Crosspointe": {
+            "id": 275,
+            "abr": "CP"
+        },
+        "Kent Gardens": {
+            "id": 305,
+            "abr": "KG"
+        },
+        "High Point Pool": {
+            "id": 298,
+            "abr": "HPP"
+        }
+    },
+    "3": {
+        "Fair Oaks": {
+            "id": 285,
+            "abr": "FO"
+        },
+        "Little Hunting Park": {
+            "id": 314,
+            "abr": "LHP"
+        },
+        "Mantua": {
+            "id": 318,
+            "abr": "M"
+        },
+        "Hunt Valley": {
+            "id": 303,
+            "abr": "HV"
+        },
+        "Little Rocky Run": {
+            "id": 315,
+            "abr": "LRR"
+        },
+        "McLean": {
+            "id": 319,
+            "abr": "ML"
+        }
+    },
+    "4": {
+        "Vienna Aquatic": {
+            "id": 357,
+            "abr": "VAC"
+        },
+        "Hiddenbrook": {
+            "id": 295,
+            "abr": "HB"
+        },
+        "Vienna Woods": {
+            "id": 358,
+            "abr": "VW"
+        },
+        "Orange Hunt": {
+            "id": 327,
+            "abr": "OH"
+        },
+        "Hamlet": {
+            "id": 292,
+            "abr": "HSC"
+        },
+        "Pinecrest": {
+            "id": 332,
+            "abr": "PC"
+        }
+    },
+    "5": {
+        "Sleepy Hollow Rec": {
+            "id": 347,
+            "abr": "SHR"
+        },
+        "Lee Graham": {
+            "id": 312,
+            "abr": "LG"
+        },
+        "Virginia Hills": {
+            "id": 361,
+            "abr": "VH"
+        },
+        "Cardinal Hill": {
+            "id": 270,
+            "abr": "CH"
+        },
+        "Fairfax": {
+            "id": 282,
+            "abr": "F"
+        },
+        "Springboard": {
+            "id": 350,
+            "abr": "SB"
+        }
+    },
+    "6": {
+        "Fox Hunt": {
+            "id": 287,
+            "abr": "FX"
+        },
+        "Rolling Hills": {
+            "id": 340,
+            "abr": "RH"
+        },
+        "Parklawn": {
+            "id": 329,
+            "abr": "PL"
+        },
+        "Poplar Heights": {
+            "id": 335,
+            "abr": "PH"
+        },
+        "Ravensworth Farm": {
+            "id": 337,
+            "abr": "R"
+        },
+        "Virginia Run": {
+            "id": 362,
+            "abr": "VR"
+        }
+    },
+    "7": {
+        "Sleepy Hollow B & R": {
+            "id": 346,
+            "abr": "SHB"
+        },
+        "Canterbury Woods": {
+            "id": 269,
+            "abr": "CW"
+        },
+        "Waynewood": {
+            "id": 365,
+            "abr": "WW"
+        },
+        "Dunn Loring": {
+            "id": 280,
+            "abr": "DL"
+        },
+        "Hunter Mill": {
+            "id": 302,
+            "abr": "HTM"
+        },
+        "South Run": {
+            "id": 349,
+            "abr": "SOR"
+        }
+    },
+    "8": {
+        "Dominion Hills": {
+            "id": 277,
+            "abr": "DH"
+        },
+        "Lakeview": {
+            "id": 309,
+            "abr": "LV"
+        },
+        "Mount Vernon Park": {
+            "id": 321,
+            "abr": "MVP"
+        },
+        "Fairfax Station": {
+            "id": 284,
+            "abr": "FS"
+        },
+        "Cottontail": {
+            "id": 273,
+            "abr": "CT"
+        },
+        "Camelot": {
+            "id": 268,
+            "abr": "CCC"
+        }
+    },
+    "9": {
+        "Dowden Terrace": {
+            "id": 279,
+            "abr": "DT"
+        },
+        "Forest Hollow": {
+            "id": 286,
+            "abr": "FH"
+        },
+        "Arlington Forest": {
+            "id": 368,
+            "abr": "AF"
+        },
+        "Lakevale Estates": {
+            "id": 308,
+            "abr": "LE"
+        },
+        "Kings Ridge": {
+            "id": 306,
+            "abr": "KR"
+        },
+        "Hollin Meadows": {
+            "id": 300,
+            "abr": "HM"
+        }
+    },
+    "10": {
+        "Greenbriar": {
+            "id": 291,
+            "abr": "G"
+        },
+        "Mansion House": {
+            "id": 317,
+            "abr": "MHC"
+        },
+        "Villa Aquatic": {
+            "id": 359,
+            "abr": "VA"
+        },
+        "Sully Station": {
+            "id": 353,
+            "abr": "SS"
+        },
+        "Shouse Village": {
+            "id": 344,
+            "abr": "SV"
+        },
+        "Truro": {
+            "id": 355,
+            "abr": "THA"
+        }
+    },
+    "11": {
+        "Daventry": {
+            "id": 276,
+            "abr": "DV"
+        },
+        "Commonwealth": {
+            "id": 272,
+            "abr": "CSC"
+        },
+        "Mosby Woods": {
+            "id": 320,
+            "abr": "MW"
+        },
+        "Highland Park": {
+            "id": 296,
+            "abr": "HP"
+        },
+        "Country Club Hills": {
+            "id": 274,
+            "abr": "CCH"
+        },
+        "Walden Glen": {
+            "id": 364,
+            "abr": "WG"
+        }
+    },
+    "12": {
+        "Stratford": {
+            "id": 352,
+            "abr": "SRA"
+        },
+        "Great Falls": {
+            "id": 290,
+            "abr": "GF"
+        },
+        "Fairfax Club Estates": {
+            "id": 283,
+            "abr": "FCE"
+        },
+        "Rolling Valley": {
+            "id": 341,
+            "abr": "RV"
+        },
+        "Poplar Tree": {
+            "id": 336,
+            "abr": "PT"
+        },
+        "Sideburn Run": {
+            "id": 345,
+            "abr": "SR"
+        }
+    },
+    "13": {
+        "Riverside Gardens": {
+            "id": 338,
+            "abr": "RG"
+        },
+        "Holmes Run Acres": {
+            "id": 301,
+            "abr": "HRA"
+        },
+        "Rolling Forest": {
+            "id": 339,
+            "abr": "RF"
+        },
+        "Fox Mill Woods": {
+            "id": 289,
+            "abr": "FMW"
+        },
+        "Burke Station": {
+            "id": 267,
+            "abr": "BKS"
+        },
+        "Brookfield": {
+            "id": 265,
+            "abr": "BF"
+        }
+    },
+    "14": {
+        "Hayfield Farm": {
+            "id": 293,
+            "abr": "HF"
+        },
+        "Parliament": {
+            "id": 330,
+            "abr": "PAR"
+        },
+        "Somerset-Olde Creek": {
+            "id": 348,
+            "abr": "SOC"
+        },
+        "Lincolnia Park": {
+            "id": 313,
+            "abr": "LP"
+        },
+        "Woodley": {
+            "id": 366,
+            "abr": "W"
+        },
+        "Laurel Hill": {
+            "id": 311,
+            "abr": "LH"
+        }
+    },
+    "15": {
+        "Pleasant Valley": {
+            "id": 334,
+            "abr": "PV"
+        },
+        "Newington Forest": {
+            "id": 322,
+            "abr": "NF"
+        },
+        "Fox Mill Estates": {
+            "id": 288,
+            "abr": "FME"
+        },
+        "Sully Station II": {
+            "id": 354,
+            "abr": "SS2"
+        },
+        "Rutherford": {
+            "id": 343,
+            "abr": "RFD"
+        },
+        "Hollin Hills": {
+            "id": 299,
+            "abr": "HH"
+        }
+    },
+    "16": {
+        "Brandywine": {
+            "id": 263,
+            "abr": "B"
+        },
+        "Herndon": {
+            "id": 294,
+            "abr": "H"
+        },
+        "Lake Braddock": {
+            "id": 307,
+            "abr": "LB"
+        },
+        "Ilda Community": {
+            "id": 304,
+            "abr": "IC"
+        },
+        "Village West": {
+            "id": 360,
+            "abr": "V"
+        },
+        "Annandale": {
+            "id": 261,
+            "abr": "A"
+        }
+    },
+    "17": {
+        "Long Branch": {
+            "id": 316,
+            "abr": "LBR"
+        },
+        "North Springfield": {
+            "id": 324,
+            "abr": "NS"
+        },
+        "Broyhill Crest": {
+            "id": 266,
+            "abr": "BC"
+        },
+        "Springfield": {
+            "id": 351,
+            "abr": "S"
+        },
+        "Edsall Park": {
+            "id": 281,
+            "abr": "EP"
+        },
+        "Pinewood Lake": {
+            "id": 333,
+            "abr": "PW"
+        }
+    }
+}

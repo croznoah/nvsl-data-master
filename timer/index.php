@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Swim Timer</title>
+
+    <script src="ENV.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" integrity="sha512-ml/QKfG3+Yes6TwOzQb7aCNtJF4PUyha6R3w8pSTo/VJSywl7ZreYvvtUso7fKevpsI+pYVVwnu82YO0q3V6eg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+
+    <script type="module">
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+        var supabase_url = "https://atnukwkepzignfeuqfrh.supabase.co";
+        var supabase_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0bnVrd2tlcHppZ25mZXVxZnJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxMzAwMzMsImV4cCI6MjA2NDcwNjAzM30.k1EfmPaVW_2eH3WYN2zLg86ZiCHh4vGBHo5ch72z8oM";
+        window.supabase = createClient(supabase_url, supabase_key);
+    </script>
+</head>
+<body onload="get_swimmers()">
+
+<style>
+    :root {
+        --lap-display: none;
+    }
+    * {
+        -webkit-tap-highlight-color: transparent;
+        font-family: "figtree", sans-serif;
+        box-sizing: border-box;
+    }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+        20%, 40%, 60%, 80% { transform: translateX(4px); }
+    }
+    *[locked] {
+        animation: shake 0.5s ease-in-out;
+    }
+    body {
+        margin: 0px;
+        overflow: hidden;
+        height: 100dvh;
+        width: 100dvw;
+        display: grid;
+        grid-template-rows: 1fr auto;
+        grid-template-columns: 100%;
+    }
+    .page-wrapper {
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+        display: grid;
+        grid-template-rows: 100%;
+        grid-template-columns: 100% 100%;
+    }
+    .page {
+        display: grid;
+        background-color: var(--bg1);
+        overflow: hidden;
+        height: 100%;
+        width: 100dvw;
+        transition: 0.14s ease transform;
+    }
+    #watch-page {
+        grid-template-rows: auto auto 1fr auto auto;
+    }
+    .history-wrapper {
+        padding: 20px;
+        padding-top: 10px;
+        display: flex;
+        flex-direction: column;
+        row-gap: 14px;
+        overflow-y: auto;
+    }
+    .date-header {
+        padding: 6px 1px;
+        font-weight: 600;
+        color: var(--txt2);
+        font-size: 16px;
+        letter-spacing: -0.3px;
+    }
+    .history-entry {
+        background-color: var(--bg2);
+        padding: 16px;
+        border: 1px solid var(--str2);
+        border-radius: 18px;
+    }
+    .history-entry > .laps-wrapper {
+        margin: 0px;
+        background-color: var(--bg1);
+        .lap {
+            color: var(--txt2);
+        }
+    }
+    .history-header {
+        display: grid;
+        align-items: center;
+        grid-template-columns: auto 1fr auto;
+        column-gap: 8px;
+        margin-bottom: 12px;
+    }
+    .history-profile {
+        height: 48px;
+        width: 48px;
+        font-size: 16px;
+        border-radius: 8px;
+        font-weight: 700;
+        color: var(--txt2);
+        display: grid;
+        place-items: center;
+        background-color: var(--str1);
+        border: 1px solid var(--str2);
+    }
+    .history-title {
+        font-size: 16px;
+        color: var(--txt2);
+        font-weight: 650;
+        letter-spacing: -0.3px;
+    }
+    .history-subtitle {
+        font-size: 15px;
+        color: var(--txt2);
+        font-weight: 500;
+        letter-spacing: -0.2px;
+    }
+    .history-time {
+        font-feature-settings: "tnum";
+        font-size: 22px;
+        font-weight: 650;
+        color: var(--txt1);
+        letter-spacing: -0.2px;
+    }
+    .navigation {
+        border-top: 1px solid var(--str2);
+        background-color: var(--bg2);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+    .nav-item {
+        padding: 10px;
+        display: grid;
+        row-gap: 6px;
+        justify-items: center;
+    }
+    .nav-icon {
+        height: 30px;
+        width: 60px;
+        display: grid;
+        place-items: center;
+        color: var(--txt2);
+        border-radius: 40px;
+        transition: 0.14s ease color, 0.14s ease background-color;
+    }
+    .nav-label {
+        font-size: 16px;
+        letter-spacing: -0.3px;
+        font-weight: 600;
+        color: var(--txt2);
+        transition: 0.14s ease color;
+    }
+    .nav-item[active="true"] {
+        .nav-label {
+            color: var(--txt1);
+        }
+        .nav-icon {
+            background-color: var(--str1);
+            border: 1px solid var(--str2);
+            color: var(--txt1);
+        }
+    }
+    svg {
+        height: 18px;
+        width: 18px;
+    }
+    .person-wrapper {
+        height: 72px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        padding-right: 20px;
+        border-bottom: 1px solid var(--str2);
+        background-color: var(--bg2);
+        align-items: center;
+    }
+    .profile {
+        height: 72px;
+        width: 72px;
+        font-size: 21px;
+        font-weight: 700;
+        display: grid;
+        place-items: center;
+        background-color: var(--str1);
+        border-right: 1px solid var(--str2);
+    }
+    .profile svg {
+        color: var(--txt1);
+    }
+    .person-name {
+        font-size: 18px;
+        color: var(--txt1);
+        letter-spacing: -0.3px;
+        font-weight: 650;
+    }
+    .person-details {
+        color: var(--txt2);
+        font-size: 13px;
+        font-weight: 500;
+    }
+    .person-div {
+        padding: 0px 14px;
+    }
+    .stroke-wrapper {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        border-bottom: 1px solid var(--str2);
+    }
+    .stroke-wrapper > div {
+        height: 50px;
+        display: grid;
+        font-size: 16px;
+        color: var(--txt1);
+        font-weight: 650;
+        letter-spacing: -0.3px;
+        place-items: center;
+        background-color: var(--bg2);
+        border-right: 1px solid var(--str2);
+        transition: 0.20s background-color ease, 0.20s color ease;
+    }
+    .stroke-wrapper > div:last-child {
+        border-right: none;
+    }
+    .stroke-wrapper > div[active="true"] {
+        background-color: var(--txt1);
+        color: var(--bg1);
+    }
+    .total-time {
+        font-feature-settings: "tnum";
+        font-size: 68px;
+        font-weight: 600;
+        letter-spacing: -1.4px;
+        margin: auto;
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .controls {
+        aspect-ratio: 3;
+        width: 100%;
+        border-top: 1px solid var(--str2);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+    .controls > div {
+        background-color: var(--bg2);
+        color: var(--txt1);
+        font-weight: 650;
+        letter-spacing: -0.3px;
+        font-size: 16px;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        user-select: none;
+    }
+    .controls > div:active {
+        opacity: 0.85;
+    }
+    .controls > div[disabled] {
+        color: grey;
+        pointer-events: none;
+    }
+    .controls > div[start] {
+        background-color: #39d38c;
+        color: white;
+    }
+    .controls > div[stop] {
+        background-color: #ff6c28;
+        color: white;
+    }
+    #left-btn {
+        border-right: 1px solid var(--str2);
+    }
+    .lap {
+        display: grid;
+        font-feature-settings: "tnum";
+        grid-template-columns: 1fr auto auto;
+        border-bottom: 1px solid var(--str2);
+        align-items: center;
+        color: var(--txt1);
+        font-weight: 550;
+        letter-spacing: -0.4px;
+        font-size: 16px;
+        height: 50px;
+        padding-left: 16px;
+        transition: background-color 0.2s ease;
+    }
+    .lap:last-child {
+        border-bottom: none;
+    }
+    .lap-time {
+        padding-right: 16px;
+    }
+    .lap-btn {
+        height: 100%;
+        width: 50px;
+        display: var(--lap-display);
+        place-items: center;
+        background-color: transparent;
+        border-left: 1px solid var(--str2);
+        transition: 0.20s ease background-color;
+        cursor: pointer;
+    }
+    .lap-btn[active="true"] {
+        background-color: var(--str1);
+    }
+    .laps-wrapper {
+        position: relative;
+        background-color: var(--bg2);
+        border: 1px solid var(--str2);
+        margin: 10px;
+        border-radius: 8px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .laps-wrapper:empty {
+        border: none;
+    }
+    .swimmers-list {
+        position: absolute;
+        z-index: 9;
+        left: 0px;
+        top: 0px;
+        width: 100dvw;
+        height: 100%;
+        background-color: var(--bg1);
+        display: grid;
+        grid-template-rows: auto 1fr;
+        overflow: hidden;
+        transform: translateY(-100%);
+        pointer-events: none;
+        transition: 0.24s ease transform;
+    }
+    .swimmers-list[active="true"] {
+        pointer-events: auto;
+        transform: translateY(0px);
+    }
+    .header {
+        padding: 20px 10px;
+        padding-bottom: 10px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        color: var(--txt1);
+        font-size: 20px;
+        letter-spacing: -0.3px;
+        font-weight: 650;
+    }
+    .back-btn {
+        height: 40px;
+        width: 40px;
+        display: grid;
+        place-items: center;
+    }
+    .back-btn > svg {
+        height: 20px;
+        width: 20px;
+    }
+    .content {
+        padding: 20px;
+        padding-top: 10px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        row-gap: 18px;
+    }
+    .label {
+        font-size: 16px;
+        font-weight: 650;
+        letter-spacing: -0.3px;
+        color: var(--txt1);
+    }
+    .option-wrapper {
+        flex: none;
+        border: 1px solid var(--str2);
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    .option-wrapper:empty {
+        height: 90px;
+        display: grid;
+        place-items: center;
+        background-color: var(--bg2);
+    }
+    .option-wrapper:empty::after {
+        content: "Make a selection above";
+        font-size: 16px;
+        font-weight: 550;
+        letter-spacing: -0.3px;
+        color: grey;
+        font-style: italic;
+    }
+    .option {
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+        color: var(--txt2);
+        height: 54px;
+        width: 100%;
+        background-color: var(--bg2);
+        border-bottom: 1px solid var(--str2);
+        padding: 0px 16px;
+        display: flex;
+        align-items: center;
+        transition: 0.20s ease color, 0.20s ease background-color;
+    }
+    .option:last-child {
+        border-bottom: none;
+    }
+    .option-wrapper[two] {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        .option {
+            border-bottom: none;
+            border-right: 1px solid var(--str2);
+        }
+        .option:last-child {
+            border-right: none;
+        }
+    }
+    .option[selected="true"] {
+        background-color: var(--txt1);
+        color: var(--bg1);
+    }
+    #relay-mode {
+        display: none;
+    }
+</style>
+
+<div class="page-wrapper">
+    <div class="page" id="watch-page">
+        <div class="swimmers-list">
+            <did class="header">
+                <div class="back-btn" onclick="swimmers_list('close')">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="header-title">Select Swimmer</div>
+                <div></div>
+            </did>
+            <div class="content">
+                <div class="label" id="modes-label">Relay Mode</div>
+                <div class="option-wrapper" two id="modes">
+                    <div class="option" onclick="relay_mode(true, this)">On</div>
+                    <div class="option" onclick="relay_mode(false, this)" selected="true">Off</div>
+                </div>
+                <div class="label" id="genders-label">Gender</div>
+                <div class="option-wrapper" id="genders">
+                    <div class="option" onclick="select_option(this)">Boys</div>
+                    <div class="option" onclick="select_option(this)">Girls</div>
+                </div>
+                <div class="label" id="ages-label">Age Group</div>
+                <div class="option-wrapper" id="ages">
+                    <div class="option" onclick="select_option(this)">8 & Under</div>
+                    <div class="option" onclick="select_option(this)">9-10</div>
+                    <div class="option" onclick="select_option(this)">11-12</div>
+                    <div class="option" onclick="select_option(this)">13-14</div>
+                    <div class="option" onclick="select_option(this)">15-18</div>
+                </div>
+                <div class="label" id="swimmers-label">Swimmers</div>
+                <div class="option-wrapper" id="swimmers"></div>
+            </div>
+        </div>
+
+        <div class="person-wrapper" onclick="swimmers_list('open')">
+            <div class="profile">
+                <svg style="margin-left: 1px;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 15.5H7.5C6.10444 15.5 5.40665 15.5 4.83886 15.6722C3.56045 16.06 2.56004 17.0605 2.17224 18.3389C2 18.9067 2 19.6044 2 21M19 21V15M16 18H22M14.5 7.5C14.5 9.98528 12.4853 12 10 12C7.51472 12 5.5 9.98528 5.5 7.5C5.5 5.01472 7.51472 3 10 3C12.4853 3 14.5 5.01472 14.5 7.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="person-div">
+                <div class="person-name">Select Swimmer</div>
+                <div class="person-details">Parklawn Piranhas</div>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <div class="stroke-wrapper" id="stroke-selector">
+            <div onclick="select_stroke(this)" active="true">Free</div>
+            <div onclick="select_stroke(this)">Back</div>
+            <div onclick="select_stroke(this)">Breast</div>
+            <div onclick="select_stroke(this)">Fly</div>
+        </div>
+
+        <div class="stroke-wrapper" style="grid-template-columns: 1fr 1fr; display: none;" id="relay-selector">
+            <div onclick="select_relay(this)" active="true">Medley</div>
+            <div onclick="select_relay(this)">Free</div>
+        </div>
+
+        <div class="total-time">00:00.00</div>
+
+        <div class="laps-wrapper">
+        </div>
+
+        <div class="controls">
+            <div id="left-btn" disabled>Lap</div>
+            <div id="right-btn" start>Start</div>
+        </div>
+    </div>
+
+    <div class="page" id="history-page">
+        <did class="header">
+            <div class="back-btn" onclick="page_nav(0)">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </div>
+            <div class="header-title">Stopwatch History</div>
+            <div></div>
+        </did>
+        <div class="history-wrapper">
+
+        </div>
+    </div>
+</div>
+<div class="navigation">
+    <div class="nav-item" active="true" onclick="page_nav(0)">
+        <div class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 9.5V13.5L14.5 15M12 5C7.30558 5 3.5 8.80558 3.5 13.5C3.5 18.1944 7.30558 22 12 22C16.6944 22 20.5 18.1944 20.5 13.5C20.5 8.80558 16.6944 5 12 5ZM12 5V2M10 2H14M20.329 5.59204L18.829 4.09204L19.579 4.84204M3.67102 5.59204L5.17102 4.09204L4.42102 4.84204" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="nav-label">Stopwatch</div>
+    </div>
+    <div class="nav-item" onclick="page_nav(1); load_history();">
+        <div class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 7H4.6C4.03995 7 3.75992 7 3.54601 7.10899C3.35785 7.20487 3.20487 7.35785 3.10899 7.54601C3 7.75992 3 8.03995 3 8.6V19.4C3 19.9601 3 20.2401 3.10899 20.454C3.20487 20.6422 3.35785 20.7951 3.54601 20.891C3.75992 21 4.03995 21 4.6 21H9M9 21H15M9 21L9 4.6C9 4.03995 9 3.75992 9.10899 3.54601C9.20487 3.35785 9.35785 3.20487 9.54601 3.10899C9.75992 3 10.0399 3 10.6 3L13.4 3C13.9601 3 14.2401 3 14.454 3.10899C14.6422 3.20487 14.7951 3.35785 14.891 3.54601C15 3.75992 15 4.03995 15 4.6V21M15 11H19.4C19.9601 11 20.2401 11 20.454 11.109C20.6422 11.2049 20.7951 11.3578 20.891 11.546C21 11.7599 21 12.0399 21 12.6V19.4C21 19.9601 21 20.2401 20.891 20.454C20.7951 20.6422 20.6422 20.7951 20.454 20.891C20.2401 21 19.9601 21 19.4 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="nav-label">History</div>
+    </div>
+</div>
+
+<script>
+    async function load_history() {
+        var wrapper = document.querySelector(".history-wrapper");
+        wrapper.innerHTML = "";
+        let { data: stopwatch_history, error } = await supabase.from("stopwatch_history").select("*");
+
+        let current_date = null;
+        for (let i = 0; i < stopwatch_history.length; i++) {
+            var entry = stopwatch_history[i];
+            var entry_date = entry["date"].split('T')[0];
+
+            if (current_date !== entry_date) {
+                current_date = entry_date;
+                var date_header = document.createElement("DIV");
+                date_header.setAttribute("class", "date-header");
+
+                var display_date = new Date(entry_date).toLocaleDateString('en-US', { "weekday": "long", "year": "numeric", "month": "long", "day": "numeric" });
+
+                date_header.innerHTML = display_date;
+                wrapper.append(date_header);
+            }
+
+            var data = entry["data"];
+            var entry_div = document.createElement("DIV");
+            entry_div.setAttribute("class", "history-entry");
+            if (data["relay"] == false) {
+                var laps_html = "";
+                var total = 0;
+                for (let a = 0; a < data["laps"].length; a++) {
+                    var lap = data["laps"][a];
+                    laps_html += `
+                        <div class="lap">
+                            <div>Lap ${a + 1} | ${25 * (a + 1)}M</div>
+                            <div class="lap-time">${format_time(lap)}</div>
+                        </div>
+                    `;
+                    total += lap;
+                }
+                var initials = data["name"].split(" ").filter(word => word).map(word => word[0].toUpperCase()).join("");
+                var title = entry["title"].split(" | ");
+                entry_div.innerHTML = `
+                    <div class="history-header">
+                        <div class="history-profile">
+                            ${initials}
+                        </div>
+                        <div>
+                            <div class="history-title">
+                                ${title[0]}
+                            </div>
+                            <div class="history-subtitle">
+                                ${title[1]}
+                            </div>
+                        </div>
+                        <div class="history-time">
+                            ${format_time(total)}
+                        </div>
+                    </div>
+                    <div class="laps-wrapper">
+                        ${laps_html}
+                    </div>
+                `;
+            } else {
+                var laps_html = "";
+                var total = 0;
+                for (let a = 0; a < data["laps"].length; a++) {
+                    var lap = data["laps"][a];
+                    laps_html += `
+                        <div class="lap">
+                            <div>${lap["name"]} | ${lap["stroke"]}</div>
+                            <div class="lap-time">${format_time(lap["time"])}</div>
+                        </div>
+                    `;
+                    total += lap["time"];
+                }
+                var title = entry["title"].split(" | ");
+                entry_div.innerHTML = `
+                    <div class="history-header">
+                        <div class="history-profile">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 21V19C22 17.1362 20.7252 15.5701 19 15.126M15.5 3.29076C16.9659 3.88415 18 5.32131 18 7C18 8.67869 16.9659 10.1159 15.5 10.7092M17 21C17 19.1362 17 18.2044 16.6955 17.4693C16.2895 16.4892 15.5108 15.7105 14.5307 15.3045C13.7956 15 12.8638 15 11 15H8C6.13623 15 5.20435 15 4.46927 15.3045C3.48915 15.7105 2.71046 16.4892 2.30448 17.4693C2 18.2044 2 19.1362 2 21M13.5 7C13.5 9.20914 11.7091 11 9.5 11C7.29086 11 5.5 9.20914 5.5 7C5.5 4.79086 7.29086 3 9.5 3C11.7091 3 13.5 4.79086 13.5 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="history-title">
+                                ${title[0]}
+                            </div>
+                            <div class="history-subtitle">
+                                ${title[1]}
+                            </div>
+                        </div>
+                        <div class="history-time">
+                            ${format_time(total)}
+                        </div>
+                    </div>
+                    <div class="laps-wrapper">
+                        ${laps_html}
+                    </div>
+                `;
+            }
+            wrapper.append(entry_div);
+        }
+    }
+    function page_nav(index) {
+        document.querySelectorAll(".nav-item[active='true']").forEach(element => element.setAttribute("active", "false"));
+        document.querySelectorAll(".nav-item")[index].setAttribute("active", "true");
+
+        document.querySelectorAll(".page").forEach(page => {
+            page.style.transform = `translateX(-${100 * index}%)`;
+        })
+    }
+    relays = false;
+    function relay_mode(action, element = false) {
+        if (element != false) {
+            var parent = element.parentElement;
+            parent.querySelectorAll(".option[selected='true']").forEach(div => { div.setAttribute("selected", "false") });
+            element.setAttribute("selected", "true");
+        }
+
+        relays = action;
+        let a = ["genders", "genders-label", "ages", "ages-label", "swimmers", "swimmers-label", "stroke-selector"];
+        let b = ["relay-selector"];
+
+        a.forEach(id => {
+            if (relays == true) {
+                document.getElementById(id).style.display = "none";
+            } else {
+                document.getElementById(id).style.display = "";
+            }
+        })
+        b.forEach(id => {
+            if (relays == true) {
+                document.getElementById(id).style.display = "";
+            } else {
+                document.getElementById(id).style.display = "none";
+            }
+        })
+
+        if (relays == true) {
+            document.querySelector(".profile").innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 21V19C22 17.1362 20.7252 15.5701 19 15.126M15.5 3.29076C16.9659 3.88415 18 5.32131 18 7C18 8.67869 16.9659 10.1159 15.5 10.7092M17 21C17 19.1362 17 18.2044 16.6955 17.4693C16.2895 16.4892 15.5108 15.7105 14.5307 15.3045C13.7956 15 12.8638 15 11 15H8C6.13623 15 5.20435 15 4.46927 15.3045C3.48915 15.7105 2.71046 16.4892 2.30448 17.4693C2 18.2044 2 19.1362 2 21M13.5 7C13.5 9.20914 11.7091 11 9.5 11C7.29086 11 5.5 9.20914 5.5 7C5.5 4.79086 7.29086 3 9.5 3C11.7091 3 13.5 4.79086 13.5 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `;
+            select_relay(document.querySelector("#relay-selector").querySelector("div"));
+            document.querySelector(":root").style.setProperty("--lap-display", "grid");
+        } else {
+            document.querySelector(".person-name").innerText = "Select Swimmer";
+            document.querySelector(".profile").innerHTML = `
+                <svg style="margin-left: 1px;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 15.5H7.5C6.10444 15.5 5.40665 15.5 4.83886 15.6722C3.56045 16.06 2.56004 17.0605 2.17224 18.3389C2 18.9067 2 19.6044 2 21M19 21V15M16 18H22M14.5 7.5C14.5 9.98528 12.4853 12 10 12C7.51472 12 5.5 9.98528 5.5 7.5C5.5 5.01472 7.51472 3 10 3C12.4853 3 14.5 5.01472 14.5 7.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            `;
+            select_stroke(document.querySelector("#stroke-selector").querySelector("div"));
+            document.querySelector(":root").style.setProperty("--lap-display", "none");
+        }
+        document.querySelector(".person-details").innerText = "Parklawn Piranhas";
+        selected_id = null;
+    }
+    async function get_swimmers() {
+        age_groups = {
+            "8 & Under": [5, 6, 7, 8],
+            "9-10": [9, 10],
+            "11-12": [11, 12],
+            "13-14": [13, 14],
+            "15-18": [15, 16, 17, 18]
+        }
+        var { data: database_entries, error } = await supabase.from("ladder_swimmers").select("*");
+
+        plp_names = {};
+        plp_ladder = {"Boys": {}, "Girls": {}};
+        var current_year = Number(new Date().getFullYear());
+        for (let swimmer of database_entries) {
+            var id = swimmer["id"];
+            var gender = swimmer["gender"];
+            var name = swimmer["name"];
+            var birth_year = parseInt(swimmer["group"]);
+            var age = current_year - birth_year;
+
+            for (let group of Object.keys(age_groups)) {
+                var ages = age_groups[group];
+                if (ages.indexOf(age) != -1) {
+                    var swimmer_group = group;
+                    break;
+                }
+            }
+
+            if (!plp_ladder[gender][swimmer_group]) {
+                plp_ladder[gender][swimmer_group] = [];
+            }
+
+            delete swimmer["gender"];
+            delete swimmer["group"];
+            plp_ladder[gender][swimmer_group].push(swimmer);
+            plp_names[id] = {"name": name, "gender": gender, "group": swimmer_group};
+        }
+    }
+    selected_stroke = "free";
+    function select_stroke(element) {
+        element.parentElement.querySelectorAll("div[active='true']").forEach(div => { div.setAttribute("active", "false") });
+        element.setAttribute("active", "true");
+        selected_stroke = element.innerText.toLowerCase().trim();
+    }
+    selected_relay = "medley";
+    function select_relay(element) {
+        element.parentElement.querySelectorAll("div[active='true']").forEach(div => { div.setAttribute("active", "false") });
+        element.setAttribute("active", "true");
+        document.querySelector(".person-name").innerText = element.innerText + " Relay";
+
+        selected_relay = element.innerText.toLowerCase().trim();
+    }
+    function add_person(lap_number, btn) {
+        selected_lap = lap_number;
+        lap_btn = btn;
+        let a = ["genders", "genders-label", "ages", "ages-label", "swimmers", "swimmers-label"];
+        let b = ["modes", "modes-label"];
+
+        a.forEach(id => {
+            document.getElementById(id).style.display = "";
+        })
+        b.forEach(id => {
+            document.getElementById(id).style.display = "none";
+        })
+
+        document.querySelector("#swimmers").querySelectorAll(".option[selected='true']").forEach(div => { div.setAttribute("selected", "false") });
+        show_swimmers();
+        document.querySelector(".swimmers-list").setAttribute("active", "true");
+    }
+    function add_to_relay(swimmer_id, name) {
+        var initials = name.split(" ").filter(word => word).map(word => word[0].toUpperCase()).join("");
+        lap_btn.innerHTML = initials;
+        lap_btn.setAttribute("active", "true");
+
+        for (let i = 0; i < laps.length; i++) {
+            if (laps[i]["number"] == Number(selected_lap)) {
+                laps[i]["swimmer_id"] = swimmer_id;
+                break;
+            }
+        }
+
+        document.querySelector(".swimmers-list").setAttribute("active", "false");
+    }
+    function swimmers_list(action) {
+        if (action == "open") {
+            relay_mode(relays);
+            document.querySelector("#modes").style.display = "";
+            document.querySelector("#modes-label").style.display = "";
+            document.querySelector(".swimmers-list").setAttribute("active", "true");
+        } else {
+            document.querySelector(".swimmers-list").setAttribute("active", "false");
+        }
+    }
+    function select_option(option) {
+        var parent = option.parentElement;
+        if (option.getAttribute("selected") == "true") {
+            option.setAttribute("selected", "false");
+        } else {
+            parent.querySelectorAll(".option[selected='true']").forEach(div => { div.setAttribute("selected", "false") });
+            option.setAttribute("selected", "true");
+        }
+
+        show_swimmers();
+    }
+    function show_swimmers() {
+        var gender_div = document.querySelector("#genders").querySelector(".option[selected='true']");
+        var group_div = document.querySelector("#ages").querySelector(".option[selected='true']");
+        var wrapper = document.querySelector("#swimmers");
+        wrapper.innerHTML = "";
+
+        if (gender_div != null && group_div != null) {
+            var gender = gender_div.innerText.trim();
+            var group = group_div.innerText.trim();
+            var data = plp_ladder[gender][group];
+
+            data.forEach(person => {
+                var person_div = document.createElement("DIV");
+                person_div.setAttribute("class", "option");
+                person_div.setAttribute("id", person["id"]);
+                person_div.setAttribute("group", group);
+                person_div.setAttribute("gender", gender);
+                if (relays == true) {
+                    person_div.setAttribute("onclick", `add_to_relay('${person["id"]}', '${person["name"]}')`);
+                } else {
+                    person_div.setAttribute("onclick", "set_person(this)");
+                }
+                person_div.innerText = person["name"];
+
+                wrapper.append(person_div);
+            })
+            console.table(data);
+        }
+    }
+    selected_id = null;
+    function set_person(div) {
+        selected_id = div.getAttribute("id");
+        var name = div.innerText.trim();
+        var initials = name.split(" ").filter(word => word).map(word => word[0].toUpperCase()).join("");
+        var group = div.getAttribute("group");
+        var gender = div.getAttribute("gender");
+        document.querySelector(".person-name").innerText = name;
+        document.querySelector(".person-details").innerText = `${group} ${gender}`;
+        document.querySelector(".profile").innerText = initials;
+
+        div.parentElement.querySelectorAll(".option[selected='true']").forEach(div => { div.setAttribute("selected", "false") });
+        div.setAttribute("selected", "true");
+        document.querySelector(".swimmers-list").setAttribute("active", "false");
+    }
+
+    let timer_state = "idle";
+    let start_time = 0;
+    let elapsed_time = 0;
+    let timer_interval = null;
+    let lap_counter = 1;
+    let laps = [];
+    let last_lap_time = 0; // Track time of last lap for split calculations
+
+    const total_time_element = document.querySelector(".total-time");
+    const left_btn = document.getElementById("left-btn");
+    const right_btn = document.getElementById("right-btn");
+    const laps_wrapper = document.querySelector(".laps-wrapper");
+
+    function format_time(ms) {
+        const minutes = Math.floor(ms / 60000);
+        const seconds = Math.floor((ms % 60000) / 1000);
+        const milliseconds = Math.floor((ms % 1000) / 10);
+
+        return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}.${milliseconds.toString().padStart(2, "0")}`;
+    }
+
+    function update_timer_display() {
+        if (timer_state === "running") {
+            elapsed_time = Date.now() - start_time;
+        }
+        total_time_element.textContent = format_time(elapsed_time);
+    }
+
+    function start_timer() {
+        if (timer_state === "idle") {
+            start_time = Date.now();
+            elapsed_time = 0;
+            last_lap_time = 0; // Reset last lap time when starting fresh
+        } else if (timer_state === "stopped") {
+            start_time = Date.now() - elapsed_time;
+        }
+
+        timer_state = "running";
+        timer_interval = setInterval(update_timer_display, 10);
+
+        left_btn.textContent = "Lap";
+        left_btn.removeAttribute("disabled");
+        right_btn.textContent = "Stop";
+        right_btn.removeAttribute("start");
+        right_btn.setAttribute("stop", "");
+    }
+
+    // Stop the timer
+    function stop_timer() {
+        record_lap();
+
+        if (timer_state !== "running") return;
+
+        clearInterval(timer_interval);
+        timer_state = "stopped";
+
+        // Update button states
+        left_btn.textContent = "Reset";
+        right_btn.textContent = "Save";
+        right_btn.removeAttribute("stop");
+        right_btn.setAttribute("start", "");
+    }
+
+    // Reset the timer
+    function reset_timer() {
+        clearInterval(timer_interval);
+        timer_state = "idle";
+        elapsed_time = 0;
+        lap_counter = 1;
+        laps = [];
+        last_lap_time = 0;
+
+        // Update display
+        update_timer_display();
+        render_laps();
+
+        // Update button states
+        left_btn.textContent = "Lap";
+        left_btn.setAttribute("disabled", "");
+        right_btn.textContent = "Start";
+        right_btn.removeAttribute("stop");
+        right_btn.removeAttribute("disabled");
+        right_btn.setAttribute("start", "");
+    }
+
+    // Record a lap time
+    function record_lap() {
+        if (timer_state !== "running") return;
+
+        const current_time = elapsed_time;
+        const lap_duration = current_time - last_lap_time;
+        last_lap_time = current_time;
+
+        const lap_data = {
+            id: Date.now(),
+            number: lap_counter++,
+            duration: lap_duration,
+            formatted: format_time(lap_duration),
+            swimmer_id: null
+        };
+
+        laps.unshift(lap_data);
+        render_laps();
+    }
+    function render_laps() {
+        laps_wrapper.innerHTML = "";
+
+        laps.forEach(lap => {
+            const lap_element = document.createElement("div");
+            lap_element.className = "lap";
+            lap_element.innerHTML = `
+                <div>Lap ${lap.number} | ${lap.number * 25}M</div>
+                <div class="lap-time">${lap.formatted}</div>
+                <div class="lap-btn" onclick="add_person('${lap.number}', this)">
+                    <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 21C20 19.6044 20 18.9067 19.8278 18.3389C19.44 17.0605 18.4395 16.06 17.1611 15.6722C16.5933 15.5 15.8956 15.5 14.5 15.5H9.5C8.10444 15.5 7.40665 15.5 6.83886 15.6722C5.56045 16.06 4.56004 17.0605 4.17224 18.3389C4 18.9067 4 19.6044 4 21M16.5 7.5C16.5 9.98528 14.4853 12 12 12C9.51472 12 7.5 9.98528 7.5 7.5C7.5 5.01472 9.51472 3 12 3C14.4853 3 16.5 5.01472 16.5 7.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            `;
+            laps_wrapper.appendChild(lap_element);
+        });
+    }
+
+    left_btn.addEventListener("click", function() {
+        if (timer_state == "running") {
+            record_lap();
+        } else if (timer_state == "stopped") {
+            reset_timer();
+        }
+    });
+
+    right_btn.addEventListener("click", function() {
+        if (timer_state == "idle") {
+            start_timer();
+        } else if (timer_state == "running") {
+            stop_timer();
+        } else if (timer_state == "stopped") {
+            save_timer();
+        }
+    });
+
+    async function save_timer() {
+        if (relays == true) {
+            if (selected_relay == "free") {
+                for (let i = 0; i < laps.length; i++) {
+                    laps[i]["stroke"] = "free";
+                }
+            } else {
+                if (laps.length <= 4) {
+                    var strokes = ["back", "breast", "fly", "free"];
+                } else {
+                    var strokes = ["back", "back", "breast", "breast", "fly", "fly", "free", "free"];
+                }
+                for (let i = 0; i < Math.min(laps.length, strokes.length); i++) {
+                    laps[i]["stroke"] = strokes[i];
+                }
+            }
+        }
+
+        if (relays == false) {
+            if (selected_id == null) {
+                document.querySelector("#right-btn").removeAttribute("locked");
+                document.querySelector("#right-btn").offsetWidth;
+                document.querySelector("#right-btn").setAttribute("locked", "");
+                return;
+            }
+            var insert_data = laps.map(item => ({"time": item["duration"], "swimmer_id": selected_id, "stroke": selected_stroke}));
+            // var { data, error } = await supabase.from("splits").insert(insert_data).select();
+        } else {
+            var insert_data = laps.filter(item => item["swimmer_id"] != null).map(item => ({"time": item["duration"], "swimmer_id": item["swimmer_id"], "stroke": item["stroke"]}));
+            if (insert_data.length == 0) {
+                document.querySelector("#right-btn").removeAttribute("locked");
+                document.querySelector("#right-btn").offsetWidth;
+                document.querySelector("#right-btn").setAttribute("locked", "");
+                return;
+            }
+            // var { data, error } = await supabase.from("splits").insert(insert_data).select();
+        }
+
+        var pretty_strokes = {
+            "free": "Freestyle",
+            "back": "Backstroke",
+            "breast": "Breaststroke",
+            "fly": "Butterfly"
+        }
+        var supa_history = {};
+        var history_data = {};
+        if (relays == false) {
+            history_data["laps"] = laps.map(item => (item["duration"]));
+            history_data["stroke"] = selected_stroke;
+            history_data["name"] = plp_names[selected_id]["name"];
+            supa_history["title"] = `${plp_names[selected_id]["name"]} | ${laps.length * 25}M ${pretty_strokes[selected_stroke]}`;
+        } else {
+            history_data["laps"] = laps.map(item => ({"time": item["duration"], "name": plp_names[item["swimmer_id"]]["name"], "stroke": pretty_strokes[item["stroke"]]}));
+
+            var relay_ids = [...new Set(laps.filter(item => item["swimmer_id"] != null).map(item => (item["swimmer_id"])))];
+            var relay_groups = [...new Set(relay_ids.map(id => plp_names[id]["group"]))];
+            var relay_gender = [...new Set(relay_ids.map(id => plp_names[id]["gender"]))];
+
+            if (relay_groups.length > 1) {
+                var group_title = "Mixed age";
+            } else {
+                var group_title = relay_groups[0];
+            }
+            if (relay_gender.length > 1) {
+                var gender_title = "Boys & Girls";
+            } else {
+                var gender_title = relay_gender[0];
+            }
+
+            var pretty_relays = {
+                "free": "Freestyle",
+                "medley": "Medley"
+            }
+
+            supa_history["title"] = `${gender_title} ${group_title} | ${laps.length * 25}M ${pretty_relays[selected_relay]} Relay`;
+        }
+        history_data["relay"] = relays;
+
+        supa_history["data"] = history_data;
+        var { data, error } = await supabase.from("stopwatch_history").insert(supa_history).select();
+        console.log(error);
+
+        right_btn.innerText = "Time Saved";
+        right_btn.removeAttribute("start");
+        right_btn.setAttribute("disabled", "");
+    }
+    async function toggle_lap(button) {
+        if (button.getAttribute("active") == "false") {
+            button.setAttribute("active", "true");
+            var time = button.parentElement.querySelector(".lap-time").innerText.trim();
+            const { data, error } = await supabase.from("lap_entries").insert([{ "stroke": selected_stroke, "time": time, "swimmer_id": selected_id }]).select("id");
+
+            console.log(data[0]["id"]);
+            console.log(error);
+            button.setAttribute("id", data[0]["id"]);
+        } else if (button.getAttribute("id") != "") {
+            const { error } = await supabase.from("lap_entries").delete().eq("id", button.getAttribute("id"));
+            console.log(error);
+            button.removeAttribute("id");
+            button.setAttribute("active", "false");
+        }
+    }
+    function dark_theme() {
+        document.querySelector(":root").style.setProperty("--bg1", "#161616");
+        document.querySelector(":root").style.setProperty("--bg2", "#202020");
+        document.querySelector(":root").style.setProperty("--bg3", "#686868");
+
+        document.querySelector(":root").style.setProperty("--str1", "#282828");
+        document.querySelector(":root").style.setProperty("--str2", "#313131");
+
+        document.querySelector(":root").style.setProperty("--txt1", "white");
+        document.querySelector(":root").style.setProperty("--txt2", "hsl(0, 0%, 80%)");
+
+        document.querySelector(":root").style.setProperty("--rgb", "255, 255, 255");
+
+        document.documentElement.style.colorScheme = "dark";
+    }
+    function light_theme() {
+        document.querySelector(":root").style.setProperty("--bg1", "#FFFFFF");
+        document.querySelector(":root").style.setProperty("--bg2", "#FAFAFA");
+        document.querySelector(":root").style.setProperty("--bg3", "#C1C1C1");
+
+        document.querySelector(":root").style.setProperty("--str1", "#EEEEEE");
+        document.querySelector(":root").style.setProperty("--str2", "#E4E4E4");
+
+        document.querySelector(":root").style.setProperty("--txt1", "black");
+        document.querySelector(":root").style.setProperty("--txt2", "#444444");
+
+        document.querySelector(":root").style.setProperty("--rgb", "0, 0, 0");
+
+        document.documentElement.style.colorScheme = "light";
+    }
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        dark_theme();
+    } else {
+        light_theme();
+    }
+    update_timer_display();
+    render_laps();
+</script>
+</body>
+</html>

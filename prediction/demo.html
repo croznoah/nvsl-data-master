@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swim Time Predictor</title>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            font-family: "figtree", sans-serif;
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0px;
+            overflow-y: auto;
+            height: 100dvh;
+            width: 100dvw;
+            display: grid;
+            place-items: center;
+            padding: 20px 0;
+        }
+        :root {
+            --accentbg: #4285F4;
+        }
+        h1 {
+            color: var(--txt1);
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        h2 {
+            color: var(--txt2);
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            text-align: center;
+            max-width: 400px;
+            margin: auto;
+            margin-bottom: 40px;
+        }
+        button {
+            flex: none;
+            height: 48px;
+            padding: 0px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            column-gap: 7px;
+            font-size: 16px;
+            font-weight: 650;
+            letter-spacing: -0.3px;
+            border-radius: 8px;
+            background-color: var(--txt1);
+            color: var(--bg1);
+            cursor: pointer;
+            border: none;
+            outline: none;
+            width: 300px;
+            user-select: none;
+            margin: 40px auto 20px auto;
+        }
+        button:hover {
+            background-color: var(--txt2);
+        }
+        .wrapper {
+            background-color: var(--bg2);
+            width: fit-content;
+            border-radius: 5px;
+            border: 1px solid var(--str2);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .option-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .option {
+            flex: 1;
+            height: 50px;
+            padding: 0px 16px;
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--str2);
+            background-color: var(--bg1);
+            cursor: pointer;
+            font-weight: 650;
+            letter-spacing: -0.3px;
+            color: var(--txt2);
+            border-radius: 5px;
+            text-align: center;
+        }
+        .option:hover {
+            background-color: var(--bg3);
+        }
+        .option[active="true"] {
+            background-color: var(--txt1);
+            color: var(--bg1);
+            font-weight: 700;
+            border-color: var(--txt1);
+        }
+        .profile-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 30px;
+        }
+        .input-field {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-field label {
+            margin-bottom: 8px;
+            margin-left: 1px;
+            font-size: 16px;
+            font-weight: 650;
+            color: var(--txt1);
+            letter-spacing: -0.3px;
+        }
+        .input-field input {
+            height: 50px;
+            padding: 0 10px;
+            border-radius: 5px;
+            border: 1px solid var(--str2);
+            background-color: var(--bg1);
+            color: var(--txt1);
+            font-size: 16px;
+            outline: none;
+        }
+        .input-field input:focus {
+            border-color: var(--txt1);
+            border-width: 2px;
+            padding: 0px 9px;
+        }
+        #results-wrapper h2 {
+            text-align: center;
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--txt1);
+            margin: 20px 0;
+        }
+        #results-wrapper p {
+            text-align: center;
+            font-size: 16px;
+            color: var(--txt2);
+            margin-top: -20px;
+        }
+        .spinner {
+            display: block; margin: 20px auto; width: 48px; height: 48px;
+            border: 5px solid var(--txt2); border-bottom-color: transparent;
+            border-radius: 50%; animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        *[locked] { animation: shake 0.5s ease-in-out; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper" id="input-wrapper">
+        <h1>Swim Time Predictor</h1>
+
+        <h2>Select the 50m stroke to predict, the gender, and enter the swimmer's best 25m times.</h2>
+
+        <!-- Stroke to Predict Selection -->
+        <div class="option-group" id="stroke-selector">
+            <div class="option" onclick="select_option('stroke_to_predict', 'free', this)">Freestyle</div>
+            <div class="option" onclick="select_option('stroke_to_predict', 'back', this)">Backstroke</div>
+            <div class="option" onclick="select_option('stroke_to_predict', 'breast', this)">Breaststroke</div>
+            <div class="option" onclick="select_option('stroke_to_predict', 'fly', this)">Butterfly</div>
+        </div>
+
+        <!-- Gender Selection -->
+        <div class="option-group" id="gender-selector">
+            <div class="option" onclick="select_option('gender', 'boys', this)">Boys</div>
+            <div class="option" onclick="select_option('gender', 'girls', this)">Girls</div>
+        </div>
+
+        <!-- Profile Inputs for 25m Best Times -->
+        <div class="profile-inputs">
+            <div class="input-field">
+                <label for="profile-free">Freestyle</label>
+                <input type="text" id="profile-free" placeholder="e.g., 16.50">
+            </div>
+            <div class="input-field">
+                <label for="profile-back">Backstroke</label>
+                <input type="text" id="profile-back" placeholder="e.g., 20.10">
+            </div>
+            <div class="input-field">
+                <label for="profile-breast">Breaststroke</label>
+                <input type="text" id="profile-breast" placeholder="Leave blank if N/A">
+            </div>
+            <div class="input-field">
+                <label for="profile-fly">Butterfly</label>
+                <input type="text" id="profile-fly" placeholder="Leave blank if N/A">
+            </div>
+        </div>
+
+        <button id="predict-btn" onclick="get_prediction()">
+            <div>Predict Time</div>
+        </button>
+    </div>
+
+    <div class="wrapper" id="results-wrapper" style="display: none;">
+        <h1>Prediction Result</h1>
+        <div id="results-display">
+            <!-- Results will be injected here -->
+        </div>
+        <button id="reset-btn" onclick="reset_view()">
+            <div>Start Over</div>
+        </button>
+    </div>
+
+    <script src="/ENV.js"></script>
+    <script>
+        var selected_data = {};
+
+        function dark_theme() {
+            document.querySelector(":root").style.setProperty("--bg1", "#161616");
+            document.querySelector(":root").style.setProperty("--bg2", "#202020");
+            document.querySelector(":root").style.setProperty("--bg3", "#383838");
+            document.querySelector(":root").style.setProperty("--str2", "#313131");
+            document.querySelector(":root").style.setProperty("--txt1", "white");
+            document.querySelector(":root").style.setProperty("--txt2", "hsl(0, 0%, 80%)");
+            document.documentElement.style.colorScheme = "dark";
+        }
+        function light_theme() {
+            document.querySelector(":root").style.setProperty("--bg1", "#FFFFFF");
+            document.querySelector(":root").style.setProperty("--bg2", "#FAFAFA");
+            document.querySelector(":root").style.setProperty("--bg3", "#EAEAEA");
+            document.querySelector(":root").style.setProperty("--str2", "#E4E4E4");
+            document.querySelector(":root").style.setProperty("--txt1", "black");
+            document.querySelector(":root").style.setProperty("--txt2", "#444444");
+            document.documentElement.style.colorScheme = "light";
+        }
+        function init_theme() {
+            if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                dark_theme();
+            } else {
+                light_theme();
+            }
+            window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => e.matches ? dark_theme() : light_theme());
+        }
+        init_theme();
+
+        function select_option(key, value, element) {
+            selected_data[key] = value;
+            var siblings = element.parentElement.querySelectorAll(".option");
+            siblings.forEach(div => div.setAttribute("active", "false"));
+            element.setAttribute("active", "true");
+        }
+
+        function reset_view() {
+            document.querySelector("#input-wrapper").style.display = "";
+            document.querySelector("#results-wrapper").style.display = "none";
+        }
+
+        async function get_prediction() {
+            var predict_btn = document.querySelector("#predict-btn");
+
+            // --- 1. Validate Selections ---
+            if (!selected_data.stroke_to_predict || !selected_data.gender) {
+                alert("Please select a stroke to predict and a gender.");
+                predict_btn.setAttribute("locked", "");
+                setTimeout(() => predict_btn.removeAttribute("locked"), 500);
+                return;
+            }
+
+            // --- 2. Build Profile from Inputs ---
+            var profile = {};
+            const strokes_in_order = ["free", "back", "breast", "fly"];
+            let has_at_least_one_time = false;
+
+            for (const stroke of strokes_in_order) {
+                const input_val = document.querySelector(`#profile-${stroke}`).value;
+                const time = parseFloat(input_val);
+                // Assign -1 if input is empty or not a valid number, otherwise assign the time
+                profile[`${stroke}_25m_best`] = !isNaN(time) && time > 0 ? time : -1;
+                if (profile[`${stroke}_25m_best`] !== -1) {
+                    has_at_least_one_time = true;
+                }
+            }
+
+            console.log(profile);
+
+            if (!has_at_least_one_time) {
+                predict_btn.setAttribute("locked", "");
+                setTimeout(() => predict_btn.removeAttribute("locked"), 500);
+                return;
+            }
+
+            // --- 3. Show Loading State and Call API ---
+            document.querySelector("#input-wrapper").style.display = "none";
+            var results_wrapper = document.querySelector("#results-wrapper");
+            var results_display = document.querySelector("#results-display");
+            results_wrapper.style.display = "";
+            results_display.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                var response = await fetch(`${ENV["server_base_url"]}/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        stroke_to_predict: selected_data.stroke_to_predict,
+                        gender: selected_data.gender,
+                        profiles: [profile]
+                    })
+                });
+
+                if (!response.ok) {
+                    var error_data = await response.json();
+                    throw new Error(error_data.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                var result = await response.json();
+
+                // --- 4. Display Single Prediction from Batch Response ---
+                // KEY CHANGE: Access the first item of the predictions array
+                const prediction = result.predictions[0];
+                const stroke_name = selected_data.stroke_to_predict;
+
+                results_display.innerHTML = `
+                    <p>Predicted 50m ${stroke_name.charAt(0).toUpperCase() + stroke_name.slice(1)} Time:</p>
+                    <h2>${prediction.toFixed(2)}s</h2>
+                `;
+
+            } catch (error) {
+                console.error("Prediction failed:", error);
+                results_display.innerHTML = `<p style="color: #ff5c5c; text-align: center;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

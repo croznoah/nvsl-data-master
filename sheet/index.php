@@ -1,0 +1,5822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="icon" type="image/x-icon" href="/logo.png">
+    <title>NVSL Sheet Analyzer</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" integrity="sha512-ml/QKfG3+Yes6TwOzQb7aCNtJF4PUyha6R3w8pSTo/VJSywl7ZreYvvtUso7fKevpsI+pYVVwnu82YO0q3V6eg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            font-family: "figtree", sans-serif;
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0px;
+            overflow-x: hidden;
+            padding: 40px 0px;
+            background-color: var(--bg1);
+            display: grid;
+            justify-content: center;
+        }
+        :root {
+            --accentbg: #4285F4;
+            --highlight1: #39d38c;
+            --highlight2: #395fd3;
+        }
+        label {
+            height: 48px;
+            padding: 0px 22px;
+            display: flex;
+            align-items: center;
+            column-gap: 7px;
+            font-size: 16px;
+            font-weight: 650;
+            letter-spacing: -0.3px;
+            border-radius: 8px;
+            background-color: var(--txt1);
+            color: var(--bg1);
+            cursor: pointer;
+            border: none;
+            outline: none;
+            width: fit-content;
+            user-select: none;
+            margin: 20px auto;
+        }
+        label:hover {
+            background-color: var(--txt2);
+        }
+        label svg {
+            height: 18px;
+            width: 18px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .setup {
+            padding-top: 60px;
+        }
+        .logo {
+            height: 100px;
+            width: 100px;
+            border-radius: 20px;
+            background-color: #141414;
+            color: white;
+            display: grid;
+            place-items: center;
+            margin: auto;
+            margin-bottom: 80px;
+        }
+        .logo > svg {
+            height: 34px;
+            width: 34px;
+        }
+        .features-wrapper {
+            padding: 40px 100px;
+            width: fit-content;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-gap: 20px;
+        }
+        .feature {
+            background-color: var(--bg2);
+            border: 1px solid var(--str1);
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            row-gap: 15px;
+            max-width: 340px;
+        }
+        .feature-header {
+            display: flex;
+            column-gap: 10px;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 650;
+            letter-spacing: -0.3px;
+            color: var(--txt1);
+        }
+        .feature-icon {
+            height: 42px;
+            width: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 5px;
+            background-color: var(--str1);
+            border: 1px solid var(--str2);
+        }
+        .feature-icon > svg {
+            height: 18px;
+            width: 18px;
+            color: var(--txt1);
+        }
+        .feature-details {
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+            color: var(--txt2);
+            line-height: 1.3;
+        }
+        #pdf-output {
+            --bg1: #FFFFFF;
+            --bg2: #F0F0F0;
+            --str1: #E0E0E0;
+            --str2: #B8B8B8;
+            --txt1: black;
+            --txt2: #444444;
+            background-color: var(--bg1);
+            border-radius: 5px;
+            border: 1px solid var(--str1);
+            padding: 40px;
+            width: 11in;
+            display: none;
+            grid-template-columns: repeat(2, calc(5.5in - 50px));
+            column-gap: 20px;
+            row-gap: 30px;
+        }
+        .sheet-title-wrapper {
+            grid-column: -1/1;
+            margin-bottom: 10px;
+        }
+        .sheet-title-wrapper > label {
+            margin-bottom: 0px;
+        }
+        .sheet-title {
+            color: var(--txt1);
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.45px;
+            text-align: center;
+        }
+        .sheet-subtitle {
+            color: var(--txt1);
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.35px;
+            text-align: center;
+        }
+        .event-header {
+            color: var(--txt1);
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: end;
+            column-gap: 10px;
+        }
+        .event-header > div {
+            font-size: 15px;
+            font-weight: 650;
+            letter-spacing: -0.3px;
+            border-radius: 5px;
+            padding: 6px 12px;
+            background-color: var(--bg2);
+            border: 1px solid var(--str2);
+        }
+        .event-container {
+            display: flex;
+            flex-direction: column;
+            row-gap: 10px;
+        }
+        .column {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid var(--str2);
+            border-radius: 5px;
+            overflow: hidden;
+            width: 100%;
+            height: fit-content;
+            background: var(--bg1);
+        }
+        .event-header + .column {
+            page-break-before: avoid;
+            break-before: avoid;
+        }
+        .column td {
+            height: 42px;
+            padding: 0px 12px;
+            white-space: nowrap;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+            border-right: 1px solid var(--str2);
+            border-bottom: 1px solid var(--str2);
+        }
+        .column tr:last-child td {
+            border-bottom: none;
+        }
+        .column td:not([hidden]):last-child {
+            border-right: none;
+        }
+        .column td:not([hidden]):has(+ td[hidden]) {
+            border-right: none;
+        }
+        .column tr[points] {
+            border-right: none;
+        }
+        .column tr:last-child > td:not([rowspan]) {
+            border-bottom: none;
+        }
+        .column tr:last-child > td:first-child {
+            border-radius: 0px 0px 0px 3px;
+        }
+        .column tr:last-child > td:last-child {
+            border-radius: 0px 0px 3px 0px;
+        }
+        .column tr[team] {
+            color: var(--txt2);
+        }
+        .column tr[highlight] {
+            background-color: #FFFF99;
+        }
+        .column tr[title] {
+            background-color: var(--bg2);
+        }
+        .column tr[title] > td {
+            font-weight: 700;
+            color: var(--txt1);
+        }
+        .column tr[key] {
+            background-color: var(--bg2);
+        }
+        .column tr[key] > td {
+            height: 30px;
+            font-weight: 600;
+            color: var(--txt2);
+        }
+        .button-wrapper {
+            display: flex;
+            column-gap: 8px;
+            width: fit-content;
+            justify-content: center;
+            margin: auto;
+        }
+        @media print {
+            body {
+                padding: 0px;
+                display: block;
+            }
+            body > *:not(#pdf-output) {
+                display: none !important;
+            }
+            #pdf-output {
+                padding: 0px;
+                grid-template-columns: repeat(2, calc(5.5in - 10px));
+                border-radius: 0px;
+                border: none;
+            }
+            #pdf-output .button-wrapper {
+                display: none;
+            }
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+
+    <div class="setup">
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 2.26953V6.40007C14 6.96012 14 7.24015 14.109 7.45406C14.2049 7.64222 14.3578 7.7952 14.546 7.89108C14.7599 8.00007 15.0399 8.00007 15.6 8.00007H19.7305M9 15L12 18M12 18L15 15M12 18L12 12M14 2H8.8C7.11984 2 6.27976 2 5.63803 2.32698C5.07354 2.6146 4.6146 3.07354 4.32698 3.63803C4 4.27976 4 5.11984 4 6.8V17.2C4 18.8802 4 19.7202 4.32698 20.362C4.6146 20.9265 5.07354 21.3854 5.63803 21.673C6.27976 22 7.11984 22 8.8 22H15.2C16.8802 22 17.7202 22 18.362 21.673C18.9265 21.3854 19.3854 20.9265 19.673 20.362C20 19.7202 20 18.8802 20 17.2V8L14 2Z" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="sheet-title">Meet Sheet Analyzer</div>
+        <div class="sheet-subtitle">Upload an A-Meet Heat Sheet with seed times</div>
+        <div class="features-wrapper">
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.5 6.5L6.5 17.5M8.5 10.5V6.5M6.5 8.5H10.5M13.5 15.5H17.5M7.8 21H16.2C17.8802 21 18.7202 21 19.362 20.673C19.9265 20.3854 20.3854 19.9265 20.673 19.362C21 18.7202 21 17.8802 21 16.2V7.8C21 6.11984 21 5.27976 20.673 4.63803C20.3854 4.07354 19.9265 3.6146 19.362 3.32698C18.7202 3 17.8802 3 16.2 3H7.8C6.11984 3 5.27976 3 4.63803 3.32698C4.07354 3.6146 3.6146 4.07354 3.32698 4.63803C3 5.27976 3 6.11984 3 7.8V16.2C3 17.8802 3 18.7202 3.32698 19.362C3.6146 19.9265 4.07354 20.3854 4.63803 20.673C5.27976 21 6.11984 21 7.8 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        Scoring
+                    </div>
+                </div>
+                <div class="feature-details">
+                    Individual times are scored and combined by event. Total team scores are updated allowing for easy comparison of projected vs. actual points.
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 9H21M3 15H21M12 3V21M7.8 3H16.2C17.8802 3 18.7202 3 19.362 3.32698C19.9265 3.6146 20.3854 4.07354 20.673 4.63803C21 5.27976 21 6.11984 21 7.8V16.2C21 17.8802 21 18.7202 20.673 19.362C20.3854 19.9265 19.9265 20.3854 19.362 20.673C18.7202 21 17.8802 21 16.2 21H7.8C6.11984 21 5.27976 21 4.63803 20.673C4.07354 20.3854 3.6146 19.9265 3.32698 19.362C3 18.7202 3 17.8802 3 16.2V7.8C3 6.11984 3 5.27976 3.32698 4.63803C3.6146 4.07354 4.07354 3.6146 4.63803 3.32698C5.27976 3 6.11984 3 7.8 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        Readability
+                    </div>
+                </div>
+                <div class="feature-details">
+                    Boys’ events are always displayed on the left, with the corresponding girls’ events on the right for quick reference.
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 2L4.09344 12.6879C3.74463 13.1064 3.57023 13.3157 3.56756 13.4925C3.56524 13.6461 3.63372 13.7923 3.75324 13.8889C3.89073 14 4.16316 14 4.70802 14H12L11 22L19.9065 11.3121C20.2553 10.8936 20.4297 10.6843 20.4324 10.5075C20.4347 10.3539 20.3663 10.2077 20.2467 10.1111C20.1092 10 19.8368 10 19.292 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        Speed
+                    </div>
+                </div>
+                <div class="feature-details">
+                    Blazing-fast analysis and rendering; results are processed and displayed in seconds.
+                </div>
+            </div>
+        </div>
+        <label for="file-upload">
+            <div>Upload Sheet</div>
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 15V16.2C21 17.8802 21 18.7202 20.673 19.362C20.3854 19.9265 19.9265 20.3854 19.362 20.673C18.7202 21 17.8802 21 16.2 21H7.8C6.11984 21 5.27976 21 4.63803 20.673C4.07354 20.3854 3.6146 19.9265 3.32698 19.362C3 18.7202 3 17.8802 3 16.2V15M17 8L12 3M12 3L7 8M12 3V15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </label>
+        <input id="file-upload" accept=".pdf" onchange="importpdf(this)" type="file"/>
+    </div>
+    <div id="pdf-output"></div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+        function dark_theme() {
+            document.querySelector(":root").style.setProperty("--bg1", "#161616");
+            document.querySelector(":root").style.setProperty("--bg2", "#202020");
+            document.querySelector(":root").style.setProperty("--bg3", "#686868");
+
+            document.querySelector(":root").style.setProperty("--str1", "#282828");
+            document.querySelector(":root").style.setProperty("--str2", "#313131");
+
+            document.querySelector(":root").style.setProperty("--txt1", "white");
+            document.querySelector(":root").style.setProperty("--txt2", "hsl(0, 0%, 80%)");
+
+            document.documentElement.style.colorScheme = "dark";
+        }
+        function light_theme() {
+            document.querySelector(":root").style.setProperty("--bg1", "#FFFFFF");
+            document.querySelector(":root").style.setProperty("--bg2", "#FAFAFA");
+            document.querySelector(":root").style.setProperty("--bg3", "#C1C1C1");
+
+            document.querySelector(":root").style.setProperty("--str1", "#EEEEEE");
+            document.querySelector(":root").style.setProperty("--str2", "#E4E4E4");
+
+            document.querySelector(":root").style.setProperty("--txt1", "black");
+            document.querySelector(":root").style.setProperty("--txt2", "#444444");
+
+            document.documentElement.style.colorScheme = "light";
+        }
+        function toggle_points(button) {
+            if (document.querySelector(".points").getAttribute("hidden") == null) {
+                document.querySelectorAll(".points, .score").forEach(td => {
+                    td.setAttribute("hidden", "");
+                });
+                document.querySelectorAll(".heat-number").forEach(td => {
+                    td.setAttribute("colspan", "100");
+                });
+
+                button.querySelector("div").innerText = "Show Points";
+            } else {
+                document.querySelectorAll(".points, .score").forEach(td => {
+                    td.removeAttribute("hidden");
+                });
+                document.querySelectorAll(".heat-number").forEach(td => {
+                    td.removeAttribute("colspan", "");
+                });
+
+                button.querySelector("div").innerText = "Hide Points";
+            }
+        }
+        function toggle_highlights(button) {
+            var team_atr = your_team["abr"].toLowerCase();
+            if (document.querySelector(`tr[team="${team_atr}"]`).getAttribute("highlight") == null) {
+                document.querySelectorAll(`tr[team="${team_atr}"]`).forEach(td => {
+                    td.setAttribute("highlight", "");
+                });
+
+                button.querySelector("div").innerText = "Remove Highlight";
+            } else {
+                document.querySelectorAll(`tr[team="${team_atr}"]`).forEach(td => {
+                    td.removeAttribute("highlight");
+                });
+
+                button.querySelector("div").innerText = "Highlight " + your_team["name"];
+            }
+        }
+        function init_theme() {
+            if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                dark_theme();
+            } else {
+                light_theme();
+            }
+            window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", event => {
+                var color_scheme = event.matches ? "dark" : "light";
+                if (color_scheme == "dark") {
+                    dark_theme();
+                } else if (color_scheme == "light") {
+                    light_theme();
+                }
+            });
+        }
+        init_theme();
+        var monthsinyear = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+        ];
+        function importpdf(input) {
+            var file = input.files[0];
+            var pdftitle = String(file.name).substring(0, String(file.name).toLocaleLowerCase().indexOf(".pdf"));
+            if (file != undefined && file.type=="application/pdf") {
+                var pdfdreader = new FileReader();
+                pdfdreader.readAsDataURL(file);
+                pdfdreader.onload = () => {
+                    var pdffile = pdfdreader.result;
+                    extracttext(pdffile);
+                }
+            }
+        }
+        async function extracttext(file) {
+            extractedtxt = [];
+            var pdf = await pdfjsLib.getDocument(file).promise;
+            var pages = pdf.numPages;
+            final_line = [];
+            for (i = 1; i <= pages; i++) {
+                var page = await pdf.getPage(i);
+                var extract = await page.getTextContent().then(function (textContent) {
+                    var textItems = textContent.items;
+                    var line = 0;
+
+                    for (var i = 0; i < textItems.length; i++) {
+                        if (!(Math.abs(line - (textItems[i].transform[3] + textItems[i].transform[5])) < 0.2)) {
+                            if (line != 0) {
+                                extractedtxt.push(final_line);
+                                final_line = [];
+                            }
+
+                            line = textItems[i].transform[3] + textItems[i].transform[5];
+                        }
+
+                        var item = textItems[i];
+                        var text = item.str.replace("β", "f").trim();
+                        if (text != "") {
+                            final_line.push(text);
+                        }
+
+                        if (i == textItems.length - 1) {
+                            extractedtxt.push(final_line);
+                            final_line = [];
+                        }
+                    }
+                });
+            }
+
+            importsheet(extractedtxt);
+        }
+        function importsheet(pdf_lines) {
+            sheet_title = pdf_lines[1].join(" ").replace(">", "");
+
+            let entry_indexes = {
+                "individual": {
+                    "team": {},
+                    "age": {},
+                    "name": {},
+                    "time": {},
+                    "lane": {}
+                },
+                "relay": {
+                    "team": {},
+                    "age": {},
+                    "name": {},
+                    "time": {},
+                    "lane": {}
+                },
+            }
+            function log_indexes(relay_key, entry_key, index_key) {
+                var indexes_db = entry_indexes[relay_key];
+                if (indexes_db[entry_key][String(index_key)]) {
+                    indexes_db[entry_key][String(index_key)] += 1;
+                } else {
+                    indexes_db[entry_key][String(index_key)] = 1;
+                }
+            }
+
+            let i = 0;
+            sheet_data = [];
+            event_data = null;
+            while (i < pdf_lines.length) {
+                var line = pdf_lines[i].join(" ");
+                var chunk = pdf_lines[i];
+
+                if (chunk[0].includes("Event")) {
+                    if (line.includes("Relay")) {
+                        relay_mode = true;
+                    } else {
+                        relay_mode = false;
+                    }
+
+                    if (event_data != null) {
+                        sheet_data.push(event_data);
+                    }
+
+                    var event_data = {"heats": []};
+                    var number = chunk.shift().replace(/[^0-9]/g, "");
+                    var chunk = chunk.join("").split(" ");
+
+                    event_data["number"] = number;
+                    event_data["label"] = chunk.join(" ").replace(/ (?:SC|LC) Meter/g, "M");
+                } else if (chunk[0].includes("Heat")) {
+                    var current_heat = [];
+                    if (relay_mode == false) {
+                        for (let a = i + 1; a < i + 7; a++) {
+                            var entry = {
+                                "team": null,
+                                "age": null,
+                                "name": null,
+                                "display-time": null,
+                                "time": null,
+                                "lane": null,
+                                "data-index": a,
+                                "points": ""
+                            };
+                            var temp_chunk = pdf_lines[a];
+
+                            if (temp_chunk.length > 2) {
+                                for (let b = 0; b < temp_chunk.length; b++) {
+                                    var snip = temp_chunk[b];
+
+                                    if (/^[0-9:]*\d\.[0-9.:]*$/.test(snip) || snip == "NT") {
+                                        entry["display-time"] = snip;
+                                        if (snip == "NT") {
+                                            entry["time"] = 99999999;
+                                        } else {
+                                            entry["time"] = parse_time(snip);
+                                        }
+
+                                        log_indexes("individual", "time", b);
+                                    } else if (get_team(snip) != null) {
+                                        entry["team"] = get_team(snip);
+
+                                        log_indexes("individual", "team", b);
+                                    } else if (snip.includes(",")) {
+                                        entry["name"] = snip;
+
+                                        log_indexes("individual", "name", b);
+                                    } else if (/^[0-9]+$/.test(snip)) {
+                                        if (entry["age"] == null) {
+                                            entry["age"] = snip;
+
+                                            log_indexes("individual", "age", b);
+                                        } else {
+                                            entry["lane"] = snip;
+
+                                            log_indexes("individual", "lane", b);
+                                        }
+                                    }
+                                }
+
+                                current_heat.push(entry);
+                            } else {
+                                entry["name"] = "";
+                                entry["team"] = "";
+                                entry["time"] = 99999999;
+                                entry["display-time"] = "";
+                                entry["age"] = "";
+                                entry["lane"] = current_heat.length + 1;
+
+                                current_heat.push(entry);
+                            }
+                        }
+                        event_data["heats"].push(current_heat);
+                        i += 6;
+                    } else {
+                        let a = i + 1;
+                        var cut = ["Heat", "Event", "NVSL"];
+                        while (a < pdf_lines.length && cut.some(word => pdf_lines[a][0].includes(word)) == false) {
+                            var temp_chunk = pdf_lines[a];
+                            var lane = temp_chunk.pop();
+                            var first = temp_chunk.shift();
+
+                            if (["A", "B", "C"].some(word => word == first)) {
+                                var entry = {"swimmers": [], "points": ""};
+                                var time = temp_chunk[0];
+                                var team = temp_chunk[1];
+
+                                for (let c = a + 1; c < a + 3; c++) {
+                                    var entry_chunk = pdf_lines[c].join("").split(/[1234]\)/).filter(item => item.trim() != "").map(item => item.split(/(?=\d)(?<!\d)/));
+                                    entry_chunk.forEach(person => {
+                                        var name = person[0].trim();
+                                        var age = person[1].trim();
+                                        entry["swimmers"].push({"name": name, "age": age});
+                                    })
+                                }
+                                a += 2;
+
+                                entry["time"] = parseFloat(parse_time(time));;
+                                entry["display-time"] = time;
+                                entry["lane"] = parseInt(lane);
+                                entry["team"] = get_team(team, false);
+
+                                current_heat.push(entry);
+                            }
+                            a++;
+                        }
+                        event_data["heats"].push(current_heat);
+
+                        i += a - i - 1;
+                    }
+                }
+
+                i++;
+            }
+
+            if (event_data != null) {
+                sheet_data.push(event_data);
+            }
+
+            for (type of Object.keys(entry_indexes)) {
+                for (label of Object.keys(entry_indexes[type])) {
+                    var max_index = [null, 0];
+
+                    for (index of Object.keys(entry_indexes[type][label])) {
+                        var freq = entry_indexes[type][label][index];
+                        if (max_index[1] < freq) {
+                            var max_index = [Number(index), freq];
+                        }
+                    }
+
+                    entry_indexes[type][label] = max_index[0];
+                }
+            }
+
+
+            team_data = new Set();
+            sheet_data.forEach(event => {
+                if (event["label"].includes("Relay")) {
+                    relay_mode = true;
+                    var indexes_db = entry_indexes["relay"];
+                } else {
+                    relay_mode = false;
+                    var indexes_db = entry_indexes["individual"];
+                }
+
+                for (let i = 0; i < event["heats"].length; i++) {
+                    var heat_data = event["heats"][i];
+                    heat_data.forEach((entry, count) => {
+                        if (relay_mode == false) {
+                            let entry_labels = ["team", "age", "name", "time", "lane"];
+                            entry_labels.forEach(key => {
+                                if (entry[key] == null) {
+                                    entry[key] = pdf_lines[entry["data-index"]][indexes_db[key]];
+                                }
+                            });
+
+                            team_data.add(entry["team"].toUpperCase());
+                        }
+                    });
+                }
+            });
+
+            sheet_score = {};
+            [...team_data].filter(name => name != "").forEach(name => sheet_score[name] = 0);
+
+            render_sheet(sheet_data, pdf_lines);
+        }
+        function render_sheet(sheet_data, pdf_lines) {
+            document.querySelector(".setup").remove();
+            var wrapper = document.getElementById("pdf-output");
+            wrapper.style.display = "grid";
+
+            if (!team_data.has(your_team["abr"])) {
+                var highlight_display = "none";
+            } else {
+                var highlight_display = "";
+            }
+
+            wrapper.innerHTML = `
+                <div class="sheet-title-wrapper">
+                    <div class="sheet-title">${sheet_title}</div>
+                    <div class="sheet-subtitle">Meet Program</div>
+                    <div class="button-wrapper">
+                        <label onclick="download_sheet()">
+                            <div>Download PDF</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 2.26953V6.40007C14 6.96012 14 7.24015 14.109 7.45406C14.2049 7.64222 14.3578 7.7952 14.546 7.89108C14.7599 8.00007 15.0399 8.00007 15.6 8.00007H19.7305M9 15L12 18M12 18L15 15M12 18L12 12M14 2H8.8C7.11984 2 6.27976 2 5.63803 2.32698C5.07354 2.6146 4.6146 3.07354 4.32698 3.63803C4 4.27976 4 5.11984 4 6.8V17.2C4 18.8802 4 19.7202 4.32698 20.362C4.6146 20.9265 5.07354 21.3854 5.63803 21.673C6.27976 22 7.11984 22 8.8 22H15.2C16.8802 22 17.7202 22 18.362 21.673C18.9265 21.3854 19.3854 20.9265 19.673 20.362C20 19.7202 20 18.8802 20 17.2V8L14 2Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </label>
+                        <label onclick="toggle_points(this)">
+                            <div>Show Points</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 9H2M6 17.5L8.5 15L6 12.5M11 17.5L15 17.5M2 7.8L2 16.2C2 17.8802 2 18.7202 2.32698 19.362C2.6146 19.9265 3.07354 20.3854 3.63803 20.673C4.27976 21 5.11984 21 6.8 21H17.2C18.8802 21 19.7202 21 20.362 20.673C20.9265 20.3854 21.3854 19.9265 21.673 19.362C22 18.7202 22 17.8802 22 16.2V7.8C22 6.11984 22 5.27977 21.673 4.63803C21.3854 4.07354 20.9265 3.6146 20.362 3.32698C19.7202 3 18.8802 3 17.2 3L6.8 3C5.11984 3 4.27976 3 3.63803 3.32698C3.07354 3.6146 2.6146 4.07354 2.32698 4.63803C2 5.27976 2 6.11984 2 7.8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </label>
+                        <label style="display: ${highlight_display};" onclick="toggle_highlights(this)">
+                            <div>Highlight ${your_team["name"]}</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 20.9998H13M2.5 21.4998L8.04927 19.3655C8.40421 19.229 8.58168 19.1607 8.74772 19.0716C8.8952 18.9924 9.0358 18.901 9.16804 18.7984C9.31692 18.6829 9.45137 18.5484 9.72028 18.2795L21 6.99982C22.1046 5.89525 22.1046 4.10438 21 2.99981C19.8955 1.89525 18.1046 1.89524 17 2.99981L5.72028 14.2795C5.45138 14.5484 5.31692 14.6829 5.20139 14.8318C5.09877 14.964 5.0074 15.1046 4.92823 15.2521C4.83911 15.4181 4.77085 15.5956 4.63433 15.9506L2.5 21.4998ZM2.5 21.4998L4.55812 16.1488C4.7054 15.7659 4.77903 15.5744 4.90534 15.4867C5.01572 15.4101 5.1523 15.3811 5.2843 15.4063C5.43533 15.4351 5.58038 15.5802 5.87048 15.8703L8.12957 18.1294C8.41967 18.4195 8.56472 18.5645 8.59356 18.7155C8.61877 18.8475 8.58979 18.9841 8.51314 19.0945C8.42545 19.2208 8.23399 19.2944 7.85107 19.4417L2.5 21.4998Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </label>
+                    </div>
+                </div>
+            `;
+
+            sheet_data.forEach(event => {
+                var container = document.createElement("DIV");
+                container.setAttribute("class", "event-container");
+                container.innerHTML = `<div class="event-header">
+                    <div>Event ${event["number"]}</div>
+                    <div>${event["label"]}</div>
+                </div>`;
+
+                if (event["label"].includes("Relay")) {
+                    relay_mode = true;
+                } else {
+                    relay_mode = false;
+                }
+
+                var all_entries = event["heats"].flat().map(entry => entry["time"]);
+                var sorted_times = [...new Set(all_entries)].sort((a, b) => a - b);
+
+                for (let heat of event["heats"]) {
+                    for (let entry of heat) {
+                        if (sheet_title.includes("Todd Potts")) {
+                            var points = [32, 26, 24, 22, 20, 18, 14, 10, 8, 6, 4, 2];
+                        } else if (relay_mode == false) {
+                            var points = [5, 3, 1];
+                        } else {
+                            var points = [5];
+                        }
+
+                        var time_index = sorted_times.indexOf(entry["time"]);
+                        if (time_index < points.length) {
+                            entry["points"] = points[time_index];
+                            sheet_score[entry["team"].toUpperCase()] += points[time_index];
+                        }
+                    }
+
+                    heat.push({...sheet_score});
+                }
+
+                for (let i = 0; i < event["heats"].length; i++) {
+                    var heat_data = event["heats"][i];
+
+                    var score_data = heat_data.pop();
+                    let score_text = "";
+                    for (team of Object.keys(score_data)) {
+                        score_text += `${team}: ${score_data[team]} `;
+                    }
+
+                    var column = document.createElement("TABLE");
+                    column.setAttribute("class", "column");
+                    var column_contents = document.createElement("TBODY");
+                    column_contents.innerHTML = `
+                        <tr title>
+                            <td class="heat-number" colspan="100">Heat ${i + 1}</td>
+                            <td class="score" hidden colspan="100">${score_text.trim()}</td>
+                        </tr>
+                        <tr key>
+                            <td>Lane</td>
+                            <td>Name</td>
+                            <td>Age</td>
+                            <td>Team</td>
+                            <td>Time</td>
+                            <td class="points" hidden>P</td>
+                        </tr>
+                    `;
+
+                    heat_data.forEach((entry, count) => {
+                        if (relay_mode == false) {
+                            column_contents.innerHTML += `
+                                <tr team="${entry["team"].toLowerCase()}">
+                                    <td>${entry["lane"]}</td>
+                                    <td>${format_name(entry["name"])}</td>
+                                    <td>${entry["age"]}</td>
+                                    <td>${entry["team"].toUpperCase()}</td>
+                                    <td>${entry["display-time"]}</td>
+                                    <td class="points" hidden>${entry["points"]}</td>
+                                </tr>
+                            `;
+                        } else {
+                            if (count == heat_data.length - 1) {
+                                var style = `border-bottom: none;`;
+                            } else {
+                                var style = "";
+                            }
+
+                            let swimmers_html = "";
+                            entry["swimmers"].forEach((swimmer, index) => {
+                                swimmers_html += `
+                                    <tr team="${entry["team"].toLowerCase()}">
+                                        ${index === 0 ? `<td style="${style}" rowspan="${entry["swimmers"].length}">${entry["lane"]}</td>` : ""}
+                                        <td style="border-right: 1px solid var(--str2);">${format_name(swimmer["name"])}</td>
+                                        <td style="border-radius: 0px; border-right: 1px solid var(--str2);">${swimmer["age"]}</td>
+                                        ${index === 0 ? `<td style="${style}" rowspan="${entry["swimmers"].length}">${entry["team"]}</td>` : ""}
+                                        ${index === 0 ? `<td style="${style}" rowspan="${entry["swimmers"].length}">${entry["display-time"]}</td>` : ""}
+                                        ${index === 0 ? `<td class="points" hidden style="${style}" rowspan="${entry["swimmers"].length}">${entry["points"]}</td>` : ""}
+                                    </tr>
+                                `;
+                            });
+                            column_contents.innerHTML += swimmers_html;
+                        }
+                    })
+
+                    column.append(column_contents);
+                    container.append(column);
+                }
+
+                wrapper.append(container);
+            });
+        }
+        function format_name(string) {
+            return string.split(",").reverse().join(" ");
+        }
+        function get_info(id) {
+            outer_loop: for (let division of Object.keys(teams)) {
+                for (let team_name of Object.keys(teams[division])) {
+                    if (teams[division][team_name]["id"] == id) {
+                        your_team = teams[division][team_name];
+                        your_team["name"] = team_name;
+                        your_team["divion"] = Number(division);
+                        break outer_loop;
+                    }
+                }
+            }
+        }
+        your_team_id = 329;
+        async function init_jsons() {
+            var response = await fetch("/files/teams.json");
+            teams = await response.json();
+
+            get_info(your_team_id);
+            // test_pdf();
+        }
+        init_jsons();
+        function get_team(string, strict = true) {
+            for (let division of Object.keys(teams)) {
+                for (let full_name of Object.keys(teams[division])) {
+                    var abr = teams[division][full_name]["abr"];
+                    if (string == full_name || string == abr) {
+                        return abr;
+                    }
+                }
+            }
+
+            if (strict == false) {
+                var first_word = string.split(/\s+/)[0].toLowerCase();
+                for (let division of Object.keys(teams)) {
+                    for (let full_name of Object.keys(teams[division])) {
+                        var team_first_word = full_name.split(/\s+/)[0].toLowerCase();
+                        if (team_first_word.includes(first_word) || first_word.includes(team_first_word)) {
+                            var abr = teams[division][full_name]["abr"];
+                            return abr;
+                        }
+                    }
+                }
+
+                return string
+            } else {
+                return null
+            }
+        }
+        async function download_sheet() {
+            var title_chunks = sheet_title.match(/(\d+|[a-zA-Z%]+|[^a-zA-Z\d%\s]+)/g);
+            var at_index = title_chunks.indexOf("@");
+            var teams_title = title_chunks[at_index - 1] + title_chunks[at_index] + title_chunks[at_index + 1];
+            var download_title = teams_title + " Scored Meet Program";
+
+            const response = await fetch("http://localhost:3000/render-pdf", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ html: document.documentElement.outerHTML }),
+            });
+
+            var blob = await response.blob();
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = download_title + ".pdf";
+            a.click();
+        }
+        function parse_time(str) {
+            const parts = str.split(":").map(Number);
+            if (parts.some(isNaN)) return NaN;
+
+            return parts.reverse().reduce((total, n, i) => total + n * Math.pow(60, i), 0);
+        }
+        function test_pdf() {
+            var text_file = [
+                [
+                    "NVSL Division 9-3",
+                    "HY-TEK's MEET MANAGER 8.0 - 12:37 PM 7/3/2025 Page 1"
+                ],
+                [
+                    "NVSL A-Meet FX@PL - 7/5/2025"
+                ],
+                [
+                    "Northern Virginia Swimming League"
+                ],
+                [
+                    "Meet Program"
+                ],
+                [
+                    "Event 1",
+                    "Boys 8 & Under 25 SC Meter Freestyle"
+                ],
+                [
+                    "NVSL Meter:",
+                    "15.10",
+                    "7/10/1965",
+                    "Roger McLeod"
+                ],
+                [
+                    "Fox Hunt:",
+                    "17.00",
+                    "7/30/1988"
+                ],
+                [
+                    "Todd O'Neal"
+                ],
+                [
+                    "Parklawn:",
+                    "17.03",
+                    "7/1/2022"
+                ],
+                [
+                    "Ezra Mancari"
+                ],
+                [
+                    "ALL*",
+                    "17.75"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "35.12",
+                    "7",
+                    "Petri, Theo",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "19.64",
+                    "7",
+                    "McEvoy, Gordon",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "19.18",
+                    "8",
+                    "Murphy, Danny",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "18.31",
+                    "8",
+                    "Aung, Kevin",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "30.93",
+                    "8",
+                    "Smail, Wesley",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "24.11",
+                    "8",
+                    "Jones, Owen",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 2",
+                    "Girls 8 & Under 25 SC Meter Freestyle"
+                ],
+                [
+                    "NVSL Meter:",
+                    "15.25",
+                    "6/24/2017",
+                    "Charis Roundtree"
+                ],
+                [
+                    "Fox Hunt:",
+                    "17.20",
+                    "7/31/2021"
+                ],
+                [
+                    "Katherine James"
+                ],
+                [
+                    "Parklawn:",
+                    "17.62",
+                    "7/1/1998"
+                ],
+                [
+                    "Quinn de la Concepcion"
+                ],
+                [
+                    "ALL*",
+                    "18.52"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "29.24",
+                    "7",
+                    "Morris, Marta",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "26.90",
+                    "6",
+                    "Kazimi, Yusra",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "21.29",
+                    "8",
+                    "Celentano, Coco",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "19.14",
+                    "8",
+                    "Tibulschii, Mia",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "25.96",
+                    "8",
+                    "Rothschild, Harriet",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "28.44",
+                    "7",
+                    "Steele, So",
+                    "f",
+                    "ia",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 3",
+                    "Boys 9-10 50 SC Meter Freestyle"
+                ],
+                [
+                    "NVSL Meter:",
+                    "29.38",
+                    "7/12/2014",
+                    "Johnny Bradshaw"
+                ],
+                [
+                    "Fox Hunt:",
+                    "31.30",
+                    "7/30/1977"
+                ],
+                [
+                    "Keenan Goldsby"
+                ],
+                [
+                    "Parklawn:",
+                    "33.13",
+                    "7/20/2024"
+                ],
+                [
+                    "Ezra Mancari"
+                ],
+                [
+                    "ALL*",
+                    "34.41"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "51.81",
+                    "10",
+                    "Hsia, Micah",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "36.54",
+                    "10",
+                    "Tibulschii, Michael",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "37.15",
+                    "10",
+                    "Gleeson, Lucas",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "32.96",
+                    "10",
+                    "Johnson, Reid",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "41.00",
+                    "9",
+                    "Oliphant, Calvin",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "38.47",
+                    "10",
+                    "Morgan, Grif",
+                    "f",
+                    "in",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 4",
+                    "Girls 9-10 50 SC Meter Freestyle"
+                ],
+                [
+                    "NVSL Meter:",
+                    "29.43",
+                    "6/22/2019",
+                    "Charis Roundtree"
+                ],
+                [
+                    "Fox Hunt:",
+                    "33.72",
+                    "7/12/2008"
+                ],
+                [
+                    "Allison Davis"
+                ],
+                [
+                    "Parklawn:",
+                    "34.05",
+                    "7/1/2000"
+                ],
+                [
+                    "Quinn De La Concepcion"
+                ],
+                [
+                    "ALL*",
+                    "35.40"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "44.90",
+                    "10",
+                    "Silveira, Angie",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "37.93",
+                    "10",
+                    "Miller, Harper",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "35.94",
+                    "10",
+                    "Celentano, Addie",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "34.50",
+                    "10",
+                    "Van Schagen, Tessa",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "42.98",
+                    "10",
+                    "Vickrey-Lau, Kaiya",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "40.50",
+                    "9",
+                    "Morgan, Paige",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 5",
+                    "Boys 11-12 50 SC Meter Freestyle"
+                ],
+                [
+                    "NVSL Meter:",
+                    "26.18",
+                    "8/4/2018",
+                    "Michael Mullen"
+                ],
+                [
+                    "Fox Hunt:",
+                    "28.10",
+                    "7/28/1979"
+                ],
+                [
+                    "Keenan Goldsby"
+                ],
+                [
+                    "Parklawn:",
+                    "29.66",
+                    "7/1/2007"
+                ],
+                [
+                    "Lucas Jennings"
+                ],
+                [
+                    "ALL*",
+                    "30.56"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "35.05",
+                    "12",
+                    "Supple, Miller",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "31.72",
+                    "11",
+                    "Bae, Asher",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "29.95",
+                    "12",
+                    "Hadley, James",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "29.09",
+                    "12",
+                    "Kelly, Charlie",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "34.56",
+                    "12",
+                    "Skerritt, Kirby",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "32.62",
+                    "12",
+                    "Reyes Aun, Sebastien",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 6",
+                    "Girls 11-12 50 SC Meter Freestyle"
+                ],
+                [
+                    "NVSL Meter:",
+                    "27.36",
+                    "6/23/2012",
+                    "Cassidy Bayer"
+                ],
+                [
+                    "Fox Hunt:",
+                    "29.51",
+                    "7/31/1999"
+                ],
+                [
+                    "Laura Galway"
+                ],
+                [
+                    "Parklawn:",
+                    "30.00",
+                    "7/1/1976"
+                ],
+                [
+                    "Kathy Anderson"
+                ],
+                [
+                    "ALL*",
+                    "31.22"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "38.90",
+                    "11",
+                    "Raezer, Charlize",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "33.52",
+                    "11",
+                    "Aung, Susan",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "33.81",
+                    "12",
+                    "Corbett, Kenzie",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "31.95",
+                    "12",
+                    "Baker, Violet",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "35.25",
+                    "12",
+                    "Nye, Sophia",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "37.87",
+                    "11",
+                    "Linker, Reagan",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 7",
+                    "Boys 13-14 50 SC Meter Freestyle"
+                ],
+                [
+                    "NVSL Meter:",
+                    "24.03",
+                    "8/2/2014",
+                    "Tommy Hallock"
+                ],
+                [
+                    "Fox Hunt:",
+                    "26.56",
+                    "7/8/2024"
+                ],
+                [
+                    "Finn Johnson"
+                ],
+                [
+                    "Parklawn:",
+                    "26.00",
+                    "7/11/2009"
+                ],
+                [
+                    "Lucas Jennings"
+                ],
+                [
+                    "ALL*",
+                    "27.16"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "31.56",
+                    "14",
+                    "Smith, Kellan",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "30.21",
+                    "14",
+                    "Linker, Owen",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "28.83",
+                    "14",
+                    "Corbett, Quade",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "30.00",
+                    "14",
+                    "Gallton, Zach",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "31.21",
+                    "13",
+                    "Mesmer, Raph",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "34.34",
+                    "13",
+                    "Hochstein, Parker",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 8",
+                    "Girls 13-14 50 SC Meter Freestyle"
+                ],
+                [
+                    "NVSL Meter:",
+                    "26.00",
+                    "7/31/2010",
+                    "Janet Hu"
+                ],
+                [
+                    "Fox Hunt:",
+                    "28.95",
+                    "8/7/2010"
+                ],
+                [
+                    "Alison Cook"
+                ],
+                [
+                    "Parklawn:",
+                    "28.63",
+                    "7/1/1995"
+                ],
+                [
+                    "Katie Collins"
+                ],
+                [
+                    "ALL*",
+                    "29.33"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "34.26",
+                    "13",
+                    "Snow, Jessie",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "30.72",
+                    "14",
+                    "McLean, Aubrey",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "29.12",
+                    "14",
+                    "Corbett, CC",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "29.40",
+                    "14",
+                    "Miller, Kenzie",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "29.21",
+                    "14",
+                    "Young, Amelia",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "30.82",
+                    "14",
+                    "McEvoy, Isabel",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "NVSL Division 9-3",
+                    "HY-TEK's MEET MANAGER 8.0 - 12:37 PM 7/3/2025 Page 2"
+                ],
+                [
+                    "NVSL A-Meet FX@PL - 7/5/2025"
+                ],
+                [
+                    "Northern Virginia Swimming League"
+                ],
+                [
+                    "Meet Program"
+                ],
+                [
+                    "Event 9",
+                    "Boys 15-18 50 SC Meter Freestyle"
+                ],
+                [
+                    "NVSL Meter:",
+                    "22.45",
+                    "7/20/2019",
+                    "Anthony Grimm"
+                ],
+                [
+                    "Fox Hunt:",
+                    "24.87",
+                    "7/27/1991"
+                ],
+                [
+                    "Cliff Harbourt"
+                ],
+                [
+                    "Parklawn:",
+                    "24.77",
+                    "7/20/2024"
+                ],
+                [
+                    "Noah Popp"
+                ],
+                [
+                    "ALL*",
+                    "25.03"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "NT",
+                    "18",
+                    "Liller, Joey",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "28.33",
+                    "15",
+                    "Chiquitucto, Christian",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "28.45",
+                    "16",
+                    "Tedros, Danny",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "27.62",
+                    "15",
+                    "Van Schagen, Asher",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "29.79",
+                    "15",
+                    "Shea, Cian",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "29.26",
+                    "18",
+                    "Linker, Riley",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 10",
+                    "Girls 15-18 50 SC Meter Freestyle"
+                ],
+                [
+                    "NVSL Meter:",
+                    "25.67",
+                    "7/27/2013",
+                    "Janet Hu"
+                ],
+                [
+                    "Fox Hunt:",
+                    "28.49",
+                    "8/2/2014"
+                ],
+                [
+                    "Lauren Yi"
+                ],
+                [
+                    "Parklawn:",
+                    "27.12",
+                    "7/30/2016"
+                ],
+                [
+                    "Anna Shumate"
+                ],
+                [
+                    "ALL*",
+                    "28.21"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "32.31",
+                    "15",
+                    "Popp, Miriam",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "34.10",
+                    "15",
+                    "Austin, Meredith",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "29.66",
+                    "14",
+                    "Oliphant, Lucy",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "32.46",
+                    "16",
+                    "Beltz, Kaja",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "30.84",
+                    "13",
+                    "Kinder, Alina",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "34.19",
+                    "17",
+                    "Grubbs, Ginny",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 11",
+                    "Boys 8 & Under 25 SC Meter Backstroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "18.15",
+                    "7/28/2007",
+                    "Roman Lowery"
+                ],
+                [
+                    "Fox Hunt:",
+                    "20.16",
+                    "7/29/2023"
+                ],
+                [
+                    "Reid T. Johnson"
+                ],
+                [
+                    "Parklawn:",
+                    "20.76",
+                    "7/7/1989"
+                ],
+                [
+                    "Marco Sanzetenea"
+                ],
+                [
+                    "ALL*",
+                    "22.11"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "34.95",
+                    "7",
+                    "Garrison, Gus",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "25.59",
+                    "8",
+                    "Cook, Nolan",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "27.03",
+                    "8",
+                    "Dvorak, Oliver",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "25.31",
+                    "7",
+                    "McEvoy, Gordon",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "28.58",
+                    "7",
+                    "Kurz, Jaxson",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "31.37",
+                    "8",
+                    "Jones, Owen",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 12",
+                    "Girls 8 & Under 25 SC Meter Backstroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "17.70",
+                    "8/2/2014",
+                    "Courtney Watts"
+                ],
+                [
+                    "Fox Hunt:",
+                    "20.88",
+                    "6/22/2019"
+                ],
+                [
+                    "Kenzie Miller"
+                ],
+                [
+                    "Parklawn:",
+                    "21.56",
+                    "7/1/1998"
+                ],
+                [
+                    "Quinn de la Concepcion"
+                ],
+                [
+                    "ALL*",
+                    "22.71"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "44.92",
+                    "6",
+                    "Laihow, Emilia",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "29.53",
+                    "7",
+                    "Steele, So",
+                    "f",
+                    "ia",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "27.49",
+                    "8",
+                    "Rothschild, Harriet",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "23.46",
+                    "8",
+                    "Tibulschii, Mia",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "28.17",
+                    "7",
+                    "Harris, Avery",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "30.50",
+                    "8",
+                    "Ball, Alice",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 13",
+                    "Boys 9-10 50 SC Meter Backstroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "33.37",
+                    "7/5/2014",
+                    "Johnny Bradshaw"
+                ],
+                [
+                    "Fox Hunt:",
+                    "38.09",
+                    "6/28/2025"
+                ],
+                [
+                    "Reid T. Johnson"
+                ],
+                [
+                    "Parklawn:",
+                    "39.31",
+                    "6/24/2024"
+                ],
+                [
+                    "Ezra Mancari"
+                ],
+                [
+                    "ALL*",
+                    "41.21"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "1:00.10",
+                    "10",
+                    "Manegold, Sean",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "46.08",
+                    "9",
+                    "Vasquez, Luke",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "47.77",
+                    "10",
+                    "Lee, Danny",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "38.09",
+                    "10",
+                    "Johnson, Reid",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "49.72",
+                    "9",
+                    "Oliphant, Calvin",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "49.24",
+                    "10",
+                    "Coombs, Sawyer",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 14",
+                    "Girls 9-10 50 SC Meter Backstroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "33.16",
+                    "7/9/2016",
+                    "Courtney Watts"
+                ],
+                [
+                    "Fox Hunt:",
+                    "39.65",
+                    "7/8/2023"
+                ],
+                [
+                    "Katherine James"
+                ],
+                [
+                    "Parklawn:",
+                    "39.91",
+                    "7/1/2000"
+                ],
+                [
+                    "Quinn de la Concepcion"
+                ],
+                [
+                    "ALL*",
+                    "41.32"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "53.76",
+                    "9",
+                    "Garcia-Johnson, Ori",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "47.81",
+                    "10",
+                    "Draughon, Scarlett",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "47.02",
+                    "10",
+                    "Vickrey-Lau, Kaiya",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "40.49",
+                    "10",
+                    "Grif",
+                    "f",
+                    "ith, Brooklyn",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "48.59",
+                    "10",
+                    "Whipkey, Susanna",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "49.45",
+                    "9",
+                    "Abraham, Amelia",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 15",
+                    "Boys 11-12 50 SC Meter Backstroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "29.09",
+                    "7/7/2007",
+                    "Philip Hu"
+                ],
+                [
+                    "Fox Hunt:",
+                    "32.37",
+                    "6/7/2025"
+                ],
+                [
+                    "Charlie Kelly"
+                ],
+                [
+                    "Parklawn:",
+                    "35.03",
+                    "8/4/2007"
+                ],
+                [
+                    "Lucas Jennings"
+                ],
+                [
+                    "ALL*",
+                    "35.70"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "45.06",
+                    "12",
+                    "McGrorey, Jack",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "40.01",
+                    "12",
+                    "Reyes Aun, Sebastien",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "36.53",
+                    "11",
+                    "Mancari, Ezra",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "37.08",
+                    "12",
+                    "Butler, Henry",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "41.25",
+                    "12",
+                    "Gutierrez, Keaton",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "41.09",
+                    "12",
+                    "Oborski, Patrick",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 16",
+                    "Girls 11-12 50 SC Meter Backstroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "29.96",
+                    "7/13/2024",
+                    "Kennedy Mast"
+                ],
+                [
+                    "Fox Hunt:",
+                    "35.51",
+                    "7/31/1999"
+                ],
+                [
+                    "Laura Galway"
+                ],
+                [
+                    "Parklawn:",
+                    "34.43",
+                    "6/8/2024"
+                ],
+                [
+                    "Charlotte Hill"
+                ],
+                [
+                    "ALL*",
+                    "35.47"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "51.31",
+                    "12",
+                    "Kirk, Anna",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "40.71",
+                    "12",
+                    "Morgan, Anabelle",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "38.17",
+                    "11",
+                    "Hungerford, Rebecca",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "38.50",
+                    "12",
+                    "Steele, Gigi",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "47.26",
+                    "11",
+                    "Shea, Danelea",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "42.88",
+                    "11",
+                    "Abraham, Sophia",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "NVSL Division 9-3",
+                    "HY-TEK's MEET MANAGER 8.0 - 12:37 PM 7/3/2025 Page 3"
+                ],
+                [
+                    "NVSL A-Meet FX@PL - 7/5/2025"
+                ],
+                [
+                    "Northern Virginia Swimming League"
+                ],
+                [
+                    "Meet Program"
+                ],
+                [
+                    "Event 17",
+                    "Boys 13-14 50 SC Meter Backstroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "26.19",
+                    "7/15/2017",
+                    "Anthony Grimm"
+                ],
+                [
+                    "Fox Hunt:",
+                    "29.72",
+                    "7/6/2024"
+                ],
+                [
+                    "Finn Johnson"
+                ],
+                [
+                    "Parklawn:",
+                    "30.16",
+                    "7/18/2009"
+                ],
+                [
+                    "Lucas Jennings"
+                ],
+                [
+                    "ALL*",
+                    "30.94"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "40.58",
+                    "13",
+                    "Wiedemann, Emmett",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "40.28",
+                    "14",
+                    "Bae, Nathan",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "34.45",
+                    "13",
+                    "Boynton, Eddie",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "39.60",
+                    "13",
+                    "Maloney, Max",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "37.52",
+                    "14",
+                    "Manegold, Connor",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "43.96",
+                    "13",
+                    "Chiquitucto, Joshua",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 18",
+                    "Girls 13-14 50 SC Meter Backstroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "29.38",
+                    "7/20/2024",
+                    "Hadley Petronello"
+                ],
+                [
+                    "Fox Hunt:",
+                    "33.53",
+                    "6/21/2025"
+                ],
+                [
+                    "Kenzie Miller"
+                ],
+                [
+                    "Parklawn:",
+                    "33.25",
+                    "6/21/2025"
+                ],
+                [
+                    "Emerson Mancari"
+                ],
+                [
+                    "ALL*",
+                    "32.78"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "39.76",
+                    "13",
+                    "Rothschild, Betsy",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "35.07",
+                    "14",
+                    "Steiner, Lilly",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "33.25",
+                    "14",
+                    "Mancari, Emerson",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "33.53",
+                    "14",
+                    "Miller, Kenzie",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "37.96",
+                    "14",
+                    "Macdonald, Abby",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "36.18",
+                    "14",
+                    "Mazerolle, Elia",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 19",
+                    "Boys 15-18 50 SC Meter Backstroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "23.82",
+                    "7/20/2019",
+                    "Anthony Grimm"
+                ],
+                [
+                    "Fox Hunt:",
+                    "27.37",
+                    "7/24/2021"
+                ],
+                [
+                    "Jacob Macrina"
+                ],
+                [
+                    "Parklawn:",
+                    "28.08",
+                    "6/24/2024"
+                ],
+                [
+                    "Noah Popp"
+                ],
+                [
+                    "ALL*",
+                    "28.03"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "40.21",
+                    "15",
+                    "Silveira, Alex",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "31.90",
+                    "15",
+                    "Van Schagen, Asher",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "28.29",
+                    "17",
+                    "Popp, Noah",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "29.94",
+                    "15",
+                    "Johnson, Finn",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "34.54",
+                    "15",
+                    "Shea, Cian",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "38.34",
+                    "18",
+                    "Linker, Riley",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 20",
+                    "Girls 15-18 50 SC Meter Backstroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "28.21",
+                    "8/4/2012",
+                    "Janet Hu"
+                ],
+                [
+                    "Fox Hunt:",
+                    "32.97",
+                    "7/12/2014"
+                ],
+                [
+                    "Lauren Yi"
+                ],
+                [
+                    "Parklawn:",
+                    "32.50",
+                    "7/27/2013"
+                ],
+                [
+                    "Hayley Snell"
+                ],
+                [
+                    "ALL*",
+                    "31.78"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "37.80",
+                    "15",
+                    "Beck, Libby",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "40.10",
+                    "18",
+                    "Baker, Sophie",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "34.28",
+                    "13",
+                    "Hill, Charlotte",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "39.62",
+                    "17",
+                    "Grubbs, Ginny",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "36.28",
+                    "17",
+                    "Perez Fernandez, Camila",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "40.81",
+                    "15",
+                    "Austin, Meredith",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 21",
+                    "Boys 8 & Under 25 SC Meter Breaststroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "19.35",
+                    "7/28/2018",
+                    "Andy Li"
+                ],
+                [
+                    "Fox Hunt:",
+                    "23.08",
+                    "7/30/1988"
+                ],
+                [
+                    "Jeremy Thomasy"
+                ],
+                [
+                    "Parklawn:",
+                    "23.70",
+                    "7/7/1975"
+                ],
+                [
+                    "Charles Beach"
+                ],
+                [
+                    "ALL*",
+                    "24.93"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "NT",
+                    "7",
+                    "Garrison, Gus",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "29.25",
+                    "8",
+                    "Bae, Elijah",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "32.57",
+                    "8",
+                    "Gould, Paul",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "28.02",
+                    "8",
+                    "Aung, Kevin",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "58.44",
+                    "7",
+                    "Kurz, Jaxson",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "34.81",
+                    "7",
+                    "Breslin, Liam",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 22",
+                    "Girls 8 & Under 25 SC Meter Breaststroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "19.61",
+                    "7/22/2017",
+                    "Elizabeth Bryan"
+                ],
+                [
+                    "Fox Hunt:",
+                    "23.30",
+                    "7/29/1978"
+                ],
+                [
+                    "Lynne Yankosky"
+                ],
+                [
+                    "Parklawn:",
+                    "24.43",
+                    "7/1/1996"
+                ],
+                [
+                    "Maxine Battis"
+                ],
+                [
+                    "ALL*",
+                    "25.76"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "NT",
+                    "6",
+                    "Dvorak, Quinn",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "34.53",
+                    "7",
+                    "Kane, Merritt",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "36.74",
+                    "7",
+                    "Hungerford, Katherine",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "33.53",
+                    "8",
+                    "DeAngelis, Vivi",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "41.97",
+                    "7",
+                    "Harris, Avery",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "36.93",
+                    "8",
+                    "Blackwood, Violet",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 23",
+                    "Boys 9-10 50 SC Meter Breaststroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "37.26",
+                    "8/4/2018",
+                    "Brandon Lesser"
+                ],
+                [
+                    "Fox Hunt:",
+                    "43.73",
+                    "6/28/2025"
+                ],
+                [
+                    "Michael Tibulschii"
+                ],
+                [
+                    "Parklawn:",
+                    "45.53",
+                    "7/24/2010"
+                ],
+                [
+                    "Garrett Downs"
+                ],
+                [
+                    "ALL*",
+                    "47.00"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "59.40",
+                    "10",
+                    "Hadley, Sebastian",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "54.26",
+                    "10",
+                    "Ball, Owen",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "49.58",
+                    "10",
+                    "Gleeson, Lucas",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "43.73",
+                    "10",
+                    "Tibulschii, Michael",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "57.37",
+                    "9",
+                    "Lopez, Jackson",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "54.84",
+                    "10",
+                    "Coombs, Sawyer",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 24",
+                    "Girls 9-10 50 SC Meter Breaststroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "36.38",
+                    "8/3/2019",
+                    "Elizabeth Bryan"
+                ],
+                [
+                    "Fox Hunt:",
+                    "43.16",
+                    "7/31/1999"
+                ],
+                [
+                    "Kellie Chang"
+                ],
+                [
+                    "Parklawn:",
+                    "45.73",
+                    "7/19/2010"
+                ],
+                [
+                    "Anna Shumate"
+                ],
+                [
+                    "ALL*",
+                    "47.66"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "56.28",
+                    "10",
+                    "Gould, Claire",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "52.68",
+                    "10",
+                    "Draughon, Scarlett",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "52.21",
+                    "10",
+                    "Kinder, Anya",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "48.72",
+                    "10",
+                    "Grif",
+                    "f",
+                    "ith, Brooklyn",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "55.13",
+                    "10",
+                    "Weathers, Ivy",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "55.07",
+                    "10",
+                    "Moore, Eleanor",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "NVSL Division 9-3",
+                    "HY-TEK's MEET MANAGER 8.0 - 12:37 PM 7/3/2025 Page 4"
+                ],
+                [
+                    "NVSL A-Meet FX@PL - 7/5/2025"
+                ],
+                [
+                    "Northern Virginia Swimming League"
+                ],
+                [
+                    "Meet Program"
+                ],
+                [
+                    "Event 25",
+                    "Boys 11-12 50 SC Meter Breaststroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "32.99",
+                    "7/30/2016",
+                    "Johnny Bradshaw"
+                ],
+                [
+                    "Fox Hunt:",
+                    "37.07",
+                    "6/7/2025"
+                ],
+                [
+                    "Charlie Kelly"
+                ],
+                [
+                    "Parklawn:",
+                    "38.34",
+                    "6/20/2015"
+                ],
+                [
+                    "Andrew Tran"
+                ],
+                [
+                    "ALL*",
+                    "40.03"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "47.12",
+                    "12",
+                    "Henderson, Cormac",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "44.97",
+                    "12",
+                    "Oborski, Patrick",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "42.63",
+                    "11",
+                    "Mancari, Ezra",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "43.62",
+                    "12",
+                    "Butler, Henry",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "46.92",
+                    "12",
+                    "Goldwater, Parker",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "50.41",
+                    "12",
+                    "Mattos, Nicholas",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 26",
+                    "Girls 11-12 50 SC Meter Breaststroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "34.40",
+                    "7/28/2018",
+                    "Catherine Hughes"
+                ],
+                [
+                    "Fox Hunt:",
+                    "39.86",
+                    "7/27/1985"
+                ],
+                [
+                    "Tracy Peltz"
+                ],
+                [
+                    "Parklawn:",
+                    "38.02",
+                    "6/8/2024"
+                ],
+                [
+                    "Alina Kinder"
+                ],
+                [
+                    "ALL*",
+                    "40.50"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "56.18",
+                    "11",
+                    "Van Hooser, Bridgette",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "46.53",
+                    "11",
+                    "Abraham, Sophia",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "44.11",
+                    "11",
+                    "Hungerford, Rebecca",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "45.75",
+                    "11",
+                    "Aung, Susan",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "54.12",
+                    "11",
+                    "Snow, Vivian",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "50.62",
+                    "11",
+                    "Pangilinan, Priscilla",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 27",
+                    "Boys 13-14 50 SC Meter Breaststroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "30.41",
+                    "7/28/2018",
+                    "Aiken Do"
+                ],
+                [
+                    "Fox Hunt:",
+                    "34.33",
+                    "7/6/2013"
+                ],
+                [
+                    "Mark Simonsen"
+                ],
+                [
+                    "Parklawn:",
+                    "35.00",
+                    "7/1/1972"
+                ],
+                [
+                    "Steve Galvin"
+                ],
+                [
+                    "ALL*",
+                    "35.00"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "43.09",
+                    "14",
+                    "Watkins, Henry",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "39.49",
+                    "14",
+                    "Gallton, Zach",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "40.70",
+                    "13",
+                    "Kirk, Seth",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "39.46",
+                    "14",
+                    "Linker, Owen",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "42.79",
+                    "14",
+                    "Manegold, Connor",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "44.63",
+                    "13",
+                    "Jaramillo, Matthew",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 28",
+                    "Girls 13-14 50 SC Meter Breaststroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "32.83",
+                    "6/21/1997",
+                    "Lindsey Ertter"
+                ],
+                [
+                    "Fox Hunt:",
+                    "36.02",
+                    "7/28/2001"
+                ],
+                [
+                    "Laura Galway"
+                ],
+                [
+                    "Parklawn:",
+                    "34.60",
+                    "8/2/2014"
+                ],
+                [
+                    "Anna Shumate"
+                ],
+                [
+                    "ALL*",
+                    "38.41"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "42.05",
+                    "14",
+                    "Sonn, Camille",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "40.65",
+                    "14",
+                    "McEvoy, Isabel",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "36.98",
+                    "13",
+                    "Kinder, Alina",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "37.73",
+                    "14",
+                    "McLean, Aubrey",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "40.79",
+                    "14",
+                    "Lee, Alexandra",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "48.48",
+                    "13",
+                    "Beltz, Emilie",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 29",
+                    "Boys 15-18 50 SC Meter Breaststroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "27.57",
+                    "7/13/2019",
+                    "Anthony Grimm"
+                ],
+                [
+                    "Fox Hunt:",
+                    "31.52",
+                    "7/27/1985"
+                ],
+                [
+                    "Mark Eissing"
+                ],
+                [
+                    "Parklawn:",
+                    "32.96",
+                    "7/28/2018"
+                ],
+                [
+                    "Garrett Downs"
+                ],
+                [
+                    "ALL*",
+                    "31.16"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "40.71",
+                    "17",
+                    "Henderson, Will",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "36.04",
+                    "18",
+                    "Kelly, Teddy",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "34.38",
+                    "17",
+                    "Popp, Noah",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "35.44",
+                    "15",
+                    "Chiquitucto, Christian",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "39.52",
+                    "16",
+                    "Tedros, Danny",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "39.43",
+                    "16",
+                    "Bryan, John",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 30",
+                    "Girls 15-18 50 SC Meter Breaststroke"
+                ],
+                [
+                    "NVSL Meter:",
+                    "31.37",
+                    "7/27/2019",
+                    "Anna Keating"
+                ],
+                [
+                    "Fox Hunt:",
+                    "35.82",
+                    "7/31/1999"
+                ],
+                [
+                    "Elizabeth Holloway"
+                ],
+                [
+                    "Parklawn:",
+                    "33.40",
+                    "7/25/2015"
+                ],
+                [
+                    "Anna Shumate"
+                ],
+                [
+                    "ALL*",
+                    "36.03"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "47.45",
+                    "18",
+                    "Andonegui, Mia",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "43.44",
+                    "15",
+                    "Chesser, Caroline",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "39.31",
+                    "13",
+                    "Hill, Charlotte",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "39.90",
+                    "16",
+                    "Beltz, Kaja",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "40.50",
+                    "18",
+                    "Galway, Tess",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "43.65",
+                    "15",
+                    "Cochran, Megan",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 31",
+                    "Boys 8 & Under 25 SC Meter Butter",
+                    "f",
+                    "ly"
+                ],
+                [
+                    "NVSL Meter:",
+                    "16.21",
+                    "7/28/2018",
+                    "Andy Li"
+                ],
+                [
+                    "Fox Hunt:",
+                    "18.55",
+                    "7/27/2002"
+                ],
+                [
+                    "Peter Simonsen"
+                ],
+                [
+                    "Parklawn:",
+                    "18.39",
+                    "7/7/1989"
+                ],
+                [
+                    "Devin Crock"
+                ],
+                [
+                    "ALL*",
+                    "21.66"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "33.30",
+                    "8",
+                    "Gould, Paul",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "29.40",
+                    "8",
+                    "Bae, Elijah",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "25.50",
+                    "8",
+                    "Murphy, Danny",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "25.28",
+                    "8",
+                    "Cook, Nolan",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "29.12",
+                    "8",
+                    "Dvorak, Oliver",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "38.27",
+                    "7",
+                    "Breslin, Liam",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 32",
+                    "Girls 8 & Under 25 SC Meter Butter",
+                    "f",
+                    "ly"
+                ],
+                [
+                    "NVSL Meter:",
+                    "16.54",
+                    "7/13/2013",
+                    "Kathleen Modder"
+                ],
+                [
+                    "Fox Hunt:",
+                    "18.99",
+                    "6/26/2023"
+                ],
+                [
+                    "Tessa Van Schagen"
+                ],
+                [
+                    "Parklawn:",
+                    "20.34",
+                    "7/22/2023"
+                ],
+                [
+                    "Adelaide Celentano"
+                ],
+                [
+                    "ALL*",
+                    "20.94"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "NT",
+                    "7",
+                    "Morris, Marta",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "34.93",
+                    "8",
+                    "Blackwood, Violet",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "25.52",
+                    "8",
+                    "Celentano, Coco",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "28.90",
+                    "7",
+                    "Kane, Merritt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "31.27",
+                    "7",
+                    "Hungerford, Katherine",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "35.57",
+                    "8",
+                    "Ball, Alice",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "NVSL Division 9-3",
+                    "HY-TEK's MEET MANAGER 8.0 - 12:37 PM 7/3/2025 Page 5"
+                ],
+                [
+                    "NVSL A-Meet FX@PL - 7/5/2025"
+                ],
+                [
+                    "Northern Virginia Swimming League"
+                ],
+                [
+                    "Meet Program"
+                ],
+                [
+                    "Event 33",
+                    "Boys 9-10 25 SC Meter Butter",
+                    "f",
+                    "ly"
+                ],
+                [
+                    "NVSL Meter:",
+                    "14.36",
+                    "8/2/2014",
+                    "Johnny Bradshaw"
+                ],
+                [
+                    "Fox Hunt:",
+                    "16.46",
+                    "7/28/1990"
+                ],
+                [
+                    "Todd O'Neal"
+                ],
+                [
+                    "Parklawn:",
+                    "16.69",
+                    "7/29/2023"
+                ],
+                [
+                    "Ezra Mancari"
+                ],
+                [
+                    "ALL*",
+                    "17.40"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "28.98",
+                    "10",
+                    "Haines, Jack",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "21.05",
+                    "10",
+                    "Morgan, Grif",
+                    "f",
+                    "in",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "19.63",
+                    "10",
+                    "Lee, Danny",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "19.47",
+                    "10",
+                    "Rossi, Max",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "22.55",
+                    "9",
+                    "Goldwater, Grayson",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "21.96",
+                    "9",
+                    "Vasquez, Luke",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 34",
+                    "Girls 9-10 25 SC Meter Butter",
+                    "f",
+                    "ly"
+                ],
+                [
+                    "NVSL Meter:",
+                    "14.74",
+                    "7/31/2010",
+                    "Cassidy Bayer"
+                ],
+                [
+                    "Fox Hunt:",
+                    "16.54",
+                    "6/28/2025"
+                ],
+                [
+                    "Tessa Van Schagen"
+                ],
+                [
+                    "Parklawn:",
+                    "16.70",
+                    "6/21/2025"
+                ],
+                [
+                    "Addie Celentano"
+                ],
+                [
+                    "ALL*",
+                    "17.72"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "20.92",
+                    "9",
+                    "Gutierrez, Tallie",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "20.02",
+                    "9",
+                    "Morgan, Paige",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "16.70",
+                    "10",
+                    "Celentano, Addie",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "16.54",
+                    "10",
+                    "Van Schagen, Tessa",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "19.21",
+                    "10",
+                    "Kinder, Anya",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "20.15",
+                    "9",
+                    "Abraham, Amelia",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 35",
+                    "Boys 11-12 50 SC Meter Butter",
+                    "f",
+                    "ly"
+                ],
+                [
+                    "NVSL Meter:",
+                    "27.97",
+                    "7/30/2022",
+                    "Max Thompson"
+                ],
+                [
+                    "Fox Hunt:",
+                    "31.71",
+                    "6/14/2025"
+                ],
+                [
+                    "Charlie Kelly"
+                ],
+                [
+                    "Parklawn:",
+                    "33.06",
+                    "6/20/2015"
+                ],
+                [
+                    "Andrew Tran"
+                ],
+                [
+                    "ALL*",
+                    "33.94"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "51.95",
+                    "11",
+                    "Sobral, Emmett",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "36.12",
+                    "12",
+                    "Mattos, Nicholas",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "34.66",
+                    "12",
+                    "Hadley, James",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "31.71",
+                    "12",
+                    "Kelly, Charlie",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "39.41",
+                    "12",
+                    "Supple, Miller",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "36.63",
+                    "11",
+                    "Bae, Asher",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 36",
+                    "Girls 11-12 50 SC Meter Butter",
+                    "f",
+                    "ly"
+                ],
+                [
+                    "NVSL Meter:",
+                    "28.49",
+                    "7/28/2012",
+                    "Cassidy Bayer"
+                ],
+                [
+                    "Fox Hunt:",
+                    "32.92",
+                    "8/2/2008"
+                ],
+                [
+                    "Lauren Yi"
+                ],
+                [
+                    "Parklawn:",
+                    "32.35",
+                    "7/29/2023"
+                ],
+                [
+                    "Emerson Mancari"
+                ],
+                [
+                    "ALL*",
+                    "35.20"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "42.17",
+                    "11",
+                    "Snow, Vivian",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "36.75",
+                    "12",
+                    "Steele, Gigi",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "37.12",
+                    "12",
+                    "Corbett, Kenzie",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "35.72",
+                    "12",
+                    "Baker, Violet",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "41.37",
+                    "12",
+                    "Nye, Sophia",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "36.78",
+                    "12",
+                    "Morgan, Anabelle",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 37",
+                    "Boys 13-14 50 SC Meter Butter",
+                    "f",
+                    "ly"
+                ],
+                [
+                    "NVSL Meter:",
+                    "25.88",
+                    "7/22/2017",
+                    "Anthony Grimm"
+                ],
+                [
+                    "Fox Hunt:",
+                    "29.26",
+                    "7/6/2024"
+                ],
+                [
+                    "Finn Johnson"
+                ],
+                [
+                    "Parklawn:",
+                    "29.05",
+                    "8/5/2017"
+                ],
+                [
+                    "Andrew Tran"
+                ],
+                [
+                    "ALL*",
+                    "29.85"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "36.95",
+                    "13",
+                    "Mesmer, Raph",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "37.18",
+                    "13",
+                    "Maloney, Max",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "32.04",
+                    "14",
+                    "Corbett, Quade",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "35.18",
+                    "14",
+                    "Bae, Nathan",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "34.86",
+                    "13",
+                    "Boynton, Eddie",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "41.34",
+                    "13",
+                    "Chiquitucto, Joshua",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 38",
+                    "Girls 13-14 50 SC Meter Butter",
+                    "f",
+                    "ly"
+                ],
+                [
+                    "NVSL Meter:",
+                    "27.89",
+                    "7/27/2013",
+                    "Cassidy Bayer"
+                ],
+                [
+                    "Fox Hunt:",
+                    "30.49",
+                    "7/30/1988"
+                ],
+                [
+                    "Hayley Lattus"
+                ],
+                [
+                    "Parklawn:",
+                    "31.15",
+                    "7/20/2024"
+                ],
+                [
+                    "Emerson Mancari"
+                ],
+                [
+                    "ALL*",
+                    "31.78"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "34.04",
+                    "13",
+                    "Cervoni, Lili",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "33.52",
+                    "14",
+                    "Mazerolle, Elia",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "32.62",
+                    "14",
+                    "Oliphant, Lucy",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "33.00",
+                    "14",
+                    "Steiner, Lilly",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "33.28",
+                    "14",
+                    "Young, Amelia",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "43.36",
+                    "14",
+                    "Fitch, Riley",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 39",
+                    "Boys 15-18 50 SC Meter Butter",
+                    "f",
+                    "ly"
+                ],
+                [
+                    "NVSL Meter:",
+                    "23.63",
+                    "7/13/2019",
+                    "Anthony Grimm"
+                ],
+                [
+                    "Fox Hunt:",
+                    "26.11",
+                    "7/28/2012"
+                ],
+                [
+                    "Colin Stephenson"
+                ],
+                [
+                    "Parklawn:",
+                    "27.14",
+                    "7/1/1999"
+                ],
+                [
+                    "Devin Crock"
+                ],
+                [
+                    "ALL*",
+                    "26.86"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "37.82",
+                    "15",
+                    "Silveira, Alex",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "30.38",
+                    "18",
+                    "Kelly, Teddy",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "29.57",
+                    "18",
+                    "Liller, Joey",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "29.61",
+                    "15",
+                    "Johnson, Finn",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "32.70",
+                    "15",
+                    "Manegold, Max",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "33.80",
+                    "18",
+                    "Chesser, Matthew",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 40",
+                    "Girls 15-18 50 SC Meter Butter",
+                    "f",
+                    "ly"
+                ],
+                [
+                    "NVSL Meter:",
+                    "27.30",
+                    "7/26/2014",
+                    "Janet Hu"
+                ],
+                [
+                    "Fox Hunt:",
+                    "29.54",
+                    "8/2/2014"
+                ],
+                [
+                    "Lauren Yi"
+                ],
+                [
+                    "Parklawn:",
+                    "30.44",
+                    "7/1/1996"
+                ],
+                [
+                    "Amanda Becker"
+                ],
+                [
+                    "ALL*",
+                    "30.34"
+                ],
+                [
+                    "Age",
+                    "Lane",
+                    "Team",
+                    "Name",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "PL",
+                    "35.20",
+                    "18",
+                    "Thomason, Katie",
+                    "_____",
+                    "1"
+                ],
+                [
+                    "FX",
+                    "38.39",
+                    "16",
+                    "Allen, Kaylee",
+                    "_____",
+                    "2"
+                ],
+                [
+                    "PL",
+                    "31.51",
+                    "14",
+                    "Corbett, CC",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "FX",
+                    "37.90",
+                    "18",
+                    "Baker, Sophie",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "PL",
+                    "31.77",
+                    "14",
+                    "Mancari, Emerson",
+                    "_____",
+                    "5"
+                ],
+                [
+                    "FX",
+                    "39.12",
+                    "17",
+                    "Laden, Ruby",
+                    "_____",
+                    "6"
+                ],
+                [
+                    "NVSL Division 9-3",
+                    "HY-TEK's MEET MANAGER 8.0 - 12:37 PM 7/3/2025 Page 6"
+                ],
+                [
+                    "NVSL A-Meet FX@PL - 7/5/2025"
+                ],
+                [
+                    "Northern Virginia Swimming League"
+                ],
+                [
+                    "Meet Program"
+                ],
+                [
+                    "Event 41",
+                    "Boys 8 & Under 100 SC Meter Freestyle Relay"
+                ],
+                [
+                    "NVSL Meter:",
+                    "1:07.95",
+                    "7/1/2023",
+                    "McLean"
+                ],
+                [
+                    "A. Henry, H. Weeks, T. Wager, N. Lee"
+                ],
+                [
+                    "Fox Hunt:",
+                    "1:14.70",
+                    "7/31/1976"
+                ],
+                [
+                    "Fox Hunt"
+                ],
+                [
+                    "S. Sto",
+                    "f",
+                    "ko, K. Crennan, J. Maranto, W. Goldsby"
+                ],
+                [
+                    "Parklawn:",
+                    "1:22.30",
+                    "1/1/1969"
+                ],
+                [
+                    "B Abba,T Odom,J Osbourne,C Dom"
+                ],
+                [
+                    "beck"
+                ],
+                [
+                    "ALL*",
+                    "1:24.04"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "1:36.27",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Garrison, Gus 7",
+                    "2) Murphy, Danny 8"
+                ],
+                [
+                    "3) Gould, Paul 8",
+                    "4) Dvorak, Oliver 8"
+                ],
+                [
+                    "A",
+                    "1:22.81",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) McEvoy, Gordon 7",
+                    "2) Bae, Elijah 8"
+                ],
+                [
+                    "3) Cook, Nolan 8",
+                    "4) Aung, Kevin 8"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 42",
+                    "Girls 8 & Under 100 SC Meter Freestyle Relay"
+                ],
+                [
+                    "NVSL Meter:",
+                    "1:10.35",
+                    "6/28/2014",
+                    "Tuckahoe"
+                ],
+                [
+                    "P. Leonard, J. Gieseman, B. Thomas, C. Hughes"
+                ],
+                [
+                    "Fox Hunt:",
+                    "1:18.37",
+                    "7/12/2023"
+                ],
+                [
+                    "Fox Hunt"
+                ],
+                [
+                    "H. Miller, P Morgan, B. Grif",
+                    "f",
+                    "ith, T. Van Schage"
+                ],
+                [
+                    "Parklawn:",
+                    "1:27.87",
+                    "7/7/2021"
+                ],
+                [
+                    "K Corbett, L Talarico, S Fabri"
+                ],
+                [
+                    "zio, R Hungerford"
+                ],
+                [
+                    "ALL*",
+                    "1:25.45"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "1:40.16",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Harris, Avery 7",
+                    "2) Celentano, Coco 8"
+                ],
+                [
+                    "3) Rothschild, Harriet 8",
+                    "4) Hungerford, Katherine 7"
+                ],
+                [
+                    "A",
+                    "1:33.65",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) Kazimi, Yusra 6",
+                    "2) Ball, Alice 8"
+                ],
+                [
+                    "3) Kane, Merritt 7",
+                    "4) Tibulschii, Mia 8"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 43",
+                    "Boys 9-10 100 SC Meter Medley Relay"
+                ],
+                [
+                    "NVSL Meter:",
+                    "1:07.59",
+                    "7/6/2024",
+                    "Tuckahoe"
+                ],
+                [
+                    "A. Pelaez, D. Klett, V. rodriguez, O. Waisberg"
+                ],
+                [
+                    "Fox Hunt:",
+                    "1:14.31",
+                    "7/2/2025"
+                ],
+                [
+                    "Fox Hunt Splash"
+                ],
+                [
+                    "R. Johnson, M. Tibulschii, M. Rossi, G. Morgan"
+                ],
+                [
+                    "Parklawn:",
+                    "1:18.50",
+                    "7/1/1971"
+                ],
+                [
+                    "B Abba, T Odom, J Osborne, C D"
+                ],
+                [
+                    "ombeck"
+                ],
+                [
+                    "ALL*",
+                    "1:17.58"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "1:31.72",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Lee, Danny 10",
+                    "2) Gleeson, Lucas 10"
+                ],
+                [
+                    "3) Goldwater, Grayson 9",
+                    "4) Oliphant, Calvin 9"
+                ],
+                [
+                    "A",
+                    "1:14.31",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) Johnson, Reid 10",
+                    "2) Tibulschii, Michael 10"
+                ],
+                [
+                    "3) Rossi, Max 10",
+                    "4) Morgan, Grif",
+                    "f",
+                    "in 10"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 44",
+                    "Girls 9-10 100 SC Meter Medley Relay"
+                ],
+                [
+                    "NVSL Meter:",
+                    "1:07.34",
+                    "7/23/2016",
+                    "Chesterbrook"
+                ],
+                [
+                    "P. Leonard, E. Leonard, K. Gutierrez, M. Turley"
+                ],
+                [
+                    "Fox Hunt:",
+                    "1:16.25",
+                    "6/14/2025"
+                ],
+                [
+                    "Fox Hunt"
+                ],
+                [
+                    "B. Grif",
+                    "f",
+                    "ith, S. Draughon, T. V. Schagen, H. Miller"
+                ],
+                [
+                    "Parklawn:",
+                    "1:18.93",
+                    "7/6/2022"
+                ],
+                [
+                    "C Hill, A Kinder, L Cervoni, K"
+                ],
+                [
+                    "Supple"
+                ],
+                [
+                    "ALL*",
+                    "1:18.88"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "1:28.12",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Vickrey-Lau, Kaiya 10",
+                    "2) Kinder, Anya 10"
+                ],
+                [
+                    "3) Celentano, Addie 10",
+                    "4) Gutierrez, Tallie 9"
+                ],
+                [
+                    "A",
+                    "1:16.25",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) Grif",
+                    "f",
+                    "ith, Brooklyn 10",
+                    "2) Draughon, Scarlett 10"
+                ],
+                [
+                    "3) Van Schagen, Tessa 10",
+                    "4) Miller, Harper 10"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ],
+                [
+                    "NVSL Division 9-3",
+                    "HY-TEK's MEET MANAGER 8.0 - 12:37 PM 7/3/2025 Page 7"
+                ],
+                [
+                    "NVSL A-Meet FX@PL - 7/5/2025"
+                ],
+                [
+                    "Northern Virginia Swimming League"
+                ],
+                [
+                    "Meet Program"
+                ],
+                [
+                    "Event 45",
+                    "Boys 11-12 100 SC Meter Medley Relay"
+                ],
+                [
+                    "NVSL Meter:",
+                    "59.90",
+                    "7/23/2016",
+                    "Fairfax"
+                ],
+                [
+                    "J. Singletary, J. Connors, C. Dobrydney, G. Evers"
+                ],
+                [
+                    "Fox Hunt:",
+                    "1:05.28",
+                    "7/2/2025"
+                ],
+                [
+                    "Fox Hunt Splash"
+                ],
+                [
+                    "H. Butler, C. Kelly, N. Mattos, A. Bae"
+                ],
+                [
+                    "Parklawn:",
+                    "1:07.90",
+                    "7/1/1972"
+                ],
+                [
+                    "B Abba, T Odom, J Osborne, C D"
+                ],
+                [
+                    "ombeck"
+                ],
+                [
+                    "ALL*",
+                    "1:07.64"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "1:16.57",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Mancari, Ezra 11",
+                    "2) Goldwater, Parker 12"
+                ],
+                [
+                    "3) Hadley, James 12",
+                    "4) Supple, Miller 12"
+                ],
+                [
+                    "A",
+                    "1:05.28",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) Butler, Henry 12",
+                    "2) Kelly, Charlie 12"
+                ],
+                [
+                    "3) Mattos, Nicholas 12",
+                    "4) Bae, Asher 11"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 46",
+                    "Girls 11-12 100 SC Meter Medley Relay"
+                ],
+                [
+                    "NVSL Meter:",
+                    "1:00.66",
+                    "7/18/2015",
+                    "McLean"
+                ],
+                [
+                    "S. Gonzalez, D. Wu, O. Brower, S. Tennant"
+                ],
+                [
+                    "Fox Hunt:",
+                    "1:08.05",
+                    "7/31/1999"
+                ],
+                [
+                    "Fox Hunt"
+                ],
+                [
+                    "L. Galway, M. Johnson, S. Poucher, M. Fray"
+                ],
+                [
+                    "Parklawn:",
+                    "1:04.78",
+                    "6/28/2023"
+                ],
+                [
+                    "E. Mancari, A. Kinder, C. Corb"
+                ],
+                [
+                    "ett, A. Young"
+                ],
+                [
+                    "ALL*",
+                    "1:07.77"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "1:20.16",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Corbett, Kenzie 12",
+                    "2) Hungerford, Rebecca 11"
+                ],
+                [
+                    "3) Snow, Vivian 11",
+                    "4) Nye, Sophia 12"
+                ],
+                [
+                    "A",
+                    "1:09.25",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) Steele, Gigi 12",
+                    "2) Aung, Susan 11"
+                ],
+                [
+                    "3) Morgan, Anabelle 12",
+                    "4) Baker, Violet 12"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 47",
+                    "Boys 13-14 100 SC Meter Medley Relay"
+                ],
+                [
+                    "NVSL Meter:",
+                    "53.50",
+                    "7/13/2019",
+                    "Tuckahoe"
+                ],
+                [
+                    "JT Ewing, E. Rovelas, N. Dunkel, S. Jafari"
+                ],
+                [
+                    "Fox Hunt:",
+                    "57.94",
+                    "6/24/2017"
+                ],
+                [
+                    "Fox Hunt Splash"
+                ],
+                [
+                    "J.Macrina, C.Neal, R. Murray, C. Baker"
+                ],
+                [
+                    "Parklawn:",
+                    "1:00.37",
+                    "6/21/2025"
+                ],
+                [
+                    "E. Boynton, S. Kirk, Q. Corbet"
+                ],
+                [
+                    "t, T. Schuerfeld"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "1:09.19",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Boynton, Eddie 13",
+                    "2) Kirk, Seth 13"
+                ],
+                [
+                    "3) Corbett, Quade 14",
+                    "4) Mesmer, Raph 13"
+                ],
+                [
+                    "A",
+                    "1:02.87",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) Maloney, Max 13",
+                    "2) Linker, Owen 14"
+                ],
+                [
+                    "3) Bae, Nathan 14",
+                    "4) Gallton, Zach 14"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 48",
+                    "Girls 13-14 100 SC Meter Medley Relay"
+                ],
+                [
+                    "NVSL Meter:",
+                    "57.33",
+                    "7/6/2019",
+                    "Chesterbrook"
+                ],
+                [
+                    "C. Sheridan, E. Leonard, P. Leonard, C. Burgeson"
+                ],
+                [
+                    "Fox Hunt:",
+                    "1:02.75",
+                    "6/28/2025"
+                ],
+                [
+                    "Fox Hunt"
+                ],
+                [
+                    "L. Steiner, A. McLean, E. Mazerolle, I. McEvoy"
+                ],
+                [
+                    "Parklawn:",
+                    "1:01.49",
+                    "6/21/2025"
+                ],
+                [
+                    "E. Mancari, C. Hill, L. Olipha"
+                ],
+                [
+                    "nt, A. Young"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "1:05.47",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Mancari, Emerson 14",
+                    "2) Kinder, Alina 13"
+                ],
+                [
+                    "3) Corbett, CC 14",
+                    "4) Young, Amelia 14"
+                ],
+                [
+                    "A",
+                    "1:02.75",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) Miller, Kenzie 14",
+                    "2) McLean, Aubrey 14"
+                ],
+                [
+                    "3) Steiner, Lilly 14",
+                    "4) McEvoy, Isabel 14"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ],
+                [
+                    "NVSL Division 9-3",
+                    "HY-TEK's MEET MANAGER 8.0 - 12:37 PM 7/3/2025 Page 8"
+                ],
+                [
+                    "NVSL A-Meet FX@PL - 7/5/2025"
+                ],
+                [
+                    "Northern Virginia Swimming League"
+                ],
+                [
+                    "Meet Program"
+                ],
+                [
+                    "Event 49",
+                    "Boys 15-18 200 SC Meter Medley Relay"
+                ],
+                [
+                    "NVSL Meter:",
+                    "1:43.20",
+                    "7/15/2023",
+                    "Tuckahoe"
+                ],
+                [
+                    "N. Dunkel, I. Bell, JT Ewing, H. Zipperer"
+                ],
+                [
+                    "Fox Hunt:",
+                    "1:53.56",
+                    "7/7/2021"
+                ],
+                [
+                    "Fox Hunt"
+                ],
+                [
+                    "J. Macrina, N. Connor, R. Murray, A. Macrina"
+                ],
+                [
+                    "Parklawn:",
+                    "1:59.60",
+                    "7/6/2024"
+                ],
+                [
+                    "N. Popp, J. Liller, L. Molife,"
+                ],
+                [
+                    "N. Crozier"
+                ],
+                [
+                    "ALL*",
+                    "1:53.82"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "2:07.17",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Popp, Noah 17",
+                    "2) Tedros, Danny 16"
+                ],
+                [
+                    "3) Liller, Joey 18",
+                    "4) Shea, Cian 15"
+                ],
+                [
+                    "A",
+                    "2:02.87",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) Johnson, Finn 15",
+                    "2) Chiquitucto, Christian 15"
+                ],
+                [
+                    "3) Kelly, Teddy 18",
+                    "4) Van Schagen, Asher 15"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 50",
+                    "Girls 15-18 200 SC Meter Medley Relay"
+                ],
+                [
+                    "NVSL Meter:",
+                    "1:58.61",
+                    "7/17/2021",
+                    "Highlands Swim"
+                ],
+                [
+                    "A Martin, B Morris-Larkin, S Sunderhauf, M Craven"
+                ],
+                [
+                    "Fox Hunt:",
+                    "2:13.14",
+                    "7/10/2013"
+                ],
+                [
+                    "Fox Hunt"
+                ],
+                [
+                    "A. Davis, B. Demyanovich, L. Yi, M. Goldsby"
+                ],
+                [
+                    "Parklawn:",
+                    "2:17.24",
+                    "7/5/2014"
+                ],
+                [
+                    "H Snell, A Shumate, T Liller,"
+                ],
+                [
+                    "C Klima"
+                ],
+                [
+                    "ALL*",
+                    "2:08.46"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "2:25.44",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Perez Fernandez, Camila 17",
+                    "2) Galway, Tess 18"
+                ],
+                [
+                    "3) Thomason, Katie 18",
+                    "4) Galway, Ella 18"
+                ],
+                [
+                    "A",
+                    "2:26.46",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) Grubbs, Ginny 17",
+                    "2) Beltz, Kaja 16"
+                ],
+                [
+                    "3) Baker, Sophie 18",
+                    "4) Austin, Meredith 15"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 51",
+                    "Boys 18 & Under 200 SC Meter Freestyle Relay Mixed Age"
+                ],
+                [
+                    "NVSL Meter:",
+                    "1:49.25",
+                    "7/16/2022",
+                    "Tuckahoe"
+                ],
+                [
+                    "K. Koay, G. Nielsen, H. Zipperer, JT Ewing"
+                ],
+                [
+                    "Fox Hunt:",
+                    "1:58.80",
+                    "7/29/1978"
+                ],
+                [
+                    "Fox Hunt"
+                ],
+                [
+                    "K. Goldsby, W. Goldsby, P. Cassell, J. Bullard"
+                ],
+                [
+                    "Parklawn:",
+                    "1:57.69",
+                    "7/2/2025"
+                ],
+                [
+                    "J. Hadley, L Gleeson, Q. Corbe"
+                ],
+                [
+                    "tt, N. Popp"
+                ],
+                [
+                    "ALL*",
+                    "1:58.41"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "2:00.82",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Hadley, James 12",
+                    "2) Gleeson, Lucas 10"
+                ],
+                [
+                    "3) Corbett, Quade 14",
+                    "4) Popp, Noah 17"
+                ],
+                [
+                    "A",
+                    "1:59.00",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) Kelly, Charlie 12",
+                    "2) Johnson, Reid 10"
+                ],
+                [
+                    "3) Gallton, Zach 14",
+                    "4) Johnson, Finn 15"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ],
+                [
+                    "Event 52",
+                    "Girls 18 & Under 200 SC Meter Freestyle Relay Mixed Age"
+                ],
+                [
+                    "NVSL Meter:",
+                    "1:55.96",
+                    "7/15/2017",
+                    "Tuckahoe"
+                ],
+                [
+                    "C. Hughes, D. Hughes, C. Zubler, E. Gieseman"
+                ],
+                [
+                    "Fox Hunt:",
+                    "2:04.75",
+                    "7/16/2008"
+                ],
+                [
+                    "Fox Hunt"
+                ],
+                [
+                    "L. Yi, A. Davis, K. Kellogg, S. Yi"
+                ],
+                [
+                    "Parklawn:",
+                    "2:06.63",
+                    "7/2/2025"
+                ],
+                [
+                    "K. Corbett, A. Celentano, C. C"
+                ],
+                [
+                    "orbett, C. Perez-Fernandez"
+                ],
+                [
+                    "ALL*",
+                    "2:05.82"
+                ],
+                [
+                    "Lane",
+                    "Relay",
+                    "Team",
+                    "Seed Time"
+                ],
+                [
+                    "Heat",
+                    "1 of 1",
+                    "Finals"
+                ],
+                [
+                    "_____",
+                    "1"
+                ],
+                [
+                    "_____",
+                    "2"
+                ],
+                [
+                    "A",
+                    "2:11.00",
+                    "Parklawn",
+                    "_____",
+                    "3"
+                ],
+                [
+                    "1) Corbett, Kenzie 12",
+                    "2) Celentano, Addie 10"
+                ],
+                [
+                    "3) Corbett, CC 14",
+                    "4) Perez Fernandez, Camila 17"
+                ],
+                [
+                    "A",
+                    "2:07.37",
+                    "Fox Hunt",
+                    "_____",
+                    "4"
+                ],
+                [
+                    "1) Baker, Violet 12",
+                    "2) Van Schagen, Tessa 10"
+                ],
+                [
+                    "3) Miller, Kenzie 14",
+                    "4) Beltz, Kaja 16"
+                ],
+                [
+                    "_____",
+                    "5"
+                ],
+                [
+                    "_____",
+                    "6"
+                ]
+            ];
+            importsheet(text_file);
+        }
+    </script>
+</body>
+</html>

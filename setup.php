@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <title>SeedMaster</title>
+
+        <script src="ENV.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    </head>
+    <body>
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            font-family: "figtree", sans-serif;
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0px;
+            overflow-x: hidden;
+            background-color: var(--bg1);
+            display: flex;
+        }
+        :root {
+            --accentbg: #4285F4;
+        }
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            margin-block: 20px;
+            text-align: center;
+        }
+        button {
+            height: 48px;
+            padding: 0px 22px;
+            display: flex;
+            align-items: center;
+            column-gap: 7px;
+            font-size: 16px;
+            font-weight: 650;
+            letter-spacing: -0.3px;
+            border-radius: 8px;
+            background-color: var(--txt1);
+            color: var(--bg1);
+            cursor: pointer;
+            border: none;
+            outline: none;
+            width: fit-content;
+            user-select: none;
+        }
+        button:hover {
+            background-color: var(--txt2);
+        }
+        button svg {
+            height: 18px;
+            width: 18px;
+        }
+        .main {
+            height: 100dvh;
+            width: 100dvw;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr auto;
+            row-gap: 16px;
+            justify-items: center;
+        }
+        .panel {
+            display: flex;
+            column-gap: 10px;
+            width: fit-content;
+        }
+        #terminal {
+            overflow-x: hidden;
+            overflow-y: auto;
+            height: 100%;
+            width: 100%;
+            background-color: var(--bg2);
+            border: 1px solid var(--str2);
+            border-radius: 5px;
+            padding-bottom: 9px;
+        }
+        #terminal > a {
+            display: block;
+            font-weight: 500;
+            color: var(--txt2);
+            margin: 0px;
+            padding: 3px 12px;
+        }
+        #terminal > a[title] {
+            font-weight: 700;
+            color: var(--txt1);
+        }
+        #terminal > a[error] {
+            font-weight: 700;
+            color: red;
+        }
+        #terminal > a[success] {
+            font-weight: 700;
+            color: #59b259;
+        }
+        #terminal > a[link] {
+            color: var(--accentbg);
+            text-decoration: underline;
+        }
+        .progress {
+            top: 0px;
+            position: sticky;
+            width: 100%;
+            height: 16px;
+            background-color: var(--bg2);
+            border-bottom: 1px solid var(--str2);
+            margin-bottom: 12px;
+        }
+        #inner {
+            height: inherit;
+            background-color: var(--txt1);
+            transition: 0.24s ease width;
+            width: 0px;
+        }
+    </style>
+
+    <div class="main">
+        <div id="terminal">
+            <div class="progress">
+                <div id="inner"></div>
+            </div>
+            <a title>
+                Welcome to SeedMaster!
+                <br><br>
+                At the beginning of each year, the system must gather the upcoming A-Meet dates and a list of the updated team divisions. Use the bottons below to automaticlly scrape this data and save it into files which are required to run the main application.
+            </a>
+        </div>
+        <div class="panel">
+            <button onclick="scrape_teams()">
+                <div>Get Teams</div>
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <button onclick="scrape_schedule()">
+                <div>Get Schedule</div>
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        async function get_url(url, check_year = true) {
+            var response = await fetch(`http://localhost:3000/fetch-html?url=${encodeURIComponent(url)}`);
+            var html = await response.text();
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(html, "text/html");
+            if (check_year == true && doc.querySelector("select[name='year']").value.trim() == "") {
+                return null
+            } else {
+                return doc;
+            }
+        }
+        function log(message, type = false) {
+            var a = document.createElement("A");
+            if (type) {
+                a.setAttribute(type, "");
+            }
+            if (type == "link") {
+                a.setAttribute("href", message);
+                a.setAttribute("target", "_blank");
+            }
+
+            a.innerHTML = message.charAt(0).toUpperCase() + message.slice(1);
+            document.querySelector("#terminal").append(a);
+            document.querySelector("#terminal").scrollTop = document.querySelector("#terminal").scrollHeight;
+        }
+        function progress(decimal) {
+            document.querySelector("#inner").style.width = Math.min(Math.max(0, (decimal * 100)), 100) + "%";
+        }
+        async function scrape_schedule() {
+            log("<br>Scraping Schedule", "success");
+            log("<br>");
+            progress(0);
+            let schedule = {};
+            var this_year = Number(new Date().getFullYear());
+
+            let months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+
+            var loop_length = 20;
+            for (let i = 0; i < loop_length; i++) {
+                var year = this_year - i;
+                var nvsl_url = `https://www.mynvsl.com/schedules?year=${year}&div=1&date=`;
+                log("Year: " + year, "title");
+                log(nvsl_url, "link");
+
+                var doc = await get_url(nvsl_url, year);
+                if (doc != null) {
+                    schedule[year] = [];
+                    var results = doc.querySelector("#league_schedules").querySelectorAll("h6");
+                    for (let i = 0; i < results.length; i++) {
+                        var header = results[i].innerText.toLowerCase().split(",");
+                        var day = header[0].trim();
+                        if (day == "saturday") {
+                            var month_date = header[1].trim().split(" ");
+                            var month = month_date[0];
+                            var date = month_date[1];
+
+                            var year_date = String(year).substring(2, 4);
+                            var month_date = months.indexOf(month) + 1;
+                            var date_string = month_date + "/" + date + "/" + year_date;
+
+                            schedule[year].push(date_string);
+                            log(results[i].innerText + ": " + date_string);
+                        }
+
+                        if (schedule[year].length >= 5) {
+                            break;
+                        }
+                    }
+
+                    log("<br>");
+                    progress((i + 1) / loop_length);
+                }
+            }
+
+            console.log(schedule);
+            await save_file(schedule, "schedule");
+        }
+        async function scrape_teams() {
+            log("<br>Scraping Teams", "success");
+            progress(0);
+            let teams = {};
+            var this_year = Number(new Date().getFullYear());
+
+            var nvsl_url = "https://www.mynvsl.com/standings";
+            var doc = await get_url(nvsl_url);
+            var results = doc.querySelectorAll("table");
+            results.forEach(table => {
+                var division = table.querySelector("th").innerText.replace(/[^0-9]/g, "");
+                teams[division] = {};
+
+                var rows = table.querySelectorAll("tr");
+                for (let a = 1; a < rows.length; a++) {
+                    var name = rows[a].querySelector("a").innerText.trim();
+                    teams[division][name] = {"id": "unset", "abr": null};
+                }
+            })
+
+            var loop_length = 400;
+            id_loop: for (let i = 0; i < loop_length; i++) {
+                log("<br>");
+                progress((i + 1) / loop_length);
+
+                var nvsl_url = `https://www.mynvsl.com/leaders?post=1&mt=0&age=1&sex=1&st=1&stroke=25-free&m=1&year=${this_year}&count=25&division=&team=${i}`;
+                log("Team id: " + i, "title");
+                log(nvsl_url, "link");
+
+                var doc = await get_url(nvsl_url, this_year);
+                if (doc != null) {
+                    var team_value = doc.querySelector("select[name='team']").value.trim();
+                    if (team_value != "") {
+                        var team_name = doc.querySelector("select[name='team']").querySelector("option[value='" + i + "']").innerText.trim();
+
+                        for (let division of Object.keys(teams)) {
+                            if (teams[division][team_name]) {
+                                var nvsl_url = `https://www.mynvsl.com/leaders?post=1&mt=0&age=2&sex=0&st=1&stroke=50-free&m=1&year=${this_year}&count=25&division=&team=${i}`;
+                                var doc = await get_url(nvsl_url);
+
+                                try {
+                                    var abbreviation = doc.querySelector("tr[class]").querySelectorAll("td")[4].innerText.trim();
+                                } catch {
+                                    var abbreviation = null;
+                                }
+
+                                teams[division][team_name] = {"id": i, "abr": abbreviation};
+                                log(`Found: ${team_name} | (${abbreviation})`, "success");
+                                continue id_loop;
+                            }
+                        }
+                        log("Unable to match team with standings list", "error");
+                    } else {
+                        log("Nothing Found");
+                    }
+                }
+            }
+
+            var missing_ids = [];
+            var missing_abr = [];
+            for (let division of Object.keys(teams)) {
+                for (let team of Object.keys(teams[division])) {
+                    if (teams[division][team]["id"] == "unset") {
+                        missing_ids.push(team);
+                    } else if (teams[division][team]["abr"] == null) {
+                        missing_abr.push(team);
+                    }
+                }
+            }
+
+            if (missing_ids.length > 0) {
+                log("<br>Missing ids from: " + missing_ids.join(", ") + "<br><br>", "error");
+            }
+            if (missing_abr.length > 0) {
+                log("<br>Missing abbreviations from: " + missing_abr.join(", ") + "<br><br>", "error");
+            }
+
+            console.log(teams);
+            await save_file(teams, "teams");
+        }
+        async function save_file(jsonObject, filename) {
+            try {
+                const response = await fetch('save-json.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        data: jsonObject,
+                        filename: filename + ".json"
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                log(filename + " saved successfully", "success");
+                return result;
+            } catch (error) {
+                log("Error Saving" + filename, "title");
+                console.error('Error saving file:', error);
+                throw error;
+            }
+        }
+        function dark_theme() {
+            document.querySelector(":root").style.setProperty("--bg1", "#161616");
+            document.querySelector(":root").style.setProperty("--bg2", "#202020");
+            document.querySelector(":root").style.setProperty("--bg3", "#686868");
+
+            document.querySelector(":root").style.setProperty("--str1", "#282828");
+            document.querySelector(":root").style.setProperty("--str2", "#313131");
+
+            document.querySelector(":root").style.setProperty("--txt1", "white");
+            document.querySelector(":root").style.setProperty("--txt2", "hsl(0, 0%, 80%)");
+            document.querySelector(":root").style.setProperty("--txt3", "grey");
+
+            document.querySelector(":root").style.setProperty("--rgb", "255, 255, 255");
+            document.querySelector(":root").style.setProperty("--highlight", "#1f2846");
+            document.querySelector(":root").style.setProperty("--disabled", "#4a262f");
+
+            document.documentElement.style.colorScheme = "dark";
+        }
+        function light_theme() {
+            document.querySelector(":root").style.setProperty("--bg1", "#FFFFFF");
+            document.querySelector(":root").style.setProperty("--bg2", "#FAFAFA");
+            document.querySelector(":root").style.setProperty("--bg3", "#C1C1C1");
+
+            document.querySelector(":root").style.setProperty("--str1", "#EEEEEE");
+            document.querySelector(":root").style.setProperty("--str2", "#E4E4E4");
+
+            document.querySelector(":root").style.setProperty("--txt1", "black");
+            document.querySelector(":root").style.setProperty("--txt2", "#444444");
+
+            document.querySelector(":root").style.setProperty("--rgb", "0, 0, 0");
+            document.querySelector(":root").style.setProperty("--highlight", "#d9e7fd");
+            document.querySelector(":root").style.setProperty("--disabled", "#ffcccc");
+
+            document.documentElement.style.colorScheme = "light";
+        }
+        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            dark_theme();
+        } else {
+            light_theme();
+        }
+    </script>
+    </body>
+</html>
