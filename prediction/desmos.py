@@ -1,12 +1,10 @@
 import json
-import os
 import subprocess
 
-def extract_freestyle_times(gender, stroke):
-    script_dir = os.path.dirname(__file__)
-    file_path = os.path.join(script_dir, "..", "files", "swimmer-profiles.json")
+from model_config import PROFILE_DATA_PATH
 
-    with open(file_path, "r") as f:
+def extract_freestyle_times(gender, stroke):
+    with open(PROFILE_DATA_PATH, "r") as f:
         all_profiles = json.load(f)
 
     print_data = []

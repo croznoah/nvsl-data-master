@@ -1,1 +1,1 @@
-{"free_25m_best": 19.56, "free_25m_avg": 20.46, "free_25m_std": 0.7402026749478824, "back_25m_best": 25.08, "back_25m_avg": 26.505000000000003, "back_25m_std": 1.0934212363037406, "breast_25m_best": 27.71, "breast_25m_avg": 29.232333333333333, "breast_25m_std": 1.2570487771521046, "fly_25m_best": 19.46, "fly_25m_avg": 20.372999999999998, "fly_25m_std": 0.6803561918744558}
+{"free_25m_best": 19.56, "back_25m_best": 25.08, "breast_25m_best": 27.71, "fly_25m_best": 19.46}

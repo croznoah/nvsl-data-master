@@ -1,0 +1,12 @@
+{
+    "feature_columns": [
+        "free_25m_best",
+        "back_25m_best",
+        "breast_25m_best",
+        "fly_25m_best"
+    ],
+    "target_type": "ratio",
+    "ratio_bounds": [1.78, 2.4],
+    "min_training_samples": 20,
+    "min_scrape_samples": 3
+}

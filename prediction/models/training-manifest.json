@@ -1,0 +1,73 @@
+{
+  "feature_columns": [
+    "free_25m_best",
+    "back_25m_best",
+    "breast_25m_best",
+    "fly_25m_best"
+  ],
+  "target_type": "ratio",
+  "ratio_bounds": [
+    1.78,
+    2.4
+  ],
+  "min_training_samples": 20,
+  "min_scrape_samples": 3,
+  "models": {
+    "free-boys": {
+      "samples": 1350,
+      "source_feature": "free_25m_best",
+      "target_feature": "free_50m_best",
+      "cv_mae_seconds": 1.643,
+      "cv_r2": 0.799
+    },
+    "back-boys": {
+      "samples": 1269,
+      "source_feature": "back_25m_best",
+      "target_feature": "back_50m_best",
+      "cv_mae_seconds": 2.268,
+      "cv_r2": 0.827
+    },
+    "breast-boys": {
+      "samples": 1270,
+      "source_feature": "breast_25m_best",
+      "target_feature": "breast_50m_best",
+      "cv_mae_seconds": 2.275,
+      "cv_r2": 0.753
+    },
+    "fly-boys": {
+      "samples": 1301,
+      "source_feature": "fly_25m_best",
+      "target_feature": "fly_50m_best",
+      "cv_mae_seconds": 2.014,
+      "cv_r2": 0.823
+    },
+    "free-girls": {
+      "samples": 1288,
+      "source_feature": "free_25m_best",
+      "target_feature": "free_50m_best",
+      "cv_mae_seconds": 1.549,
+      "cv_r2": 0.802
+    },
+    "back-girls": {
+      "samples": 1181,
+      "source_feature": "back_25m_best",
+      "target_feature": "back_50m_best",
+      "cv_mae_seconds": 2.136,
+      "cv_r2": 0.809
+    },
+    "breast-girls": {
+      "samples": 1311,
+      "source_feature": "breast_25m_best",
+      "target_feature": "breast_50m_best",
+      "cv_mae_seconds": 2.125,
+      "cv_r2": 0.794
+    },
+    "fly-girls": {
+      "samples": 1463,
+      "source_feature": "fly_25m_best",
+      "target_feature": "fly_50m_best",
+      "cv_mae_seconds": 1.855,
+      "cv_r2": 0.827
+    }
+  }
+}

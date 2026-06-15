@@ -1,5 +1,6 @@
-import pandas as pd
-import numpy as np
+"""Deprecated. Use models.py instead."""
+
+raise SystemExit("Use models.py to train prediction models.")
 import os
 import json
 from sklearn.ensemble import RandomForestRegressor
@@ -8,20 +9,22 @@ from sklearn.metrics import r2_score, mean_absolute_error
 import skl2onnx
 from skl2onnx.common.data_types import FloatTensorType
 
+from model_config import (
+    FEATURE_COLUMNS,
+    GENDERS,
+    MODELS_DIR,
+    PROFILE_DATA_PATH,
+    STROKES,
+    clean_profile_frame,
+    compute_feature_medians,
+    prepare_training_data,
+)
+
 def create_all_models():
     print("🐍 Loading swimmer profile data...")
-    try:
-        script_dir = os.path.dirname(__file__)
-        file_path = os.path.join(script_dir, "..", "files", "swimmer-profiles.json")
-        models_dir = os.path.join(script_dir, "models")
-        os.makedirs(models_dir, exist_ok=True)
-    except NameError:
-        script_dir = os.getcwd()
-        file_path = os.path.join(script_dir, "..", "files", "swimmer-profiles.json")
-        models_dir = os.path.join(script_dir, "models")
-        os.makedirs(models_dir, exist_ok=True)
+    os.makedirs(MODELS_DIR, exist_ok=True)
 
-    with open(file_path, 'r') as f:
+    with open(PROFILE_DATA_PATH, 'r') as f:
         all_profiles = json.load(f)
 
     MODEL_CONFIG = {
@@ -30,54 +33,28 @@ def create_all_models():
         "n_jobs": -1
     }
 
-    genders = ["boys", "girls"]
-    strokes_to_predict = ["free", "back", "breast", "fly"]
-    feature_columns = [
-        "free_25m_best", "free_25m_avg", "free_25m_std", "free_25m_count",
-        "back_25m_best", "back_25m_avg", "back_25m_std", "back_25m_count",
-        "breast_25m_best", "breast_25m_avg", "breast_25m_std", "breast_25m_count",
-        "fly_25m_best", "fly_25m_avg", "fly_25m_std", "fly_25m_count"
-    ]
-
-    # Separate count and non-count features
-    non_count_columns = [col for col in feature_columns if not col.endswith('_count')]
-    count_columns = [col for col in feature_columns if col.endswith('_count')]
-
-    for gender in genders:
+    for gender in GENDERS:
         print(f"\n{'='*60}\nProcessing All Models for: {gender.upper()}\n{'='*60}")
         df = pd.DataFrame(all_profiles[gender])
 
-        # Precompute medians for entire gender dataset
-        gender_df = df.copy()
-        gender_df[count_columns] = gender_df[count_columns].replace(-1, 0)
-        gender_df[non_count_columns] = gender_df[non_count_columns].replace(-1, np.nan)
-        gender_medians = gender_df[non_count_columns].median()
+        clean_df = clean_profile_frame(df)
+        gender_medians = compute_feature_medians(clean_df)
 
         # Save medians for inference
-        medians_file = os.path.join(models_dir, f"{gender}-medians.json")
+        medians_file = os.path.join(MODELS_DIR, f"{gender}-medians.json")
         with open(medians_file, 'w') as f:
             json.dump(gender_medians.to_dict(), f)
         print(f"💾 Saved {gender} medians to: {medians_file}")
 
-        for stroke in strokes_to_predict:
-            target_column = f"{stroke}_50m_best"
+        for stroke in STROKES:
             print(f"\n--- Training {stroke.title()} Model for {gender.title()} ---")
 
-            # Filter valid targets
-            trainable_df = df[df[target_column] != -1].copy()
-            if len(trainable_df) < 20:
+            X, y, dropped_rows = prepare_training_data(df, stroke, gender_medians)
+            if len(X) < 20:
                 print(f"⚠️  Not enough data to train {stroke} model for {gender}. Skipping.")
                 continue
 
-            print(f"Found {len(trainable_df)} trainable samples")
-
-            # Clean and impute data
-            trainable_df[count_columns] = trainable_df[count_columns].replace(-1, 0)
-            trainable_df[non_count_columns] = trainable_df[non_count_columns].replace(-1, np.nan)
-            trainable_df[non_count_columns] = trainable_df[non_count_columns].fillna(gender_medians)
-
-            X = trainable_df[feature_columns]
-            y = trainable_df[target_column]
+            print(f"Found {len(X)} trainable samples ({dropped_rows} rows missing target/source or outside ratio bounds)")
 
             # Train/test split
             X_train, X_test, y_train, y_test = train_test_split(
@@ -102,10 +79,10 @@ def create_all_models():
 
             # Export ONNX model
             print("🔄 Converting to ONNX...")
-            initial_type = [('float_input', FloatTensorType([None, 16]))]
+            initial_type = [('float_input', FloatTensorType([None, len(FEATURE_COLUMNS)]))]
             onnx_model = skl2onnx.convert_sklearn(final_model, initial_types=initial_type)
 
-            model_path = os.path.join(models_dir, f"{stroke}-{gender}-model.onnx")
+            model_path = os.path.join(MODELS_DIR, f"{stroke}-{gender}-model.onnx")
             with open(model_path, "wb") as f:
                 f.write(onnx_model.SerializeToString())
             print(f"💾 Model saved to: {model_path}")
