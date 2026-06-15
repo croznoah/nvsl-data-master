@@ -175,7 +175,6 @@
     </button>
 </div>
 
-<script src="/ENV.js"></script>
 <script>
     function dark_theme() {
         document.querySelector(":root").style.setProperty("--bg1", "#161616");
@@ -217,7 +216,7 @@
 
     async function save_file(jsonObject, filename) {
         try {
-            const response = await fetch("/save-json.php", {
+            const response = await fetch("/api/save-json", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -239,7 +238,7 @@
 
     async function get_url(url) {
         try {
-            var response = await fetch(`${ENV["server_base_url"]}/fetch-html?url=${encodeURIComponent(url)}`);
+            var response = await fetch(`/api/fetch-html?url=${encodeURIComponent(url)}`);
             var html = await response.text();
             var parser = new DOMParser();
             var doc = parser.parseFromString(html, "text/html");

@@ -1,20 +1,22 @@
 {
+    "name": "nvsl-data-master",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "NVSL swimming data analysis and meet planning tools",
+    "scripts": {
+        "dev": "node server/index.js",
+        "build": "vite build",
+        "start": "NODE_ENV=production node server/index.js",
+        "preview": "npm run build && npm run start"
+    },
     "dependencies": {
         "cors": "^2.8.5",
         "express": "^5.1.0",
         "lru-cache": "^11.1.0",
+        "onnxruntime-node": "^1.26.0",
         "puppeteer": "^24.11.2"
     },
-    "type": "module",
-    "name": "nvsl-scraper",
-    "version": "1.0.0",
-    "main": "server.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node server.js"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "description": ""
+    "devDependencies": {
+        "vite": "^6.3.5"
+    }
 }

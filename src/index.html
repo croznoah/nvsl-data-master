@@ -3,15 +3,12 @@
     <head>
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-        <link rel="icon" type="image/x-icon" href="logo.png">
+        <link rel="icon" type="image/x-icon" href="/logo.png">
         <title>NVSL Data Master</title>
 
-        <script src="ENV.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" integrity="sha512-ml/QKfG3+Yes6TwOzQb7aCNtJF4PUyha6R3w8pSTo/VJSywl7ZreYvvtUso7fKevpsI+pYVVwnu82YO0q3V6eg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
@@ -62,6 +59,12 @@
             width: fit-content;
             user-select: none;
             margin: 20px auto;
+        }
+        button[sqr] {
+            padding: 0px;
+            display: grid;
+            place-items: center;
+            width: 48px;
         }
         button:hover {
             background-color: var(--txt2);
@@ -164,11 +167,11 @@
             background-color: var(--bg2);
         }
         .team-option[selected="true"] {
-            background-color: var(--str2) !important;
+            background-color: var(--txt1) !important;
         }
         .team-option[selected="true"] > td {
             border-bottom-color: var(--str2) !important;
-            color: var(--txt1) !important;
+            color: var(--bg1) !important;
         }
         .search {
             background-color: var(--bg2);
@@ -192,6 +195,188 @@
         .search-wrapper:hover {
             background-color: var(--bg1);
         }
+        .division-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0px 30px 10px;
+        }
+        .division-dropdown {
+            position: relative;
+            min-width: 220px;
+        }
+        .division-dropdown-trigger {
+            all: unset;
+            box-sizing: border-box;
+            width: 100%;
+            height: 48px;
+            padding: 0px 14px 0px 16px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            column-gap: 10px;
+            font-size: 16px;
+            font-weight: 650;
+            letter-spacing: -0.3px;
+            color: var(--txt1);
+            background-color: var(--bg1);
+            border: 1px solid var(--str2);
+            border-radius: 10px;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.20s ease background-color, 0.20s ease border-color, 0.20s ease box-shadow;
+        }
+        .division-dropdown-trigger:hover,
+        .division-dropdown:has(.division-dropdown-menu[active="true"]) .division-dropdown-trigger {
+            background-color: var(--bg2);
+            border-color: var(--str1);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+        }
+        .division-dropdown-trigger > svg {
+            height: 18px;
+            width: 18px;
+            color: var(--txt2);
+            transition: 0.22s ease transform;
+        }
+        .division-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0px;
+            right: 0px;
+            z-index: 20;
+            background-color: var(--bg1);
+            border: 1px solid var(--str2);
+            border-radius: 10px;
+            max-height: 350px;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.10);
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
+            transition: 0.22s ease opacity, 0.22s ease transform;
+        }
+        .division-dropdown-menu[active="true"] {
+            opacity: 1;
+            transform: translateY(0px);
+            pointer-events: auto;
+        }
+        .division-dropdown-menu > div {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            column-gap: 10px;
+            padding: 0px 16px;
+            height: 44px;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            color: var(--txt2);
+            border-bottom: 1px solid var(--str2);
+            cursor: pointer;
+            transition: 0.18s ease background-color, 0.18s ease color;
+        }
+        .division-dropdown-menu > div:last-child {
+            border-bottom: none;
+        }
+        .division-dropdown-menu > div:hover {
+            background-color: var(--bg2);
+            color: var(--txt1);
+        }
+        .division-dropdown-menu > div[active="true"] {
+            background-color: var(--txt1);
+            color: var(--bg1);
+        }
+        .division-dropdown-menu > div > svg {
+            height: 16px;
+            width: 16px;
+            opacity: 0;
+        }
+        .division-dropdown-menu > div[active="true"] > svg {
+            opacity: 1;
+        }
+        #teams-table {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+            height: 100%;
+            margin: 0px;
+            padding: 48px 40px;
+            row-gap: 0px;
+            overflow-y: auto;
+        }
+        #teams-table .teams-panel {
+            width: 100%;
+            max-width: 380px;
+            display: grid;
+            row-gap: 18px;
+        }
+        #teams-table .teams-panel-header h1 {
+            margin: 0px;
+            text-align: left;
+            font-size: 24px;
+        }
+        #teams-table .teams-panel-header p {
+            margin: 6px 0px 0px;
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1.45;
+            letter-spacing: -0.2px;
+            color: var(--txt2);
+        }
+        #teams-table .division-bar {
+            margin: 0px;
+            justify-content: stretch;
+        }
+        #teams-table .division-dropdown {
+            width: 100%;
+            min-width: 0px;
+        }
+        #teams-table .teams-list {
+            width: 100%;
+            min-height: 120px;
+        }
+        #teams-table .teams-list .table-wrapper {
+            width: 100%;
+            border-radius: 10px;
+            border-color: var(--str2);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+        }
+        #teams-table .teams-list .column td {
+            border-right: none;
+            height: 48px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        #teams-table .teams-list .column tr:last-child td {
+            border-bottom: none;
+        }
+        #teams-table .team-option[selected="true"] > td {
+            font-weight: 650;
+        }
+        #teams-table .team-option[hide] > td {
+            color: var(--str2);
+            font-style: italic;
+            font-weight: 500;
+        }
+        #teams-table #get-btn {
+            width: 100%;
+            margin: 4px 0px 0px;
+            justify-content: center;
+        }
+        @keyframes teams-list-in {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0px);
+            }
+        }
+        #teams-table .teams-list.teams-list-animate .table-wrapper {
+            animation: teams-list-in 0.22s ease;
+        }
         .table {
             display: grid;
             max-width: 100%;
@@ -208,6 +393,11 @@
             display: flex;
             grid-gap: 10px;
             padding-bottom: 6px;
+        }
+        #individual-details-table {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr 1fr 1fr;
+            grid-gap: 10px;
         }
         .table-wrapper {
             flex: none;
@@ -337,9 +527,6 @@
             border-radius: 8px;
             height: fit-content;
         }
-        #overall-score {
-            border: 4px solid var(--str2);
-        }
         .nav-items {
             display: flex;
             column-gap: 8px;
@@ -350,13 +537,17 @@
         }
         .nav-option {
             position: relative;
-            border: 1px solid transparent;
+            border: 1px solid var(--str2);
+            background-color: var(--bg1);
             border-radius: 5px;
             cursor: pointer;
-            font-weight: 600;
+        }
+        .nav-option:hover {
+            background-color: var(--bg2);
+        }
+        .nav-text {
             color: var(--txt2);
-            background-color: var(--bg1);
-            border-color: var(--str2);
+            font-weight: 600;
             letter-spacing: -0.3px;
             display: flex;
             column-gap: 7px;
@@ -365,10 +556,7 @@
             align-items: center;
             user-select: none;
         }
-        .nav-option:hover {
-            background-color: var(--bg2);
-        }
-        .nav-option > svg {
+        .nav-text > svg {
             margin-top: 1px;
             height: 18px;
             width: 18px;
@@ -383,7 +571,7 @@
             opacity: 0;
             pointer-events: none;
             min-width: 130px;
-            width: fit-content;
+            width: max-content;
             background-color: var(--bg1);
             border-radius: 5px;
             border: 1px solid var(--str2);
@@ -395,16 +583,24 @@
             pointer-events: auto;
         }
         .nav-menu > div {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            column-gap: 10px;
             padding: 8px 12px;
             border-bottom: 1px solid var(--str2);
+            transition: 0.24s ease background-color, 0.24s ease color;
+        }
+        .nav-menu > div > svg {
+            height: 16px;
+            width: 16px;
+            opacity: 0;
         }
         .nav-menu > div:hover {
             background-color: var(--bg2);
         }
-        .nav-menu > div[active="true"] {
-            background-color: var(--txt1);
-            color: var(--bg1);
-            font-weight: 700;
+        .nav-menu > div[active="true"] > svg {
+            opacity: 1;
         }
         .nav-menu > div:last-child {
             border-bottom: none;
@@ -464,10 +660,29 @@
             height: 18px;
             width: 18px;
         }
+        #predict-btn {
+            width: 50.5px;
+            height: 50px;
+            border-left: 1px solid var(--str2);
+            display: grid;
+            place-items: center;
+            position: absolute;
+            right: 0px;
+            top: 0px;
+            color: var(--txt1);
+        }
+        #predict-btn > svg {
+            height: 18px;
+            width: 18px;
+        }
+        #predict-btn:hover {
+            background-color: var(--bg2);
+        }
         .column td {
             position: relative;
             height: 50px;
             padding: 0px 16px;
+            font-weight: 500;
             white-space: nowrap;
             font-size: 16px;
             letter-spacing: -0.2px;
@@ -515,10 +730,14 @@
             pointer-events: none;
         }
         .tr-hover {
+            z-index: 9;
             pointer-events: none;
             position: absolute;
             border: 2px solid var(--txt1);
             box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 2px 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .tr-hover[inuse="false"] {
+            display: none;
         }
         .column tr[hover] > td {
             text-decoration: underline wavy 1.5px;
@@ -536,6 +755,9 @@
         }
         td:has(svg):hover {
             background-color: rgba(130, 155, 229, 0.15) !important;
+        }
+        tr[yourteam] > td:has(svg):hover {
+            background-color: var(--str1) !important;
         }
         tr[selected="true"] > td:has(svg):hover {
             background-color: dodgerblue !important;
@@ -567,13 +789,25 @@
             text-decoration: line-through;
         }
         .column tr[title] > td {
+            background-color: var(--bg1) !important;
             font-weight: 700;
             color: var(--txt1);
+            text-align: center;
+        }
+        .column tr[key] {
+            background-color: var(--bg2);
         }
         .column tr[key] > td {
-            height: 36px;
-            font-weight: 600;
             color: var(--txt2);
+            text-transform: uppercase;
+            height: 32px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .expanding-label > div {
+            color: grey;
+            font-size: 9px;
+            line-height: 1;
         }
         .ladder-label {
             position: relative;
@@ -744,6 +978,30 @@
             padding: 40px;
             border-left: 1px solid var(--str2);
         }
+        .side-menu .ladder-panel {
+            display: grid;
+            row-gap: 14px;
+        }
+        .side-menu .ladder-panel .table-wrapper {
+            border-radius: 10px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+        }
+        .side-menu .ladder-panel .column td {
+            border-right: none;
+            height: 48px;
+        }
+        .side-menu .ladder-panel .column tr:last-child td {
+            border-bottom: none;
+        }
+        .side-menu #upload-ladder-btn {
+            width: 100%;
+            margin: 0px;
+            justify-content: center;
+        }
+        .details-info {
+            color: var(--txt2);
+            font-weight: 600;
+        }
         .details-top {
             display: grid;
             grid-template-columns: auto 1fr;
@@ -759,7 +1017,7 @@
             flex: none;
             background: var(--bg1);
             padding: 20px;
-            border-radius: 5px;
+            border-radius: 8px;
             border: 1px solid var(--str2);
             display: grid;
             grid-template-rows: 1fr auto;
@@ -843,7 +1101,7 @@
         .person-card {
             flex: none;
             border: 1px solid var(--str2);
-            border-radius: 5px;
+            border-radius: 8px;
             overflow: hidden;
             background-color: var(--bg1);
             display: grid;
@@ -876,6 +1134,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            text-align: center;
             row-gap: 12px;
             color: var(--txt2);
             font-weight: 500;
@@ -1041,93 +1300,76 @@
         </div>
         <div class="main-wrapper">
             <div class="table content" id="teams-table">
-                <h1>Select Opponent</h1>
-                <div class="row" id="teams"></div>
-                <button id="get-btn" onclick="scrape_data()">
-                    <div>Generate Ladder</div>
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
+                <div class="teams-panel">
+                    <div class="teams-panel-header">
+                        <h1>Select Opponent</h1>
+                        <p>Choose a division, then pick the team you want to generate a ladder against.</p>
+                    </div>
+                    <div class="division-bar">
+                        <div class="division-dropdown" id="division-dropdown">
+                            <button type="button" class="division-dropdown-trigger" onclick="division_dropdown_toggle(event)">
+                                <div id="division-dropdown-value">Division</div>
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            <div class="division-dropdown-menu" id="division-dropdown-menu"></div>
+                        </div>
+                    </div>
+                    <div class="teams-list" id="teams"></div>
+                    <button id="get-btn" onclick="scrape_data()">
+                        <div>Generate Ladder</div>
+                    </button>
+                </div>
             </div>
 
             <div class="side-menu">
                 <h1 id="ladder-header">Ladder</h1>
-                <div class="table-wrapper">
-                    <table class="column">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <span class="details-title">Upload Date:</span>
-                                    <span class="details-info" id="ladder-date">N/A</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="display: none;" checked="true" class="delete-btn" onclick="toggle_ladder(this)">
-                                    <span>
-                                        <div>Use Ladder</div>
-                                        <div class="checkbox">
-                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                                            </svg>
+                <div class="ladder-panel">
+                    <div class="table-wrapper">
+                        <table class="column">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="upload-details">
+                                            <span class="details-title">Upload Date</span>
+                                            <span class="details-info" id="ladder-date">N/A</span>
                                         </div>
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="display: none;" class="avalibilty-btn" onclick="availability_menu('open')">
-                                    <span>
-                                        <div>Change Availability</div>
-                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M11 3.99998H6.8C5.11984 3.99998 4.27976 3.99998 3.63803 4.32696C3.07354 4.61458 2.6146 5.07353 2.32698 5.63801C2 6.27975 2 7.11983 2 8.79998V17.2C2 18.8801 2 19.7202 2.32698 20.362C2.6146 20.9264 3.07354 21.3854 3.63803 21.673C4.27976 22 5.11984 22 6.8 22H15.2C16.8802 22 17.7202 22 18.362 21.673C18.9265 21.3854 19.3854 20.9264 19.673 20.362C20 19.7202 20 18.8801 20 17.2V13M7.99997 16H9.67452C10.1637 16 10.4083 16 10.6385 15.9447C10.8425 15.8957 11.0376 15.8149 11.2166 15.7053C11.4184 15.5816 11.5914 15.4086 11.9373 15.0627L21.5 5.49998C22.3284 4.67156 22.3284 3.32841 21.5 2.49998C20.6716 1.67156 19.3284 1.67155 18.5 2.49998L8.93723 12.0627C8.59133 12.4086 8.41838 12.5816 8.29469 12.7834C8.18504 12.9624 8.10423 13.1574 8.05523 13.3615C7.99997 13.5917 7.99997 13.8363 7.99997 14.3255V16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label for="file-upload">
-                                        <div>Upload PDF</div>
-                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M21 15V16.2C21 17.8802 21 18.7202 20.673 19.362C20.3854 19.9265 19.9265 20.3854 19.362 20.673C18.7202 21 17.8802 21 16.2 21H7.8C6.11984 21 5.27976 21 4.63803 20.673C4.07354 20.3854 3.6146 19.9265 3.32698 19.362C3 18.7202 3 17.8802 3 16.2V15M17 8L12 3M12 3L7 8M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    </label>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <input id="file-upload" accept=".pdf" onchange="upload_ladder(event)" type="file"/>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal content" id="ladder-data">
-        <div class="details-top">
-            <div class="details-header">
-                <div>
-                    <button onclick="close_ladder_type()" style="margin: 0px;">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <div>Back</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="display: none;" checked="true" class="delete-btn" onclick="toggle_ladder(this)">
+                                        <span>
+                                            <div>Use Ladder</div>
+                                            <div class="checkbox">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                            </div>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="display: none;" class="avalibilty-btn" onclick="availability_menu('open')">
+                                        <span>
+                                            <div>Change Availability</div>
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M11 3.99998H6.8C5.11984 3.99998 4.27976 3.99998 3.63803 4.32696C3.07354 4.61458 2.6146 5.07353 2.32698 5.63801C2 6.27975 2 7.11983 2 8.79998V17.2C2 18.8801 2 19.7202 2.32698 20.362C2.6146 20.9264 3.07354 21.3854 3.63803 21.673C4.27976 22 5.11984 22 6.8 22H15.2C16.8802 22 17.7202 22 18.362 21.673C18.9265 21.3854 19.3854 20.9264 19.673 20.362C20 19.7202 20 18.8801 20 17.2V13M7.99997 16H9.67452C10.1637 16 10.4083 16 10.6385 15.9447C10.8425 15.8957 11.0376 15.8149 11.2166 15.7053C11.4184 15.5816 11.5914 15.4086 11.9373 15.0627L21.5 5.49998C22.3284 4.67156 22.3284 3.32841 21.5 2.49998C20.6716 1.67156 19.3284 1.67155 18.5 2.49998L8.93723 12.0627C8.59133 12.4086 8.41838 12.5816 8.29469 12.7834C8.18504 12.9624 8.10423 13.1574 8.05523 13.3615C7.99997 13.5917 7.99997 13.8363 7.99997 14.3255V16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" id="upload-ladder-btn" onclick="open_upload_ladder()">
+                        <div>Upload Ladder</div>
                     </button>
                 </div>
-                <h1>Select Ladder Data Types</h1>
-                <div></div>
+
+                <input id="file-upload" accept=".csv,text/csv" onchange="upload_ladder(event)" type="file"/>
             </div>
         </div>
-        <table class="column">
-            <tbody>
-            </tbody>
-        </table>
-        <button id="export-btn" onclick="continue_ladder(this)">
-            <div>Continue</div>
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </button>
     </div>
 
     <div class="modal content" id="progress">
@@ -1147,8 +1389,7 @@
                 <div id="seeding-bar"></div>
             </div>
         </div>
-        <button>
-            <div>Close</div>
+        <button sqr>
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -1158,21 +1399,73 @@
     <div class="modal content" id="data" gender="Boys">
         <div class="data-nav">
             <div class="nav-items">
-                <div class="nav-option" onclick="nav_menu(this)">
-                    <div>Boys</div>
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <div class="nav-menu">
-                        <div active="true" onclick="set_gender('Boys', this)">Boys</div>
-                        <div onclick="set_gender('Girls', this)">Girls</div>
+                <div class="nav-option">
+                    <div class="nav-text" onclick="nav_menu(this.parentElement)">
+                        <div>Boys</div>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="nav-menu" toggle>
+                        <div active="true" onclick="set_gender('Boys', this); close_nav_menu();">
+                            <div>Boys</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div onclick="set_gender('Girls', this); close_nav_menu();">
+                            <div>Girls</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
                     </div>
                 </div>
-                <div class="nav-option" onclick="auto_seed_gender()">
-                    <div>Seed All Age Groups</div>
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4.5 22V17M4.5 7V2M2 4.5H7M2 19.5H7M13 3L11.2658 7.50886C10.9838 8.24209 10.8428 8.60871 10.6235 8.91709C10.4292 9.1904 10.1904 9.42919 9.91709 9.62353C9.60871 9.8428 9.24209 9.98381 8.50886 10.2658L4 12L8.50886 13.7342C9.24209 14.0162 9.60871 14.1572 9.91709 14.3765C10.1904 14.5708 10.4292 14.8096 10.6235 15.0829C10.8428 15.3913 10.9838 15.7579 11.2658 16.4911L13 21L14.7342 16.4911C15.0162 15.7579 15.1572 15.3913 15.3765 15.0829C15.5708 14.8096 15.8096 14.5708 16.0829 14.3765C16.3913 14.1572 16.7579 14.0162 17.4911 13.7342L22 12L17.4911 10.2658C16.7579 9.98381 16.3913 9.8428 16.0829 9.62353C15.8096 9.42919 15.5708 9.1904 15.3765 8.91709C15.1572 8.60871 15.0162 8.24209 14.7342 7.50886L13 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
+                <div class="nav-option">
+                    <div class="nav-text" onclick="nav_menu(this.parentElement)">
+                        <div>Data</div>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="nav-menu">
+                        <div active="true" onclick="toggle_column('team', this)">
+                            <div>Team</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div active="true" onclick="toggle_column('last-rate', this)">
+                            <div id="last-rate-label"> Swim Rate</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div onclick="toggle_column('current-rate', this)">
+                            <div id="current-rate-label"> Swim Rate</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div onclick="toggle_column('range', this)">
+                            <div>Performance</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div onclick="toggle_column('date', this)">
+                            <div>Date</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div onclick="toggle_column('age', this)">
+                            <div>Age</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="popup" id="overall-score">
@@ -1185,14 +1478,6 @@
                         <span id="other-score">0</span>
                         <div id="other-name"></div>
                     </div>
-                </div>
-            </div>
-            <div class="nav-items">
-                <div class="nav-option" onclick="generate_report()">
-                    <div>Generate Report</div>
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M14 2.26953V6.40007C14 6.96012 14 7.24015 14.109 7.45406C14.2049 7.64222 14.3578 7.7952 14.546 7.89108C14.7599 8.00007 15.0399 8.00007 15.6 8.00007H19.7305M16 13H8M16 17H8M10 9H8M14 2H8.8C7.11984 2 6.27976 2 5.63803 2.32698C5.07354 2.6146 4.6146 3.07354 4.32698 3.63803C4 4.27976 4 5.11984 4 6.8V17.2C4 18.8802 4 19.7202 4.32698 20.362C4.6146 20.9265 5.07354 21.3854 5.63803 21.673C6.27976 22 7.11984 22 8.8 22H15.2C16.8802 22 17.7202 22 18.362 21.673C18.9265 21.3854 19.3854 20.9265 19.673 20.362C20 19.7202 20 18.8802 20 17.2V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
                 </div>
             </div>
         </div>
@@ -1263,8 +1548,9 @@
             </div>
         </div>
         <div class="table-wrapper">
-            <table class="column" id="details-table"></table>
+            <table class="column" id="relay-details-table"></table>
         </div>
+        <div id="individual-details-table"></div>
     </div>
 
     <script>
@@ -1344,12 +1630,10 @@
                 menu.setAttribute("active", "true");
                 document.querySelector("#home").setAttribute("active", "false");
                 var table_container = document.querySelector("#availability-table");
-                table_container.innerHTML = ""; // Clear previous content
+                table_container.innerHTML = "";
 
-                // Collect all unique swimmers once
-                if (all_swimmers_sorted.length === 0) {
+                if (all_swimmers_sorted.length == 0) {
                     var all_swimmers = new Set();
-                    // Assuming 'your_ladder' is a global object with the data
                     for (let gender of Object.keys(your_ladder)) {
                         for (let age of Object.keys(your_ladder[gender])) {
                             for (let stroke of Object.keys(your_ladder[gender][age])) {
@@ -1467,7 +1751,7 @@
 
                 var tr = document.createElement("tr");
                 tr.setAttribute("class", "avail-person");
-                tr.setAttribute("person", name_id);
+                tr.setAttribute("ava-person", name_id);
                 tr.setAttribute("remove", is_unavailable ? "true" : "false");
                 tr.innerHTML = `
                     <td>${person}</td>
@@ -1498,7 +1782,7 @@
 
                 var tr = document.createElement("tr");
                 tr.setAttribute("class", "avail-person");
-                tr.setAttribute("person", name_id);
+                tr.setAttribute("ava-person", name_id);
                 tr.setAttribute("remove", "true");
                 tr.innerHTML = `
                     <td>${person}</td>
@@ -1558,304 +1842,162 @@
                 key_row.hidden = !has_visible_swimmers;
             });
         }
-        async function generate_report() {
-            document.querySelectorAll(".nav-option").forEach(div => {
-                div.remove();
-            })
-
-            document.querySelectorAll("#table-1, #table-2").forEach(table => {
-                table.style.display = "";
-            })
-
-            document.querySelector("#data").querySelectorAll(".row").forEach(row => {
-                var title_column = row.querySelector(".title-column");
-                title_column.querySelector(".seat-btn").remove();
-
-                row.querySelectorAll(".column:not([relay])").forEach(column => {
-                    column.querySelectorAll("tr[selected='false'], tr[selected]:not([yourteam])").forEach(tr => {
-                        tr.remove();
-                    })
-
-                    column.querySelectorAll("tr[selected]").forEach(tr => {
-                        tr.setAttribute("selected", "false");
-                        tr.removeAttribute("hover");
-                    })
-
-                    column.querySelectorAll("tr[selected], tr[key]").forEach(tr => {
-                        var tds = tr.querySelectorAll("td");
-                        var team_td = tds[2];
-                        var rate_td = tds[3];
-                        var details_td = tds[5];
-
-                        team_td.remove();
-                        rate_td.remove();
-                        if (details_td) {
-                            details_td.remove();
-                        }
-                    })
-                })
-
-                row.querySelectorAll(".column[relay]").forEach(column => {
-                    column.querySelectorAll("tr[selected]:not([yourteam])").forEach(tr => {
-                        tr.remove();
-                    })
-
-                    column.querySelectorAll("tr[selected]").forEach(tr => {
-                        tr.setAttribute("selected", "false");
-                        tr.removeAttribute("hover");
-                    })
-                })
-
-                row.style.maxWidth = "unset";
-                row.style.width = "fit-content";
-                row.style.display = "grid";
-                row.style.gridTemplateColumns = "auto 1fr 1fr 1fr 1fr";
-
-                var column_title = row.querySelector(".title-column");
-                column_title.style.gridRow = "span 2";
-                column_title.style.height = "100%";
-
-                var relay_column = row.querySelector(".column[relay]");
-                relay_column.style.gridColumn = "span 4";
-                relay_column.style.width = "fit-content";
-            });
-
-            var download_title = `${your_team["name"]} vs ${selected_data["name"]} Report`;
-            var response = await fetch("http://localhost:3000/render-pdf", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ html: document.documentElement.outerHTML }),
-            });
-
-            var blob = await response.blob();
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement("a");
-            a.href = url;
-            a.download = download_title + ".pdf";
-            // a.click();
-        }
         function upload_ladder(event) {
             var file = event.target.files[0];
-            if (file != undefined && file.type=="application/pdf") {
-                var pdf_reader = new FileReader();
-                pdf_reader.readAsDataURL(file);
-                pdf_reader.onload = () => {
-                    var pdf_file = pdf_reader.result;
-                    extract_text(pdf_file);
+            if (file != undefined && (file.type == "text/csv" || file.name.toLowerCase().endsWith(".csv"))) {
+                var csv_reader = new FileReader();
+                csv_reader.readAsText(file);
+                csv_reader.onload = () => {
+                    import_ladder_csv(csv_reader.result);
                 }
             }
+            event.target.value = "";
         }
-        async function extract_text(file) {
-            extracted_txt = [];
-            var pdf = await pdfjsLib.getDocument(file).promise;
-            var pages = pdf.numPages;
-            finalstring = "";
-            for (i = 1; i <= pages; i++) {
-                var page = await pdf.getPage(i);
-                var extract = await page.getTextContent().then(function (textContent) {
-                    var textItems = textContent.items;
-                    var line = 0;
+        function open_upload_ladder() {
+            document.querySelector("#file-upload").click();
+        }
+        function update_upload_ladder_button() {
+            var has_cached_ladder = localStorage.getItem("yourladder-" + your_team_id) != null;
+            document.querySelector("#upload-ladder-btn").querySelector("div").innerText = has_cached_ladder ? "Upload New CSV Ladder" : "Upload CSV Ladder";
+        }
+        function parse_ladder_csv(csv_text) {
+            var rows = [];
+            var row = [];
+            var value = "";
+            var in_quotes = false;
 
-                    for (var i = 0; i < textItems.length; i++) {
-                        if (!(Math.abs(line - (textItems[i].transform[3] + textItems[i].transform[5])) < 0.2)) {
-                            if (line != 0) {
-                                extracted_txt.push(finalstring);
-                                finalstring = "";
-                            }
+            for (let i = 0; i < csv_text.length; i++) {
+                var char = csv_text[i];
+                var next_char = csv_text[i + 1];
 
-                            line = textItems[i].transform[3] + textItems[i].transform[5];
-                        }
-                        var item = textItems[i];
-                        var item_text = item.str.trim();
-
-                        if (item_text != "" && finalstring.length > 0) {
-                            finalstring += "," + item_text;
-                        } else {
-                            finalstring += item_text;
-                        }
-
-                        if (i == textItems.length - 1) {
-                            extracted_txt.push(finalstring);
-                            finalstring = "";
-                        }
+                if (char == '"') {
+                    if (in_quotes && next_char == '"') {
+                        value += '"';
+                        i++;
+                    } else {
+                        in_quotes = !in_quotes;
                     }
-                });
-            }
-            setup_ladder();
-        }
-        function setup_ladder() {
-            document.querySelector("#ladder-data").setAttribute("active", "true");
-
-            var length_freq = {};
-            var rows = extracted_txt.map(item => item.split(","));
-            rows.forEach(line => {
-                if (length_freq[line.length]) {
-                    length_freq[line.length] += 1;
+                } else if (char == "," && !in_quotes) {
+                    row.push(value);
+                    value = "";
+                } else if ((char == "\n" || char == "\r") && !in_quotes) {
+                    if (char == "\r" && next_char == "\n") {
+                        i++;
+                    }
+                    row.push(value);
+                    if (row.some(cell => cell.trim() != "")) {
+                        rows.push(row);
+                    }
+                    row = [];
+                    value = "";
                 } else {
-                    length_freq[line.length] = 1;
-                }
-            });
-
-            var most_data = [0, 0];
-            for (length of Object.keys(length_freq)) {
-                var frequency = length_freq[length];
-                if (frequency > most_data[1]) {
-                    var most_data = [length, frequency];
+                    value += char;
                 }
             }
-            var most_length = Number(most_data[0]);
 
-            var sample_data = [];
-            let i = 0;
-            while (i < rows.length && sample_data.length < 5) {
-                var line = rows[i];
-                if (line.length == most_length) {
-                    sample_data.push(line);
-                }
-
-                i++;
+            row.push(value);
+            if (row.some(cell => cell.trim() != "")) {
+                rows.push(row);
             }
 
-            var column_contents = document.querySelector("#ladder-data").querySelector("TBODY");
-
-            var select_html = "";
-            for (let i = 0; i < most_length; i++) {
-                var ladder_datatypes = ["Date", "Name", "Time", "Age", "Team"];
-                var menu_html = "";
-                ladder_datatypes.forEach(type => {
-                    menu_html += `
-                        <div value="${type.toLowerCase()}" onmousedown="ladder_type(this, ${i})">
-                            ${type}
-                        </div>
-                    `;
-                })
-
-                select_html += `
-                    <td class="ladder-label" onclick="ladder_type_menu(this)">
-                        <div class="ladder-type">
-                            <div class="ladder-type-label">Select</div>
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <div class="ladder-menu">
-                            ${menu_html}
-                        </div>
-                    </td>
-                `;
+            return rows;
+        }
+        function parse_ladder_date(date_string) {
+            var parts = date_string.trim().split(/[/-]/).map(Number);
+            if (parts.length == 3 && parts.every(part => !Number.isNaN(part))) {
+                var year = parts[2] < 100 ? 2000 + parts[2] : parts[2];
+                return new Date(year, parts[0] - 1, parts[1]);
             }
-            column_contents.innerHTML = `
-                <tr title>
-                    <td colspan="100">Sample Data</td>
-                </tr>
-                <tr key>
-                    ${select_html}
-                </tr>
-            `;
 
-            sample_data.forEach(line => {
-                var entry_html = "";
-                line.forEach(column => {
-                    entry_html += `<td>${column}</td>`;
-                })
-
-                column_contents.innerHTML += `
-                    <tr>
-                        ${entry_html}
-                    </tr>
-                `;
-            })
-
-            extracted_data = {"length": most_length, "data_types": {}};
+            return new Date(date_string);
         }
-        function ladder_type_menu(td) {
-            document.querySelectorAll(".ladder-menu[active='true']").forEach(menu => {
-                menu.setAttribute("active", "false");
-            })
-            td.querySelector(".ladder-menu").setAttribute("active", "true");
+        function normalize_ladder_time(time_string) {
+            return String(time_string).trim().replace(/[a-z]+$/i, "");
         }
-        function ladder_type(type, index) {
-            var td = type.parentElement.parentElement;
-            td.querySelector(".ladder-type-label").innerText = type.innerText;
-            td.querySelector(".ladder-menu").setAttribute("active", "false");
-            td.setAttribute("active", "true");
-
-            type.parentElement.querySelectorAll("div[active='true']").forEach(label => {
-                label.setAttribute("active", "false");
-            })
-            type.setAttribute("active", "true");
-            extracted_data["data_types"][type.getAttribute("value")] = index;
-        }
-        function close_ladder_type() {
-            document.querySelector("#ladder-data").setAttribute("active", "false");
-        }
-        function continue_ladder(button) {
-            var indexes = extracted_data["data_types"];
-            if (!(indexes["date"] && indexes["age"] && indexes["name"] && indexes["time"])) {
-                button.removeAttribute("locked");
-                button.offsetWidth;
-                button.setAttribute("locked", "");
+        function import_ladder_csv(csv_text) {
+            var rows = parse_ladder_csv(csv_text);
+            if (rows.length < 2) {
+                window.alert("This CSV does not include any ladder rows.");
                 return;
             }
 
-            document.querySelector("#ladder-data").setAttribute("active", "false");
+            var headers = rows[0].map(header => header.trim().toLowerCase());
+            var indexes = {};
+            headers.forEach((header, index) => {
+                indexes[header] = index;
+            });
+
+            var required_headers = ["age_group", "distance", "stroke", "converted_time", "last_name", "first_name", "age", "team_abbr", "date"];
+            var missing_headers = required_headers.filter(header => indexes[header] == undefined);
+            if (missing_headers.length > 0) {
+                window.alert("This ladder CSV is missing: " + missing_headers.join(", "));
+                return;
+            }
+
             var ladder = {"Boys": {}, "Girls": {}};
-            let stroke_names = {"free": "Freestyle", "back": "Backstroke", "breast": "Breaststroke", "fly": "Butterfly"};
-            let rows = extracted_txt.map(item => item.split(","));
-            current_gender = null;
-            current_stroke = null;
+            var imported_count = 0;
+            var current_season_year = Number(window.this_year || new Date().getFullYear());
 
-            for (let line of rows) {
-                var header = line.join(" ").toLowerCase();
-                if (header.includes("girls") || header.includes("boys")) {
-                    if (header.includes("girls")) {
-                        current_gender = "Girls";
-                    } else if (header.includes("boys")) {
-                        current_gender = "Boys";
-                    }
-
-                    var header_stroke = header.split(" ")[header.split(" ").length - 1].toLowerCase();
-                    current_distance = header.split(" ")[header.split(" ").length - 2];
-                    if (stroke_names[header_stroke]) {
-                        current_stroke = stroke_names[header_stroke];
-                    } else {
-                        current_stroke = null;
-                    }
+            for (let line of rows.slice(1)) {
+                var team = line[indexes["team_abbr"]]?.trim().toUpperCase();
+                if (team != your_team["abr"]) {
+                    continue;
                 }
 
-                if (line.length == extracted_data["length"] && current_stroke != null) {
-                    if (indexes["team"]) {
-                        if (line[indexes["team"]].trim().toUpperCase() == your_team["abr"]) {
-                            var proceed = true;
-                        } else {
-                            var proceed = false;
-                        }
-                    } else {
-                        var proceed = true;
-                    }
-
-                    if (proceed) {
-                        var name = line[indexes["name"]];
-                        var time = line[indexes["time"]];
-                        var age = Number(line[indexes["age"]]);
-                        var date = line[indexes["date"]];
-                        var entry_year = new Date(date).getFullYear();
-
-                        if (!ladder[current_gender][age]) {
-                            ladder[current_gender][age] = {};
-                        }
-                        if (!ladder[current_gender][age][current_stroke]) {
-                            ladder[current_gender][age][current_stroke] = {};
-                        }
-                        if (!ladder[current_gender][age][current_stroke][current_distance]) {
-                            ladder[current_gender][age][current_stroke][current_distance] = [];
-                        }
-
-                        if (name.includes(`NoSwimmer${current_gender.slice(0, -1)}`) == false) {
-                            ladder[current_gender][age][current_stroke][current_distance].push([time, name, age, "", date, "", entry_year, your_team["abr"], false]);
-                        }
-                    }
+                var age_group = line[indexes["age_group"]]?.trim() || "";
+                var gender = null;
+                if (/^(girls|women)\b/i.test(age_group)) {
+                    gender = "Girls";
+                } else if (/^(boys|men)\b/i.test(age_group)) {
+                    gender = "Boys";
                 }
+
+                var stroke = line[indexes["stroke"]]?.trim();
+                var distance = line[indexes["distance"]]?.trim();
+                var first_name = line[indexes["first_name"]]?.trim();
+                var last_name = line[indexes["last_name"]]?.trim();
+                var age = Number(line[indexes["age"]]);
+                var time = normalize_ladder_time(line[indexes["converted_time"]] || line[indexes["original_time"]]);
+                var date = line[indexes["date"]]?.trim();
+                var date_object = parse_ladder_date(date);
+                var entry_year = date_object.getFullYear();
+                var current_age = age + (current_season_year - entry_year);
+
+                if (!gender || !stroke || !distance || !first_name || !last_name || Number.isNaN(age) || !time || Number.isNaN(entry_year) || Number.isNaN(current_age) || current_age > 18) {
+                    continue;
+                }
+
+                var name = `${first_name} ${last_name}`;
+                if (name.includes(`NoSwimmer${gender.slice(0, -1)}`)) {
+                    continue;
+                }
+
+                if (!ladder[gender][current_age]) {
+                    ladder[gender][current_age] = {};
+                }
+                if (!ladder[gender][current_age][stroke]) {
+                    ladder[gender][current_age][stroke] = {};
+                }
+                if (!ladder[gender][current_age][stroke][distance]) {
+                    ladder[gender][current_age][stroke][distance] = [];
+                }
+
+                var entries = ladder[gender][current_age][stroke][distance];
+                var name_id = name.toLowerCase().replace(/\s/g, "");
+                var entry = [time, name, current_age, "", date, {}, entry_year, team, false, ""];
+                var existing_index = entries.findIndex(item => item[1].toLowerCase().replace(/\s/g, "") == name_id);
+
+                if (existing_index == -1) {
+                    entries.push(entry);
+                    imported_count++;
+                } else if (parse_time(time) < parse_time(entries[existing_index][0])) {
+                    entries[existing_index] = entry;
+                }
+            }
+
+            if (imported_count == 0) {
+                window.alert("No ladder rows matched your current team.");
+                return;
             }
 
             var today = new Date();
@@ -1878,6 +2020,7 @@
             unavailable = [];
             var unavailable_string = JSON.stringify(unavailable);
             localStorage.setItem("yourladderavailability-" + your_team_id, unavailable_string);
+            update_upload_ladder_button();
         }
         async function import_supa() {
             var raw_entries = [];
@@ -1912,11 +2055,19 @@
             }
         }
         async function get_url(url, check_year = true) {
-            var response = await fetch(`${ENV["server_base_url"]}/fetch-html?url=${encodeURIComponent(url)}`);
+            var response = await fetch(`/api/fetch-html?url=${encodeURIComponent(url)}`);
             var html = await response.text();
             var parser = new DOMParser();
             var doc = parser.parseFromString(html, "text/html");
-            if (check_year == true && doc.querySelector("select[name='year']").value.trim() == "") {
+            var parsed_url = new URL(url);
+            var requested_year = parsed_url.searchParams.get("year");
+            var has_year_in_url = requested_year != null;
+            var year_select = doc.querySelector("select[name='year']");
+            var selected_year = year_select ? year_select.value.trim() : "";
+
+            if (check_year && has_year_in_url && selected_year != String(requested_year)) {
+                return null
+            } else if (check_year && !has_year_in_url && selected_year == "") {
                 return null
             } else {
                 return doc;
@@ -1928,42 +2079,105 @@
             wrapper.append(element);
             return wrapper;
         }
-        async function get_teams() {
+        function render_division_teams(division) {
             var row = document.querySelector("#teams");
+            row.innerHTML = "";
 
-            for (let division of Object.keys(teams).sort((a, b) => {
-                if (a == your_team["divion"] && b != your_team["divion"]) return -1;
-                if (b == your_team["divion"] && a != your_team["divion"]) return 1;
-                return Number(a) - Number(b);
-            })) {
-                var column = document.createElement("DIV");
-                column.setAttribute("class", "title-column");
-                column.innerHTML = `<div class="txt">Division ${division}</div>`;
-                row.append(column);
+            var column = document.createElement("TABLE");
+            column.setAttribute("class", "column");
+            var column_content = document.createElement("TBODY");
 
-                var column = document.createElement("TABLE");
-                column.setAttribute("class", "column");
-                var column_content = document.createElement("TBODY");
-
-                for (let team of Object.keys(teams[division])) {
-                    if (your_team["id"] == teams[division][team]["id"]) {
-                        var hide = "hide";
-                    } else {
-                        var hide = "";
-                    }
-
-                    column_content.innerHTML += `
-                        <tr ${hide} class="team-option" onclick="select_team('${teams[division][team]["id"]}', '${teams[division][team]["abr"]}', '${division}', '${team}', this)">
-                            <td>
-                                ${team}
-                            </td>
-                        </tr>
-                    `;
+            for (let team of Object.keys(teams[division])) {
+                if (your_team["id"] == teams[division][team]["id"]) {
+                    var hide = "hide";
+                } else {
+                    var hide = "";
                 }
 
-                column.append(column_content);
-                row.append(wrap_table(column));
+                var selected = selected_data["team_id"] == teams[division][team]["id"] ? 'selected="true"' : "";
+
+                column_content.innerHTML += `
+                    <tr ${hide} class="team-option" ${selected} onclick="select_team('${teams[division][team]["id"]}', '${teams[division][team]["abr"]}', '${division}', '${team}', this)">
+                        <td>
+                            ${team}
+                        </td>
+                    </tr>
+                `;
             }
+
+            column.append(column_content);
+            row.append(wrap_table(column));
+
+            row.classList.remove("teams-list-animate");
+            void row.offsetWidth;
+            row.classList.add("teams-list-animate");
+        }
+        function update_division_dropdown_label(division) {
+            document.querySelector("#division-dropdown-value").innerText = `Division ${division}`;
+            document.querySelector("#division-dropdown").setAttribute("value", division);
+        }
+        open_division_dropdown = null;
+        function division_dropdown_toggle(event) {
+            event.stopPropagation();
+            var dropdown = document.querySelector("#division-dropdown");
+            var menu = dropdown.querySelector(".division-dropdown-menu");
+            var icon = dropdown.querySelector(".division-dropdown-trigger svg");
+
+            if (menu.getAttribute("active") == "true") {
+                close_division_dropdown();
+            } else {
+                close_division_dropdown();
+                menu.setAttribute("active", "true");
+                icon.style.transform = "rotate(180deg)";
+                setTimeout(() => {
+                    open_division_dropdown = dropdown;
+                    document.body.setAttribute("onclick", "close_division_dropdown(event)");
+                }, 220);
+            }
+        }
+        function close_division_dropdown(event = false) {
+            if (open_division_dropdown == null) {
+                return;
+            }
+            if (event != false && open_division_dropdown.contains(event.target)) {
+                return;
+            }
+
+            var menu = open_division_dropdown.querySelector(".division-dropdown-menu");
+            menu.setAttribute("active", "false");
+            open_division_dropdown.querySelector(".division-dropdown-trigger svg").style.transform = "";
+            document.body.removeAttribute("onclick");
+            open_division_dropdown = null;
+        }
+        function select_division(division) {
+            var menu = document.querySelector("#division-dropdown-menu");
+            menu.querySelectorAll(":scope > div").forEach(item => {
+                item.setAttribute("active", item.getAttribute("data-division") == division ? "true" : "false");
+            });
+
+            update_division_dropdown_label(division);
+            close_division_dropdown();
+            render_division_teams(division);
+        }
+        async function get_teams() {
+            var menu = document.querySelector("#division-dropdown-menu");
+            var sorted_divisions = Object.keys(teams).sort((a, b) => Number(a) - Number(b));
+            var default_division = String(your_team["divion"]);
+
+            menu.innerHTML = "";
+            for (let division of sorted_divisions) {
+                var active = division == default_division ? "true" : "false";
+                menu.innerHTML += `
+                    <div data-division="${division}" active="${active}" onclick="select_division('${division}')">
+                        <div>Division ${division}</div>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                `;
+            }
+            update_division_dropdown_label(default_division);
+            render_division_teams(default_division);
 
             var ladder_string = localStorage.getItem("yourladder-" + your_team_id);
             var unavailable_string = localStorage.getItem("yourladderavailability-" + your_team_id);
@@ -1991,6 +2205,7 @@
             } else {
                 your_ladder = null;
             }
+            update_upload_ladder_button();
         }
         function toggle_ladder(button) {
             if (button.getAttribute("checked") == "true") {
@@ -2025,7 +2240,7 @@
         open_menu = null;
         function nav_menu(element) {
             var menu = element.querySelector(".nav-menu");
-            var icon = element.querySelector(":scope > svg");
+            var icon = element.querySelector(".nav-text > svg");
 
             if (menu.getAttribute("active") == "true") {
                 menu.setAttribute("active", "false");
@@ -2037,19 +2252,21 @@
                 icon.style.transform = "rotate(180deg)";
                 setTimeout(() => {
                     open_menu = [menu, icon];
-                    document.body.setAttribute("onclick", "close_nav_menu()");
+                    document.body.setAttribute("onclick", "close_nav_menu(event)");
                 }, 240);
             }
         }
-        function close_nav_menu() {
+        function close_nav_menu(event = false) {
             if (open_menu != null) {
                 var menu = open_menu[0];
                 var icon = open_menu[1];
 
-                menu.setAttribute("active", "false");
-                icon.style.transform = "";
-                document.body.removeAttribute("onclick");
-                open_menu = null;
+                if (event == false || menu.contains(event.target) == false) {
+                    menu.setAttribute("active", "false");
+                    icon.style.transform = "";
+                    document.body.removeAttribute("onclick");
+                    open_menu = null;
+                }
             }
         }
         function set_gender(gender, element) {
@@ -2072,7 +2289,7 @@
 
             document.querySelector("#data").scrollTop = 0;
             document.querySelector("#data").setAttribute("gender", gender);
-            wrapper.parentElement.querySelector(":scope > div").innerText = gender;
+            wrapper.parentElement.querySelector(".nav-text").querySelector("div").innerText = gender;
         }
         function get_info(id) {
             outer_loop: for (let division of Object.keys(teams)) {
@@ -2090,12 +2307,27 @@
             document.querySelector("#your-team-score-label").innerText = your_team["abr"];
         }
         your_team_id = 329; // PL: 329, SH: 346
+        function is_setup_out_of_date(schedule) {
+            var current_year = Number(new Date().getFullYear());
+            var schedule_years = Object.keys(schedule).map(Number);
+            if (schedule_years.length === 0) {
+                return true;
+            }
+            var latest_schedule_year = Math.max(...schedule_years);
+            return latest_schedule_year < current_year || !schedule[current_year]?.length;
+        }
         async function init_jsons() {
-            var response = await fetch("files/schedule.json");
+            var response = await fetch("/files/schedule.json");
             schedule = await response.json();
 
-            var response = await fetch("files/teams.json");
+            var response = await fetch("/files/teams.json");
             teams = await response.json();
+
+            if (is_setup_out_of_date(schedule)) {
+                alert("Setup data is out of date. Please run setup to gather the current year's schedule and team information.");
+                window.location.href = "/setup.html";
+                return;
+            }
 
             get_info(your_team_id);
             get_teams();
@@ -2130,6 +2362,9 @@
             "15-18": {"id": 5, "ages": [15, 16, 17, 18], "distance": 50, "relay": [["Backstroke", "50"], ["Breaststroke", "50"], ["Butterfly", "50"], ["Freestyle", "50"]]}
         }
         this_year = Number(new Date().getFullYear());
+        function swimmer_key(entry) {
+            return entry[3] || entry[1].toLowerCase().replace(/\s/g, "");
+        }
         async function scrape_data() {
             if (selected_data["team_id"] == null) {
                 document.querySelector("#get-btn").removeAttribute("locked");
@@ -2137,6 +2372,9 @@
                 document.querySelector("#get-btn").setAttribute("locked", "");
                 return;
             }
+
+            document.querySelector("#current-rate-label").innerText = this_year + " Swim Rate";
+            document.querySelector("#last-rate-label").innerText = (this_year - 1) + " Swim Rate";
 
             document.querySelector("#home").setAttribute("active", "false");
             document.querySelector("#progress").setAttribute("active", "true");
@@ -2146,78 +2384,169 @@
             var team_name = selected_data["name"];
             sheet_data = {};
 
+            if (your_ladder) {
+                var team_ids = [selected_data["team_id"], your_team["id"]];
+                var ladder_ids = {};
+            } else {
+                var team_ids = [selected_data["team_id"]];
+            }
             let years = [
-                [this_year - 0, 0],
-                [this_year - 1, 1]
+                [this_year - 0, 0, 0],
+                [this_year - 1, 1, 0]
             ]
+            var today_date = new Date();
+            for (let i = 0; i < years.length; i++) {
+                schedule[years[i][0]].forEach(date => {
+                    var date_object = new Date(date);
+                    if (date_object.getTime() <= today_date.getTime()) {
+                        years[i][2] += 1;
+                    }
+                });
+            }
+
             let events = {"Freestyle": "free", "Backstroke": "back", "Breaststroke": "breast", "Butterfly": "fly"};
             let genders = {"Boys": 1, "Girls": 2};
 
             abbreviation = selected_data["abr"];
             var progress = 0;
-            var total = Object.keys(age_groups).length * Object.keys(events).length * Object.keys(genders).length * years.length;
+            var total = team_ids.length * Object.keys(age_groups).length * Object.keys(events).length * Object.keys(genders).length * years.length;
 
-            for (let gender of Object.keys(genders)) {
-                if (!sheet_data[gender]) {
-                    sheet_data[gender] = {};
-                }
+            for (let team_id of team_ids) {
+                for (let gender of Object.keys(genders)) {
+                    if (!sheet_data[gender]) {
+                        sheet_data[gender] = {};
+                    }
 
-                for (let group of Object.keys(age_groups)) {
-                    for (let year of years) {
-                        var current_year = year[0];
-                        var years_offset = year[1];
+                    for (let group of Object.keys(age_groups)) {
+                        for (let year of years) {
+                            var current_year = year[0];
+                            var years_offset = year[1];
+                            var total_swims = year[2];
 
-                        for (let age of age_groups[group]["ages"]) {
-                            if (!sheet_data[gender][String(age + years_offset)]) {
-                                sheet_data[gender][String(age + years_offset)] = {};
+                            for (let age of age_groups[group]["ages"]) {
+                                if (!sheet_data[gender][String(age + years_offset)]) {
+                                    sheet_data[gender][String(age + years_offset)] = {};
+                                }
+                                for (let event of Object.keys(events)) {
+                                    if (event == "Butterfly" && group == "9-10") {
+                                        var distance = 25;
+                                    } else {
+                                        var distance = age_groups[group]["distance"];
+                                    }
+                                    if (!sheet_data[gender][String(age + years_offset)][event]) {
+                                        sheet_data[gender][String(age + years_offset)][event] = [];
+                                    }
+                                }
                             }
+
                             for (let event of Object.keys(events)) {
                                 if (event == "Butterfly" && group == "9-10") {
                                     var distance = 25;
                                 } else {
                                     var distance = age_groups[group]["distance"];
                                 }
-                                if (!sheet_data[gender][String(age + years_offset)][event]) {
-                                    sheet_data[gender][String(age + years_offset)][event] = [];
-                                }
-                            }
-                        }
+                                var stroke = events[event];
 
-                        for (let event of Object.keys(events)) {
-                            if (event == "Butterfly" && group == "9-10") {
-                                var distance = 25;
-                            } else {
-                                var distance = age_groups[group]["distance"];
-                            }
-                            var stroke = events[event];
+                                var nvsl_url = `https://www.mynvsl.com/leaders?post=1&mt=0&age=${age_groups[group]["id"]}&sex=${genders[gender]}&st=1&stroke=${distance}-${stroke}&m=1&year=${current_year}&count=25&division=&team=${team_id}`;
+                                var doc = await get_url(nvsl_url);
+                                if (doc != null) {
+                                    var results = doc.querySelector("table").querySelectorAll("tr:not([class*='hidden']):not([class*='record'])");
+                                    for (let i = 1; i < results.length; i++) {
+                                        var row_element = results[i];
+                                        var time = row_element.querySelectorAll("td")[1].innerText.trim();
+                                        var name = row_element.querySelectorAll("td")[2].innerText.replace("'", "ʼ").trim();
+                                        var age = Number(row_element.querySelectorAll("td")[3].innerText.trim()) + years_offset;
+                                        var date = row_element.querySelectorAll("td")[5].innerText.trim();
 
-                            var nvsl_url = `https://www.mynvsl.com/leaders?post=1&mt=0&age=${age_groups[group]["id"]}&sex=${genders[gender]}&st=1&stroke=${distance}-${stroke}&m=1&year=${current_year}&count=25&division=&team=${team_id}`;
-                            var doc = await get_url(nvsl_url);
-                            if (doc != null) {
-                                var results = doc.querySelector("table").querySelectorAll("tr:not([class*='hidden']):not([class*='record'])");
-                                for (let i = 1; i < results.length; i++) {
-                                    var row_element = results[i];
-                                    var time = row_element.querySelectorAll("td")[1].innerText.trim();
-                                    var name = row_element.querySelectorAll("td")[2].innerText.replace("'", "ʼ").trim();
-                                    var age = Number(row_element.querySelectorAll("td")[3].innerText.trim()) + years_offset;
-                                    var date = row_element.querySelectorAll("td")[5].innerText.trim();
-                                    var swam_number = [...doc.querySelector("table").querySelectorAll("tr[class*='double']")].filter(double_row_element => { return double_row_element.querySelectorAll("td")[2].innerText.trim() == name}).length + 1;
-                                    var swam_precent = ((Math.min(swam_number, 5) / 5) * 100) + "%";
-                                    var onclick = row_element.querySelector("a").getAttribute("onclick");
-                                    var onclick_match = onclick.match(/showSwimmer\('(\d+)'\)/);
-                                    var swimmer_id = onclick_match ? onclick_match[1] : null;
+                                        var all_swims = [...doc.querySelector("table").querySelectorAll("tr:not([class*='record'])")]
+                                            .filter(double_row_element => {
+                                                var tds = double_row_element.querySelectorAll("td");
+                                                if (tds.length != 0) {
+                                                    var temp_name = tds[2].innerText.trim();
+                                                    if (temp_name == name) {
+                                                        var temp_date = tds[5].innerText.trim();
+                                                        if (schedule[current_year].indexOf(temp_date) != -1) {
+                                                            return true;
+                                                        }
+                                                    };
+                                                }
+                                            })
+                                            .map(double_row_element => {
+                                                var tds = double_row_element.querySelectorAll("td");
+                                                var temp_time = tds[1].innerText.trim();
+                                                var temp_date = tds[5].innerText.trim();
+                                                return {"time": temp_time, "date": temp_date};
+                                            })
+                                            .sort((a, b) => {
+                                                return parse_time(a["time"]) - parse_time(b["time"])
+                                            });
 
-                                    if (current_year == this_year) {
                                         var swam_precent = "";
+                                        var range = "";
+
+                                        if (all_swims.length > 0) {
+                                            if (years_offset == 0) {
+                                                var fastest = parse_time(all_swims[0]["time"]);
+                                                var slowest = parse_time(all_swims[all_swims.length - 1]["time"]);
+                                                var plural = (all_swims.length == 1) ? "" : "s";
+
+                                                var range = `${((fastest + slowest) / 2).toFixed(2)} ± ${((slowest - fastest) / 2).toFixed(2)}, ${all_swims.length} Swim${plural}`;
+                                            }
+
+                                            if (years_offset == 0 || years_offset == 1) {
+                                                var swam_precent = Math.round((all_swims.length / total_swims) * 100) + "%";
+                                            }
+                                        }
+
+                                        var onclick = row_element.querySelector("a").getAttribute("onclick");
+                                        var onclick_match = onclick.match(/showSwimmer\('(\d+)'\)/);
+                                        var swimmer_id = onclick_match ? onclick_match[1] : null;
+
+                                        if (your_ladder && team_id == your_team["id"]) {
+                                            try {
+                                                var your_ladder_data = your_ladder[gender][String(age)][event][distance];
+                                            } catch (error) {
+                                                var your_ladder_data = false;
+                                            }
+
+                                            if (your_ladder_data) {
+                                                var person_name = split_name(name);
+
+                                                for (let i = 0; i < your_ladder_data.length; i++) {
+                                                    var entry = [...your_ladder_data[i]];
+
+                                                    var entry_name = split_name(entry[1]);
+                                                    if (entry_name["first"] == person_name["first"] && entry_name["last"] == person_name["last"]) {
+                                                        if (parse_time(time) < parse_time(entry[0])) {
+                                                            entry[0] = time;
+                                                            entry[4] = date;
+                                                        }
+
+                                                        var name_id = entry[1].toLowerCase().replace(/\s/g, "");
+                                                        if (!ladder_ids[name_id]) {
+                                                            ladder_ids[name_id] = swimmer_id;
+                                                        }
+                                                        entry[5][current_year] = swam_precent;
+
+                                                        if (current_year == this_year) {
+                                                            entry[9] = range;
+                                                        }
+
+                                                        your_ladder[gender][String(age)][event][distance][i] = entry;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            sheet_data[gender][String(age)][event].push([time, name, age, swimmer_id, date, swam_precent, distance, current_year, abbreviation, false, range]);
+                                        }
                                     }
-
-                                    sheet_data[gender][String(age)][event].push([time, name, age, swimmer_id, date, swam_precent, distance, current_year, abbreviation, false]);
                                 }
-                            }
 
-                            progress++;
-                            document.querySelector("#scraping-progress").querySelector("h1").innerText = (Math.round((progress / total) * 1000) / 10).toFixed(1) + "%";
-                            document.querySelector("#scraping-progress").querySelector(".inner").style.width = ((progress / total) * 100) + "%";
+                                progress++;
+                                document.querySelector("#scraping-progress").querySelector("h1").innerText = (Math.round((progress / total) * 1000) / 10).toFixed(1) + "%";
+                                document.querySelector("#scraping-progress").querySelector(".inner").style.width = ((progress / total) * 100) + "%";
+                            }
                         }
                     }
                 }
@@ -2255,19 +2584,33 @@
                     for (let event of Object.keys(sheet_data[gender][age])) {
                         var event_entries = sheet_data[gender][String(age)][event].sort((a, b) => b[7] - a[7]);
                         var unique_entries = [];
+                        var entries_by_swimmer = {};
 
                         event_entries.forEach(entry => {
-                            if (unique_entries.some(sub => sub[3] == entry[3]) == false) {
+                            var year = entry[7];
+                            var key = swimmer_key(entry);
+                            if (!entries_by_swimmer[key]) {
+                                var swim_rates = {};
+                                swim_rates[year] = entry[5];
+                                entry[5] = swim_rates;
+                                entries_by_swimmer[key] = entry;
                                 unique_entries.push(entry);
                             } else {
-                                var year = new Date(entry[4]).getFullYear();
-                                if (year == new Date().getFullYear() - 1) {
-                                    for (unique of unique_entries) {
-                                        if (unique[3] == entry[3]) {
-                                            unique[5] = entry[5];
-                                            break;
-                                        }
-                                    }
+                                var unique = entries_by_swimmer[key];
+                                unique[5][year] = entry[5];
+
+                                if (entry[10]) {
+                                    unique[10] = entry[10];
+                                }
+
+                                if (parse_time(entry[0]) < parse_time(unique[0])) {
+                                    var swim_rates = unique[5];
+                                    var range = unique[10];
+                                    var unique_index = unique_entries.indexOf(unique);
+                                    entry[5] = swim_rates;
+                                    entry[10] = range || entry[10];
+                                    entries_by_swimmer[key] = entry;
+                                    unique_entries[unique_index] = entry;
                                 }
                             }
                         });
@@ -2289,6 +2632,7 @@
             }
 
             if (your_ladder) {
+                console.log(ladder_ids);
                 for (let gender of Object.keys(your_ladder)) {
                     for (let age of Object.keys(your_ladder[gender])) {
                         for (let event of Object.keys(your_ladder[gender][age])) {
@@ -2296,10 +2640,13 @@
                                 var your_swimmers = your_ladder[gender][age][event][distance];
                                 var actual_entries = [];
 
-                                your_swimmers.forEach(person => {
-                                    var name_id = person[1].toLowerCase().replace(/\s/g, "");
+                                your_swimmers.forEach(entry => {
+                                    var name_id = entry[1].toLowerCase().replace(/\s/g, "");
                                     if (unavailable.indexOf(name_id) == -1) {
-                                        actual_entries.push(person);
+                                        if (ladder_ids[name_id]) {
+                                            entry[3] = ladder_ids[name_id];
+                                        }
+                                        actual_entries.push(entry);
                                     }
                                 })
 
@@ -2378,9 +2725,53 @@
                 }
             }
 
+            document.querySelector(".nav-option[seed-all]")?.remove();
+            document.querySelector(".nav-option[build-report]")?.remove();
+
             if (your_ladder) {
                 document.querySelector(".data-nav").setAttribute("active", "true");
                 document.querySelector(".data-nav").querySelector("#other-name").innerText = abbreviation;
+
+                var seed_all_option = document.createElement("div");
+                seed_all_option.setAttribute("class", "nav-option");
+                seed_all_option.setAttribute("seed-all", "");
+                seed_all_option.setAttribute("onclick", "auto_seed_gender()");
+                seed_all_option.innerHTML = `
+                    <div class="nav-text">
+                        <div>Seed All Age Groups</div>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4.5 22V17M4.5 7V2M2 4.5H7M2 19.5H7M13 3L11.2658 7.50886C10.9838 8.24209 10.8428 8.60871 10.6235 8.91709C10.4292 9.1904 10.1904 9.42919 9.91709 9.62353C9.60871 9.8428 9.24209 9.98381 8.50886 10.2658L4 12L8.50886 13.7342C9.24209 14.0162 9.60871 14.1572 9.91709 14.3765C10.1904 14.5708 10.4292 14.8096 10.6235 15.0829C10.8428 15.3913 10.9838 15.7579 11.2658 16.4911L13 21L14.7342 16.4911C15.0162 15.7579 15.1572 15.3913 15.3765 15.0829C15.5708 14.8096 15.8096 14.5708 16.0829 14.3765C16.3913 14.1572 16.7579 14.0162 17.4911 13.7342L22 12L17.4911 10.2658C16.7579 9.98381 16.3913 9.8428 16.0829 9.62353C15.8096 9.42919 15.5708 9.1904 15.3765 8.91709C15.1572 8.60871 15.0162 8.24209 14.7342 7.50886L13 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </div>
+                `;
+                document.querySelector(".data-nav .nav-items").append(seed_all_option);
+
+                var build_report_option = document.createElement("div");
+                build_report_option.setAttribute("class", "nav-option");
+                build_report_option.setAttribute("build-report", "");
+                build_report_option.innerHTML = `
+                    <div class="nav-text" onclick="nav_menu(this.parentElement)">
+                        <div>Build Report</div>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="nav-menu">
+                        <div onclick="build_seeding_report('home'); close_nav_menu();">
+                            <div>Home Meet</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div onclick="build_seeding_report('away'); close_nav_menu();">
+                            <div>Away Meet</div>
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+                document.querySelector(".data-nav .nav-items").append(build_report_option);
             }
 
             document.querySelector("#progress").setAttribute("active", "false");
@@ -2409,6 +2800,24 @@
                     row.setAttribute("group-id", group_id);
                     row.setAttribute("gender-id", gender_id);
                     table.append(row);
+
+                    var hover_counts = {};
+                    for (let event of Object.keys(render_data[gender][group])) {
+                        for (let distance of Object.keys(render_data[gender][group][event])) {
+                            render_data[gender][group][event][distance].forEach(item => {
+                                var hover_name_id = item[1].toLowerCase().replace(/\s/g, "");
+                                hover_counts[hover_name_id] = (hover_counts[hover_name_id] || 0) + 1;
+                            });
+                        }
+                    }
+                    var hover_slot_count = Math.max(8, ...Object.values(hover_counts));
+
+                    for (let i = 0; i < hover_slot_count; i++) {
+                        var hover_element = document.createElement("DIV");
+                        hover_element.setAttribute("class", "tr-hover");
+                        hover_element.setAttribute("inuse", "false");
+                        row.append(hover_element);
+                    }
 
                     var column = document.createElement("DIV");
                     column.setAttribute("class", "title-column");
@@ -2457,11 +2866,13 @@
 
                             if (prediction == true) {
                                 var title_contents = `
-                                    <td colspan="5">${distance}M ${event}</td>
-                                    <td id="predict-btn" style="width: 50px;" onclick="predict_times('${event}', '${gender}')">
-                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M13.1218 14.8446L18.0004 21.9999M10.879 14.8446L6.00041 21.9999M14.0004 13.2C14.0004 14.3045 13.105 15.2 12.0004 15.2C10.8958 15.2 10.0004 14.3045 10.0004 13.2C10.0004 12.0954 10.8958 11.2 12.0004 11.2C13.105 11.2 14.0004 12.0954 14.0004 13.2ZM17.1489 4.53225L5.36462 7.68984C5.09414 7.76232 4.95889 7.79855 4.86969 7.87888C4.79122 7.94953 4.73713 8.04321 4.71518 8.14649C4.69022 8.26391 4.72646 8.39915 4.79893 8.66964L5.67892 11.9538C5.7514 12.2243 5.78763 12.3595 5.86796 12.4487C5.93861 12.5272 6.03229 12.5813 6.13557 12.6032C6.25299 12.6282 6.38823 12.5919 6.65871 12.5195L18.443 9.36188L17.1489 4.53225ZM21.7928 9.49958C20.7109 9.78949 20.1699 9.93444 19.7002 9.83461C19.2871 9.74679 18.9124 9.53045 18.6298 9.21657C18.3085 8.85975 18.1635 8.31878 17.8736 7.23684L17.7183 6.65728C17.4284 5.57535 17.2835 5.03438 17.3833 4.56471C17.4711 4.15158 17.6875 3.77686 18.0013 3.49425C18.3582 3.17296 18.8991 3.02801 19.9811 2.7381C20.2515 2.66562 20.3868 2.62939 20.5042 2.65434C20.6075 2.6763 20.7012 2.73038 20.7718 2.80885C20.8521 2.89806 20.8884 3.0333 20.9609 3.30379L22.3585 8.51979C22.431 8.79027 22.4672 8.92551 22.4422 9.04293C22.4203 9.14621 22.3662 9.23989 22.2877 9.31055C22.1985 9.39087 22.0633 9.42711 21.7928 9.49958ZM3.50212 12.33L4.85441 11.9677C5.1249 11.8952 5.26014 11.8589 5.34935 11.7786C5.42782 11.708 5.4819 11.6143 5.50386 11.511C5.52881 11.3936 5.49258 11.2583 5.4201 10.9879L5.05775 9.63556C4.98528 9.36508 4.94904 9.22983 4.86872 9.14063C4.79806 9.06216 4.70438 9.00807 4.6011 8.98612C4.48368 8.96116 4.34844 8.9974 4.07796 9.06988L2.72566 9.43222C2.45518 9.5047 2.31993 9.54094 2.23073 9.62126C2.15226 9.69191 2.09817 9.78559 2.07622 9.88888C2.05126 10.0063 2.0875 10.1415 2.15998 10.412L2.52232 11.7643C2.5948 12.0348 2.63104 12.17 2.71136 12.2592C2.78201 12.3377 2.87569 12.3918 2.97898 12.4138C3.09639 12.4387 3.23163 12.4025 3.50212 12.33Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
+                                    <td colspan="100">
+                                        ${distance}M ${event}
+                                        <div id="predict-btn" onclick="predict_times('${event}', '${gender}')">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M13.1218 14.8446L18.0004 21.9999M10.879 14.8446L6.00041 21.9999M14.0004 13.2C14.0004 14.3045 13.105 15.2 12.0004 15.2C10.8958 15.2 10.0004 14.3045 10.0004 13.2C10.0004 12.0954 10.8958 11.2 12.0004 11.2C13.105 11.2 14.0004 12.0954 14.0004 13.2ZM17.1489 4.53225L5.36462 7.68984C5.09414 7.76232 4.95889 7.79855 4.86969 7.87888C4.79122 7.94953 4.73713 8.04321 4.71518 8.14649C4.69022 8.26391 4.72646 8.39915 4.79893 8.66964L5.67892 11.9538C5.7514 12.2243 5.78763 12.3595 5.86796 12.4487C5.93861 12.5272 6.03229 12.5813 6.13557 12.6032C6.25299 12.6282 6.38823 12.5919 6.65871 12.5195L18.443 9.36188L17.1489 4.53225ZM21.7928 9.49958C20.7109 9.78949 20.1699 9.93444 19.7002 9.83461C19.2871 9.74679 18.9124 9.53045 18.6298 9.21657C18.3085 8.85975 18.1635 8.31878 17.8736 7.23684L17.7183 6.65728C17.4284 5.57535 17.2835 5.03438 17.3833 4.56471C17.4711 4.15158 17.6875 3.77686 18.0013 3.49425C18.3582 3.17296 18.8991 3.02801 19.9811 2.7381C20.2515 2.66562 20.3868 2.62939 20.5042 2.65434C20.6075 2.6763 20.7012 2.73038 20.7718 2.80885C20.8521 2.89806 20.8884 3.0333 20.9609 3.30379L22.3585 8.51979C22.431 8.79027 22.4672 8.92551 22.4422 9.04293C22.4203 9.14621 22.3662 9.23989 22.2877 9.31055C22.1985 9.39087 22.0633 9.42711 21.7928 9.49958ZM3.50212 12.33L4.85441 11.9677C5.1249 11.8952 5.26014 11.8589 5.34935 11.7786C5.42782 11.708 5.4819 11.6143 5.50386 11.511C5.52881 11.3936 5.49258 11.2583 5.4201 10.9879L5.05775 9.63556C4.98528 9.36508 4.94904 9.22983 4.86872 9.14063C4.79806 9.06216 4.70438 9.00807 4.6011 8.98612C4.48368 8.96116 4.34844 8.9974 4.07796 9.06988L2.72566 9.43222C2.45518 9.5047 2.31993 9.54094 2.23073 9.62126C2.15226 9.69191 2.09817 9.78559 2.07622 9.88888C2.05126 10.0063 2.0875 10.1415 2.15998 10.412L2.52232 11.7643C2.5948 12.0348 2.63104 12.17 2.71136 12.2592C2.78201 12.3377 2.87569 12.3918 2.97898 12.4138C3.09639 12.4387 3.23163 12.4025 3.50212 12.33Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
                                     </td>
                                 `;
                             } else {
@@ -2476,9 +2887,22 @@
                                 </tr>
                                 <tr key>
                                     <td>Time</td>
-                                    <td>Points</td>
-                                    <td>Team</td>
-                                    <td>Swim Rate<div style="font-size: 9px; font-weight: 500;">${years[years.length - 1][0]}</div></td>
+                                    <td points-column>Points</td>
+                                    <td team-column>Team</td>
+                                    <td last-rate-column class="expanding-label">
+                                        Swim Rate
+                                        <div>In ${this_year - 1}</div>
+                                    </td>
+                                    <td current-rate-column class="expanding-label" hidden>
+                                        Swim Rate
+                                        <div>In ${this_year}</div>
+                                    </td>
+                                    <td range-column class="expanding-label" hidden>
+                                        Performance
+                                        <div>In ${years[0][0]}</div>
+                                    </td>
+                                    <td date-column hidden>Date</td>
+                                    <td age-column hidden>Age</td>
                                     <td colspan="2">Name</td>
                                 </tr>
                             `;
@@ -2486,24 +2910,29 @@
                             render_data[gender][group][event][distance].forEach(item => {
                                 var name_id = item[1].toLowerCase().replace(/\s/g, "");
 
-                                if (item[7] == your_team["abr"]) {
-                                    var details_onclick = `onclick="person_details('${item[1]}', '${item[3]}', '${gender}', this, true)"`;
-                                    var details_icon = `
-                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M14 11H8M10 15H8M16 7H8M20 10.5V6.8C20 5.11984 20 4.27976 19.673 3.63803C19.3854 3.07354 18.9265 2.6146 18.362 2.32698C17.7202 2 16.8802 2 15.2 2H8.8C7.11984 2 6.27976 2 5.63803 2.32698C5.07354 2.6146 4.6146 3.07354 4.32698 3.63803C4 4.27976 4 5.11984 4 6.8V17.2C4 18.8802 4 19.7202 4.32698 20.362C4.6146 20.9265 5.07354 21.3854 5.63803 21.673C6.27976 22 7.11984 22 8.8 22H11.5M22 22L20.5 20.5M21.5 18C21.5 19.933 19.933 21.5 18 21.5C16.067 21.5 14.5 19.933 14.5 18C14.5 16.067 16.067 14.5 18 14.5C19.933 14.5 21.5 16.067 21.5 18Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
+                                if (your_ladder) {
+                                    var td_onclick = `onclick="select_person('${name_id}', this.parentElement)"`;
+                                } else {
+                                    var td_onclick = "";
+                                }
+
+                                var team_atr = item[7];
+                                if (item[3] == "") {
+                                    var name_column = `
+                                        <td colspan="2" ${td_onclick}>${item[1]}</td>
                                     `;
                                 } else {
-                                    var details_onclick = `onclick="person_details('${item[1]}', '${item[3]}', '${gender}', this)"`;
-                                    var details_icon = `
-                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M9 7H4.6C4.03995 7 3.75992 7 3.54601 7.10899C3.35785 7.20487 3.20487 7.35785 3.10899 7.54601C3 7.75992 3 8.03995 3 8.6V19.4C3 19.9601 3 20.2401 3.10899 20.454C3.20487 20.6422 3.35785 20.7951 3.54601 20.891C3.75992 21 4.03995 21 4.6 21H9M9 21H15M9 21L9 4.6C9 4.03995 9 3.75992 9.10899 3.54601C9.20487 3.35785 9.35785 3.20487 9.54601 3.10899C9.75992 3 10.0399 3 10.6 3L13.4 3C13.9601 3 14.2401 3 14.454 3.10899C14.6422 3.20487 14.7951 3.35785 14.891 3.54601C15 3.75992 15 4.03995 15 4.6V21M15 11H19.4C19.9601 11 20.2401 11 20.454 11.109C20.6422 11.2049 20.7951 11.3578 20.891 11.546C21 11.7599 21 12.0399 21 12.6V19.4C21 19.9601 21 20.2401 20.891 20.454C20.7951 20.6422 20.6422 20.7951 20.454 20.891C20.2401 21 19.9601 21 19.4 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
+                                    var name_column = `
+                                        <td ${td_onclick}>${item[1]}</td>
+                                        <td style="width: 50px;" onclick="person_details('${item[1]}', '${item[3]}', '${gender}', this)">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M9 7H4.6C4.03995 7 3.75992 7 3.54601 7.10899C3.35785 7.20487 3.20487 7.35785 3.10899 7.54601C3 7.75992 3 8.03995 3 8.6V19.4C3 19.9601 3 20.2401 3.10899 20.454C3.20487 20.6422 3.35785 20.7951 3.54601 20.891C3.75992 21 4.03995 21 4.6 21H9M9 21H15M9 21L9 4.6C9 4.03995 9 3.75992 9.10899 3.54601C9.20487 3.35785 9.35785 3.20487 9.54601 3.10899C9.75992 3 10.0399 3 10.6 3L13.4 3C13.9601 3 14.2401 3 14.454 3.10899C14.6422 3.20487 14.7951 3.35785 14.891 3.54601C15 3.75992 15 4.03995 15 4.6V21M15 11H19.4C19.9601 11 20.2401 11 20.454 11.109C20.6422 11.2049 20.7951 11.3578 20.891 11.546C21 11.7599 21 12.0399 21 12.6V19.4C21 19.9601 21 20.2401 20.891 20.454C20.7951 20.6422 20.6422 20.7951 20.454 20.891C20.2401 21 19.9601 21 19.4 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </td>
                                     `;
                                 }
 
-                                var team_atr = item[7].toLowerCase();
-                                if (item[7] == your_team["abr"]) {
+                                if (your_ladder == null || team_atr == your_team["abr"]) {
                                     var your_atr = "yourteam";
                                 } else {
                                     var your_atr = "";
@@ -2515,16 +2944,28 @@
                                     var up_atr = "false";
                                 }
 
+                                if (!item[5][this_year - 1]) {
+                                    var last_rate = "";
+                                } else {
+                                    var last_rate = item[5][this_year - 1];
+                                }
+                                if (!item[5][this_year]) {
+                                    var current_rate = "";
+                                } else {
+                                    var current_rate = item[5][this_year];
+                                }
+
                                 column_contents.innerHTML += `
-                                    <tr ${your_atr} distance="${distance}" stroke="${event.toLowerCase()}" team="${team_atr}" person="${name_id}" swimup="${up_atr}" onmouseenter="hover_person('${name_id}', 'add')" onmouseleave="hover_person('${name_id}', 'remove')" selected="false">
-                                        <td onclick="select_person('${name_id}', this.parentElement)">${item[0]}</td>
-                                        <td onclick="select_person('${name_id}', this.parentElement)" id="points"></td>
-                                        <td onclick="select_person('${name_id}', this.parentElement)">${item[7]}</td>
-                                        <td onclick="select_person('${name_id}', this.parentElement)">${item[5]}</td>
-                                        <td onclick="select_person('${name_id}', this.parentElement)">${item[1]}</td>
-                                        <td style="width: 50px;" ${details_onclick}>
-                                            ${details_icon}
-                                        </td>
+                                    <tr ${your_atr} distance="${distance}" stroke="${event.toLowerCase()}" team="${team_atr.toLowerCase()}" person="${name_id}" swimup="${up_atr}" onmouseenter="hover_person('${name_id}', 'add')" onmouseleave="hover_person('${name_id}', 'remove')" selected="false">
+                                        <td ${td_onclick}>${item[0]}</td>
+                                        <td points-column ${td_onclick} id="points"></td>
+                                        <td team-column ${td_onclick}>${item[7]}</td>
+                                        <td last-rate-column ${td_onclick}>${last_rate}</td>
+                                        <td current-rate-column ${td_onclick} hidden>${current_rate}</td>
+                                        <td range-column ${td_onclick} hidden>${item[9]}</td>
+                                        <td date-column hidden ${td_onclick}>${format_date(item[4])}</td>
+                                        <td age-column hidden ${td_onclick}>${item[2]}</td>
+                                        ${name_column}
                                     </tr>
                                 `;
 
@@ -2671,7 +3112,97 @@
                     })
                 }
             }
+
+            apply_data_columns();
+            if (your_ladder == null) {
+                toggle_column("points");
+            }
         }
+        function split_name(fullname) {
+            var names = fullname.toLowerCase().trim().split(/\s+/);
+            return {
+                "first": names[0],
+                "last": names[names.length - 1]
+            }
+        }
+        const DATA_COLUMN_NAMES = ["team", "last-rate", "current-rate", "range", "date", "age"];
+        const DATA_COLUMNS_KEY = "data-columns";
+        const DEFAULT_DATA_COLUMNS = {
+            "team": true,
+            "last-rate": true,
+            "current-rate": false,
+            "range": false,
+            "date": false,
+            "age": false
+        };
+        function load_data_columns() {
+            try {
+                var saved = JSON.parse(localStorage.getItem(DATA_COLUMNS_KEY));
+                if (saved && typeof saved === "object") {
+                    var prefs = {...DEFAULT_DATA_COLUMNS};
+                    DATA_COLUMN_NAMES.forEach(name => {
+                        if (typeof saved[name] === "boolean") {
+                            prefs[name] = saved[name];
+                        }
+                    });
+                    return prefs;
+                }
+            } catch (e) {}
+            return {...DEFAULT_DATA_COLUMNS};
+        }
+        function save_data_columns() {
+            var prefs = {};
+            DATA_COLUMN_NAMES.forEach(name => {
+                var button = data_column_button(name);
+                if (button) {
+                    prefs[name] = button.getAttribute("active") === "true";
+                } else {
+                    var el = document.querySelector(`[${name}-column]`);
+                    prefs[name] = el ? !el.hasAttribute("hidden") : DEFAULT_DATA_COLUMNS[name];
+                }
+            });
+            localStorage.setItem(DATA_COLUMNS_KEY, JSON.stringify(prefs));
+        }
+        function data_column_button(name) {
+            return document.querySelector(`.data-nav .nav-menu div[onclick*="toggle_column('${name}'"]`);
+        }
+        function set_column_visible(name, visible, button = null) {
+            var atr = `[${name}-column]`;
+            document.querySelectorAll(atr).forEach(td => {
+                if (visible) {
+                    td.removeAttribute("hidden");
+                } else {
+                    td.setAttribute("hidden", "");
+                }
+            });
+            var menu_button = button || data_column_button(name);
+            if (menu_button) {
+                menu_button.setAttribute("active", visible ? "true" : "false");
+            }
+        }
+        function apply_data_columns() {
+            var prefs = load_data_columns();
+            DATA_COLUMN_NAMES.forEach(name => {
+                set_column_visible(name, prefs[name]);
+            });
+        }
+        function toggle_column(name, button = false) {
+            var atr = `[${name}-column]`;
+            var el = document.querySelector(atr);
+            var visible;
+            if (el) {
+                visible = el.hasAttribute("hidden");
+            } else if (button) {
+                visible = button.getAttribute("active") !== "true";
+            } else {
+                return;
+            }
+            set_column_visible(name, visible, button);
+            if (DATA_COLUMN_NAMES.includes(name)) {
+                save_data_columns();
+            }
+        }
+        apply_data_columns();
         seeding = false;
         async function auto_seed_gender() {
             var gender = document.querySelector("#data").getAttribute("gender");
@@ -3175,7 +3706,7 @@
                 }
 
                 if (window.Worker) {
-                    let worker = new Worker("annealing_worker.js");
+                    let worker = new Worker("/workers/annealing_worker.js");
 
                     worker.onmessage = function(e) {
                         const { type, progress, lineups } = e.data;
@@ -3299,19 +3830,21 @@
             document.querySelector("#person-gender").innerText = gender;
             document.querySelector("#person-details").setAttribute("active", "true");
 
-
+            const this_year = new Date().getFullYear();
             let matches = ["Relay", gender, relay_group, relay_type, distance];
             let months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
-            var relay_data_by_year = {};
 
-            var table = document.querySelector("#details-table");
+            // This object will hold the data for the chart, structured by team.
+            var relay_data_for_chart = {};
+            // This object will hold the combined data for the new table structure.
+            const combined_relay_data = {};
+
+            document.querySelector("#individual-details-table").innerHTML = "";
+            var table = document.querySelector("#relay-details-table");
             table.innerHTML = "";
 
-            const year_tbody = document.createElement("TBODY");
-            year_tbody.setAttribute("class", "column");
-
             for (const team_name of Object.keys(selected_data["results"])) {
-                relay_data_by_year[team_name] = {};
+                relay_data_for_chart[team_name] = {};
                 var promises = selected_data["results"][team_name].map(nvsl_url => {
                     return get_url(nvsl_url, false);
                 });
@@ -3323,6 +3856,10 @@
                     var month = months.indexOf(date_parts[0]) + 1;
                     var date_string = `${month}/${date_parts[1]}/${date_parts[2]}`;
                     var entry_year = new Date(date_string).getFullYear();
+
+                    if (entry_year !== this_year) {
+                        continue;
+                    }
 
                     var rows = doc.querySelectorAll("table");
                     for (let i = 1; i < rows.length; i++) {
@@ -3336,106 +3873,102 @@
                                     var time = columns[1].innerText.trim();
                                     var swimmers = columns[3].innerHTML.split("<br>").map(name => name.trim());
 
-                                    if (!relay_data_by_year[team_name][entry_year]) {
-                                        relay_data_by_year[team_name][entry_year] = {};
+                                    // Populate data for the chart
+                                    relay_data_for_chart[team_name][date_string] = { "time": time, "swimmers": swimmers };
+
+                                    // Populate data for the combined table
+                                    if (!combined_relay_data[date_string]) {
+                                        combined_relay_data[date_string] = [];
                                     }
-                                    relay_data_by_year[team_name][entry_year][date_string] = { "time": time, "swimmers": swimmers };
+                                    combined_relay_data[date_string].push({ team_name, time, swimmers });
                                     break;
                                 }
                             }
                         }
                     }
                 }
-
-                if (Object.keys(relay_data_by_year[team_name]).length === 0) {
-                    table.innerHTML = "<div class='no-data-message'>No relay data found for the selected criteria.</div>";
-                } else {
-                    const furthest_year = Number(Object.keys(relay_data_by_year[team_name]).sort((a, b) => Number(a) - Number(b))[0]);
-                    var years = [];
-                    for (let i = 0; i <= this_year - furthest_year; i++) {
-                        years.push(furthest_year + i);
-                    }
-
-                    // --- MODIFIED SECTION START ---
-                    // This loop now creates a single, properly structured table to ensure all columns align.
-                    for (let year of years.reverse()) {
-                        const year_data = relay_data_by_year[team_name][year] || {};
-                        const dates_in_year = Object.keys(year_data).sort((a, b) => new Date(a) - new Date(b));
-
-                        const team_label = (team_name == your_team["abr"]) ? your_team["name"] : selected_data["name"];
-
-                        const column_keys = (relay_type == "Free") ?
-                            "<td>First</td><td>Second</td><td>Third</td><td>Fourth</td>" :
-                            "<td>Backstroke</td><td>Breaststroke</td><td>Butterfly</td><td>Freestyle</td>";
-
-                        // Create a <tbody> for each year to group rows semantically.
-
-                        // Add title and key headers for the year block.
-                        year_tbody.innerHTML += `
-                            <tr title>
-                                <td>${team_label}</td>
-                                <td colspan="5">${relay_type} Relay History</td>
-                            </tr>
-                            <tr key>
-                                <td>Date</td>
-                                <td>Time</td>
-                                ${column_keys}
-                            </tr>
-                        `;
-
-                        if (dates_in_year.length > 0) {
-                            dates_in_year.forEach(date_string => {
-                                const entry = year_data[date_string];
-                                year_tbody.innerHTML += `
-                                    <tr>
-                                        <td>${format_date(date_string)}</td>
-                                        <td>${entry.time}</td>
-                                        <td>${entry.swimmers[0]}</td>
-                                        <td>${entry.swimmers[1]}</td>
-                                        <td>${entry.swimmers[2]}</td>
-                                        <td>${entry.swimmers[3]}</td>
-                                    </tr>
-                                `;
-                            });
-                        } else {
-                            // Add a placeholder row if no data exists for that year.
-                            year_tbody.innerHTML += `<tr><td>-</td><td colspan="5">No Data</td></tr>`;
-                        }
-
-
-                    }
-                }
             }
 
-            table.append(year_tbody);
+            var sorted_dates = Object.keys(combined_relay_data).sort((a, b) => new Date(a) - new Date(b));
+            if (sorted_dates.length == 0) {
+                table.innerHTML = "<div>No relay data found for the current year.</div>";
+            } else {
+                if (relay_type == "Free") {
+                    var column_keys = `
+                        <td>First</td>
+                        <td>Second</td>
+                        <td>Third</td>
+                        <td>Fourth</td>
+                    `;
+                } else {
+                    var column_keys = `
+                        <td>Backstroke</td>
+                        <td>Breaststroke</td>
+                        <td>Butterfly</td>
+                        <td>Freestyle</td>
+                    `;
+                }
 
-            const team_names = Object.keys(relay_data_by_year);
-            // Find all unique years across all teams.
-            const all_years = new Set();
-            team_names.forEach(team_name => {
-                Object.keys(relay_data_by_year[team_name]).forEach(year => all_years.add(year));
-            });
+                var table_html = `
+                    <tr title>
+                        <td colspan="100">${relay_type} Relay History for ${this_year}</td>
+                    </tr>
+                    <tr key>
+                        <td>Date</td>
+                        <td>Time</td>
+                        <td>Team</td>
+                        ${column_keys}
+                    </tr>
+                `;
 
-            // If no data exists for any year, hide the chart container.
-            if (all_years.size === 0) {
+                sorted_dates.forEach(date_string => {
+                    var entries_for_date = combined_relay_data[date_string];
+                    entries_for_date.forEach((entry, index) => {
+                        if (entry["team_name"] == your_team["abr"]) {
+                            var your_atr = "yourteam";
+                        } else {
+                            var your_atr = "";
+                        }
+
+                        let row_html = `<tr team ${your_atr}>`;
+                        if (index == 0) {
+                            row_html += `<td style="background-color: var(--bg1);" rowspan="${entries_for_date.length}">${format_date(date_string)}</td>`;
+                        }
+                        row_html += `
+                            <td>${entry.time}</td>
+                            <td>${entry["team_name"]}</td>
+                            <td>${entry.swimmers[0]}</td>
+                            <td>${entry.swimmers[1]}</td>
+                            <td>${entry.swimmers[2]}</td>
+                            <td>${entry.swimmers[3]}</td>
+                        </tr>`;
+                        table_html += row_html;
+                    });
+                });
+
+                var year_tbody = document.createElement("TBODY");
+                year_tbody.setAttribute("class", "column");
+                year_tbody.innerHTML = table_html;
+                table.append(year_tbody);
+            }
+
+            const team_names = Object.keys(relay_data_for_chart);
+            const has_chart_data = team_names.some(team => Object.keys(relay_data_for_chart[team]).length > 0);
+
+            if (!has_chart_data) {
                 document.querySelector(".chart-container").style.display = "none";
             } else {
                 document.querySelector(".chart-container").style.display = "";
+                document.querySelector(".chart-title").innerText = `Relay Times for ${this_year}`;
 
-                // Determine the most recent year with available data.
-                const latest_year = String(Math.max(...Array.from(all_years).map(Number)));
-                document.querySelector(".chart-title").innerText = `Relay Times for ${latest_year}`;
-
-                // Create a unified, sorted list of dates from all teams for the latest year.
                 const all_dates_for_year = new Set();
                 team_names.forEach(team_name => {
-                    if (relay_data_by_year[team_name][latest_year]) {
-                        Object.keys(relay_data_by_year[team_name][latest_year]).forEach(date => all_dates_for_year.add(date));
+                    if (relay_data_for_chart[team_name]) {
+                        Object.keys(relay_data_for_chart[team_name]).forEach(date => all_dates_for_year.add(date));
                     }
                 });
                 var chart_dates = Array.from(all_dates_for_year).sort((a, b) => new Date(a) - new Date(b));
 
-                // Helper function to get the name of the meet day.
                 const get_day_of_week = (date_string) => {
                     const date = new Date(date_string);
                     const days = ["Sunday", "Monday", "Tuesday", "Relay Carnival", "Thursday", "Friday", "A-Meet"];
@@ -3445,7 +3978,6 @@
                     return days[date.getUTCDay()];
                 };
 
-                // Helper function to parse time strings (e.g., "1:23.45") into seconds.
                 const parse_time = (time_string) => {
                     if (!time_string || typeof time_string !== "string") return null;
                     const parts = time_string.split(/[:.]/).map(Number);
@@ -3457,16 +3989,15 @@
                 };
 
                 var chart_weekdays = [];
-                for (date of chart_dates) {
+                for (const date of chart_dates) {
                     chart_weekdays.push(get_day_of_week(date));
                 }
 
-                // Prepare data series for each team.
                 const team1_name = team_names[0] || null;
                 const team2_name = team_names[1] || null;
 
-                const team1_year_data = team1_name ? relay_data_by_year[team1_name][latest_year] || {} : {};
-                const team2_year_data = team2_name ? relay_data_by_year[team2_name][latest_year] || {} : {};
+                const team1_year_data = team1_name ? relay_data_for_chart[team1_name] || {} : {};
+                const team2_year_data = team2_name ? relay_data_for_chart[team2_name] || {} : {};
 
                 const team1_times = chart_dates.map(date => parse_time(team1_year_data[date]?.time));
                 const team2_times = chart_dates.map(date => parse_time(team2_year_data[date]?.time));
@@ -3497,15 +4028,15 @@
                     formated_chart_dates,
                     team1_times,
                     team2_times,
-                    [], // Placeholder for a potential third team's data
+                    [],
                     true
                 );
             }
 
-            // --- 5. FINAL UI UPDATE ---
             document.querySelector("#details-progress").style.display = "none";
             document.querySelectorAll("#person-details > *:not(#details-progress)").forEach(element => { element.style.display = ""; });
         }
+
         async function predict_times(event, gender) {
             var strokes = {
                 "Freestyle": "free",
@@ -3559,7 +4090,7 @@
                 time_profiles.push(profiles[name_id]);
             }
 
-            var response = await fetch(`${ENV["server_base_url"]}/predict`, {
+            var response = await fetch(`/api/predict`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -3581,6 +4112,31 @@
             var stroke_atrs = ["Freestyle", "Backstroke", "Breaststroke", "Butterfly"];
             var wrapper = [...document.querySelector(`.row[gender-id="${gender.toLowerCase()}"][group-id="${selected_group}"]`).querySelectorAll(".column")][stroke_atrs.indexOf(event)].querySelector("TBODY");
 
+            function find_distance_title_row(distance) {
+                return [...wrapper.querySelectorAll("tr[title]")].find(row =>
+                    row.querySelector("td").innerText.trim().startsWith(`${distance}M`)
+                );
+            }
+
+            var title_50 = find_distance_title_row(50);
+            if (!title_50) {
+                var title_25 = find_distance_title_row(25);
+                var key_25 = title_25.nextElementSibling;
+
+                title_50 = document.createElement("tr");
+                title_50.setAttribute("title", "");
+                title_50.innerHTML = `<td colspan="100">${50}M ${event}</td>`;
+
+                var key_50 = key_25.cloneNode(true);
+
+                wrapper.insertBefore(key_50, title_25);
+                wrapper.insertBefore(title_50, key_50);
+            }
+
+            if (!render_data[gender][selected_group][event][50]) {
+                render_data[gender][selected_group][event][50] = [];
+            }
+
             for (let i = 0; i < name_ids.length; i++) {
                 var name_id = name_ids[i];
                 var tr = wrapper.querySelector(`tr[distance="25"][person="${name_id}"]`);
@@ -3595,20 +4151,26 @@
                 `;
 
                 var last_element = null;
+                var inserted = false;
                 for (element of wrapper.querySelectorAll("tr[distance='50']")) {
                     var element_time = parse_time(element.querySelector("td").innerText);
 
                     if (element_time > predicted_time) {
                         wrapper.insertBefore(new_tr, element);
-                        var last_element = null;
+                        inserted = true;
                         break;
                     }
 
-                    var last_element = element;
+                    last_element = element;
                 }
 
-                if (last_element != null) {
-                    wrapper.insertBefore(new_tr, last_element);
+                if (!inserted) {
+                    if (last_element != null) {
+                        wrapper.insertBefore(new_tr, last_element.nextSibling);
+                    } else {
+                        var key_50 = title_50.nextElementSibling;
+                        wrapper.insertBefore(new_tr, key_50.nextSibling);
+                    }
                 }
             }
 
@@ -3626,37 +4188,18 @@
 
             wrapper.querySelector("#predict-btn").setAttribute("disabled", "true");
         }
+        function get_year(date_string) {
+            var date = new Date(date_string);
+            return date.getFullYear();
+        }
         function format_date(date_string) {
             var date = new Date(date_string);
-
-            var month_names = [
-                "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
-            ];
-
-            var month = month_names[date.getMonth()];
+            var month = date.getMonth() + 1;
             var day = date.getDate();
-
-            function get_ordinal_suffix(day) {
-                if (day >= 11 && day <= 13) {
-                    return "th";
-                }
-
-                var last_digit = day % 10;
-                if (last_digit == 1) {
-                    return "st";
-                } else if (last_digit == 2) {
-                    return "nd";
-                } else if (last_digit == 3) {
-                    return "rd";
-                } else {
-                    return "th";
-                }
-            }
-
-            return month + " " + day + get_ordinal_suffix(day);
+            var year = String(date.getFullYear()).slice(-2);
+            return `${month}/${day}/${year}`;
         }
-        async function person_details(name, swimmer_id, gender, button, your_swimmer = false) {
+        async function person_details(name, swimmer_id, gender, button) {
             document.querySelector("#details-progress").style.display = "grid";
             document.querySelectorAll("#person-details > *:not(#details-progress)").forEach(element => { element.style.display = "none"; });
             document.querySelector("#person-name").innerText = name;
@@ -3664,69 +4207,6 @@
             document.querySelector(".person-bg").innerText = name.match(/(\b\S)?/g).join("").match(/(^\S|\S$)?/g).join("").toUpperCase();
             document.querySelector("#person-details").setAttribute("active", "true");
             document.querySelector(".data-nav").setAttribute("active", "false");
-
-            if (your_swimmer == true) {
-                swimmer_id = null;
-                var firstname = name.split(" ")[0];
-                var lastname = name.split(" ")[name.split(" ").length - 1];
-                var nvsl_url = `https://www.mynvsl.com/leaders?post=2&lname=${lastname}&fname=${firstname}`;
-                console.log(nvsl_url);
-                var doc = await get_url(nvsl_url, false);
-                if (doc != null) {
-                    var swimmer_ids = [];
-                    doc.querySelectorAll("tr").forEach(row_element => {
-                        var onclick = row_element.querySelector("a").getAttribute("onclick");
-                        var onclick_match = onclick.match(/\$\.leaders\.showStroke\((\d+),\s*(\d+)\)/);
-                        var id = onclick_match ? onclick_match[1] : null;
-
-                        if (id != null) {
-                            swimmer_ids.push(id);
-                        }
-                    })
-
-                    var swimmer_ids = [...swimmer_ids];
-                    id_loop: for (let id of swimmer_ids) {
-                        for (let i = 1; i <= 4; i++) {
-                            var nvsl_url = `https://www.mynvsl.com/leaders?post=2&fname=blank&lname=blank&sid=${id}&stid=${i}`;
-                            console.log(nvsl_url);
-                            var doc = await get_url(nvsl_url, false);
-
-                            if (doc != null) {
-                                try {
-                                    var team = String(doc.querySelector("tr[class]").querySelectorAll("td")[3].innerText);
-                                } catch {
-                                    var team = "";
-                                }
-
-                                if (team.trim() == your_team["abr"]) {
-                                    swimmer_id = id;
-                                    break id_loop;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (swimmer_id == null) {
-                    console.error("Cannot associate swimmer with id");
-                    document.querySelector("#person-details").setAttribute("active", "false");
-                    button.parentElement.removeAttribute("locked");
-                    button.parentElement.offsetWidth;
-                    button.parentElement.setAttribute("locked", "");
-                    return;
-                } else {
-                    var name_id = name.toLowerCase().replace(/\s/g, "");
-                    document.querySelectorAll(`tr[person="${name_id}"]`).forEach(row => {
-                        var row_button = row.querySelectorAll("td")[row.querySelectorAll("td").length - 1];
-                        row_button.setAttribute("onclick", `person_details("${name}", "${swimmer_id}", "${gender}", this)`);
-                        row_button.innerHTML = `
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 7H4.6C4.03995 7 3.75992 7 3.54601 7.10899C3.35785 7.20487 3.20487 7.35785 3.10899 7.54601C3 7.75992 3 8.03995 3 8.6V19.4C3 19.9601 3 20.2401 3.10899 20.454C3.20487 20.6422 3.35785 20.7951 3.54601 20.891C3.75992 21 4.03995 21 4.6 21H9M9 21H15M9 21L9 4.6C9 4.03995 9 3.75992 9.10899 3.54601C9.20487 3.35785 9.35785 3.20487 9.54601 3.10899C9.75992 3 10.0399 3 10.6 3L13.4 3C13.9601 3 14.2401 3 14.454 3.10899C14.6422 3.20487 14.7951 3.35785 14.891 3.54601C15 3.75992 15 4.03995 15 4.6V21M15 11H19.4C19.9601 11 20.2401 11 20.454 11.109C20.6422 11.2049 20.7951 11.3578 20.891 11.546C21 11.7599 21 12.0399 21 12.6V19.4C21 19.9601 21 20.2401 20.891 20.454C20.7951 20.6422 20.6422 20.7951 20.454 20.891C20.2401 21 19.9601 21 19.4 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        `;
-                    })
-                }
-            }
 
             const strokes = {
                 "Freestyle": 1,
@@ -3774,7 +4254,8 @@
                 }
             }
 
-            const table = document.querySelector("#details-table");
+            document.querySelector("#relay-details-table").innerHTML = "";
+            const table = document.querySelector("#individual-details-table");
             table.innerHTML = "";
 
             const furthest_year = Number(Object.keys(person_data).sort((a, b) => Number(a) - Number(b))[0]);
@@ -3787,8 +4268,6 @@
                 if (!person_data[year]) {
                     person_data[year] = {};
                 }
-                const row = document.createElement("DIV");
-                row.setAttribute("class", "row");
 
                 let column = document.createElement("TABLE");
                 column.setAttribute("class", "column");
@@ -3798,14 +4277,14 @@
                     <tr key><td>Date</td></tr>
                 `;
 
-                if (window.schedule && schedule[year]) {
+                if (schedule[year]) {
                     for (let date_string of schedule[year]) {
                         column_contents.innerHTML += `<tr><td>${format_date(date_string)}</td></tr>`;
                     }
                 }
 
                 column.append(column_contents);
-                row.append(wrap_table(column));
+                table.append(wrap_table(column));
 
                 for (let stroke of Object.keys(strokes)) {
                     if (!person_data[year][stroke]) {
@@ -3832,12 +4311,9 @@
                         }
                     }
                     column.append(column_contents);
-                    row.append(wrap_table(column));
+                    table.append(wrap_table(column));
                 }
-                table.append(row);
             }
-
-            // --- CHARTING SECTION ---
 
             // Reset the chart legend to be visible and have the correct labels for the 4 strokes
             const chart_legend = document.querySelector(".chart-lengend");
@@ -4125,33 +4601,32 @@
         function hover_styles(elements) {
             var first_element = elements[0];
             var last_element = elements[elements.length - 1];
-            var wrapper = first_element.parentElement.parentElement.parentElement.parentElement;
+            var row_wrapper = first_element.closest(".row");
 
             var top = first_element.getBoundingClientRect().top;
             var left = first_element.getBoundingClientRect().left;
             var width = first_element.getBoundingClientRect().width;
             var height = last_element.getBoundingClientRect().bottom - top;
 
-            var scroll_top = wrapper.scrollTop - wrapper.getBoundingClientRect().top;
-            var scroll_left = wrapper.scrollLeft - wrapper.getBoundingClientRect().left;
+            var scroll_top = row_wrapper.scrollTop - row_wrapper.getBoundingClientRect().top;
+            var scroll_left = row_wrapper.scrollLeft - row_wrapper.getBoundingClientRect().left;
 
-            var hover_element = document.createElement("DIV");
-            hover_element.setAttribute("class", "tr-hover");
+            var hover_element = row_wrapper.querySelector(".tr-hover[inuse='false']");
             hover_element.setAttribute("style", `top: ${top + scroll_top}px; left: ${left + scroll_left}px; width: ${width}px; height: ${height}px;`);
             var parent_last = first_element.parentElement.querySelector("tr:last-child");
             if (parent_last == last_element) {
                 hover_element.style.borderBottomLeftRadius = "5px";
                 hover_element.style.borderBottomRightRadius = "5px";
             }
-            wrapper.append(hover_element);
+            hover_element.setAttribute("inuse", "true");
 
             elements.forEach(element => {
                 element.setAttribute("hover", "");
             })
         }
         function clear_hover_styles() {
-            document.querySelectorAll(".tr-hover").forEach(element => {
-                element.remove();
+            document.querySelectorAll(".tr-hover[inuse='true']").forEach(element => {
+                element.setAttribute("inuse", "false");
             });
             document.querySelectorAll("tr[hover]").forEach(row => {
                 row.removeAttribute("hover");
@@ -4274,6 +4749,251 @@
 
             document.querySelector(".data-nav").querySelector("#your-score").innerText = overall[your_team["abr"]];
             document.querySelector(".data-nav").querySelector("#other-score").innerText = overall["other"];
+        }
+        function report_escape(value) {
+            return String(value ?? "").replace(/[&<>"']/g, char => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                "\"": "&quot;",
+                "'": "&#39;"
+            }[char]));
+        }
+        function report_points(row) {
+            return Number(row?.querySelector("#points")?.innerText.trim() || 0);
+        }
+        function report_cell_text(row, index) {
+            return row?.querySelectorAll("td")[index]?.innerText.trim() || "";
+        }
+        function report_table_title(table) {
+            return table.querySelector("tr[title] td")?.childNodes[0]?.textContent.trim() || "";
+        }
+        function recalc_report_scores() {
+            document.querySelectorAll("#table-1 .row, #table-2 .row").forEach(row => {
+                if (row.querySelector("table[relay]")) {
+                    calc_score(row);
+                }
+            });
+        }
+        function collect_individual_report_event(table, lane_map) {
+            var entries = [...table.querySelectorAll(`tr[selected='true'][team='${your_team["abr"].toLowerCase()}']`)]
+                .sort((a, b) => parse_time(report_cell_text(a, 0)) - parse_time(report_cell_text(b, 0)));
+            var selected = [...table.querySelectorAll("tr[selected='true']")];
+            var event_score = {
+                ours: selected
+                    .filter(row => row.getAttribute("team").toUpperCase() == your_team["abr"])
+                    .reduce((total, row) => total + report_points(row), 0),
+                theirs: selected
+                    .filter(row => row.getAttribute("team").toUpperCase() == abbreviation)
+                    .reduce((total, row) => total + report_points(row), 0)
+            };
+
+            return {
+                title: report_table_title(table),
+                type: "individual",
+                score: event_score,
+                entries: entries.map((row, index) => ({
+                    lane: lane_map[index] || "",
+                    time: report_cell_text(row, 0),
+                    points: report_points(row),
+                    age: report_cell_text(row, 7),
+                    name: row.querySelectorAll("td")[8]?.innerText.trim() || report_cell_text(row, 8),
+                    swimUp: row.getAttribute("swimup") == "true"
+                }))
+            };
+        }
+        function collect_relay_report_event(table, lane_map) {
+            var our_rows = [...table.querySelectorAll(`tr[team='${your_team["abr"].toLowerCase()}'][selected='true']`)];
+            var selected = [...table.querySelectorAll("tr[onclick][selected='true']")];
+            var event_score = {
+                ours: selected
+                    .filter(row => row.getAttribute("team").toUpperCase() == your_team["abr"])
+                    .reduce((total, row) => total + report_points(row), 0),
+                theirs: selected
+                    .filter(row => row.getAttribute("team").toUpperCase() == abbreviation)
+                    .reduce((total, row) => total + report_points(row), 0)
+            };
+            var relay_time = our_rows[0] ? report_cell_text(our_rows[0], 0) : "";
+            var relay_points = our_rows[0] ? report_points(our_rows[0]) : 0;
+
+            return {
+                title: report_table_title(table),
+                type: "relay",
+                score: event_score,
+                entries: our_rows.map((row, index) => {
+                    var cells = row.querySelectorAll("td");
+                    if (index == 0) {
+                        return {
+                            lane: lane_map[0],
+                            stroke: cells[3]?.innerText.trim() || "",
+                            time: cells[4]?.innerText.trim() || "",
+                            name: cells[5]?.innerText.trim() || "",
+                            relayTime: relay_time,
+                            points: relay_points
+                        };
+                    }
+                    return {
+                        lane: lane_map[0],
+                        stroke: cells[0]?.innerText.trim() || "",
+                        time: cells[1]?.innerText.trim() || "",
+                        name: cells[2]?.innerText.trim() || "",
+                        relayTime: relay_time,
+                        points: relay_points
+                    };
+                })
+            };
+        }
+        function collect_report_data(location_type) {
+            recalc_report_scores();
+
+            var lane_map = location_type == "away" ? [4, 2, 6] : [3, 5, 1];
+            var report = {
+                location: location_type,
+                team: your_team["name"],
+                teamAbr: your_team["abr"],
+                opponent: selected_data["name"],
+                opponentAbr: abbreviation,
+                generated: new Date().toLocaleString(),
+                genders: []
+            };
+
+            [["Boys", "#table-1"], ["Girls", "#table-2"]].forEach(([gender, selector]) => {
+                var gender_data = {
+                    gender,
+                    total: { ours: 0, theirs: 0 },
+                    groups: []
+                };
+
+                document.querySelectorAll(`${selector} .row`).forEach(row => {
+                    var title = row.querySelector(".title-column .txt")?.innerText.split(/\n/)[0].trim() || "";
+                    var group_data = {
+                        title,
+                        score: {
+                            ours: Number(row.querySelector("#your-score")?.innerText.trim() || 0),
+                            theirs: Number(row.querySelector("#other-score")?.innerText.trim() || 0)
+                        },
+                        events: []
+                    };
+
+                    row.querySelectorAll("table.column").forEach(table => {
+                        var event_data = table.hasAttribute("relay")
+                            ? collect_relay_report_event(table, lane_map)
+                            : collect_individual_report_event(table, lane_map);
+
+                        if (event_data.entries.length > 0 || event_data.score.ours > 0 || event_data.score.theirs > 0) {
+                            group_data.events.push(event_data);
+                        }
+                    });
+
+                    gender_data.total.ours += group_data.score.ours;
+                    gender_data.total.theirs += group_data.score.theirs;
+                    gender_data.groups.push(group_data);
+                });
+
+                report.genders.push(gender_data);
+            });
+
+            return report;
+        }
+        async function download_report_pdf(report) {
+            var report_summary = report.genders.reduce((summary, gender) => {
+                summary.groups += gender.groups.length;
+                gender.groups.forEach(group => {
+                    summary.events += group.events.length;
+                    group.events.forEach(event => {
+                        summary.entries += event.entries.length;
+                    });
+                });
+                return summary;
+            }, {groups: 0, events: 0, entries: 0});
+            console.log("[Seeding Report] Sending report data", {
+                team: report.teamAbr,
+                opponent: report.opponentAbr,
+                location: report.location,
+                ...report_summary
+            });
+
+            var response = await fetch("/api/seeding-report-pdf", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({report})
+            });
+            var request_id = response.headers.get("X-Seeding-Report-Request-Id");
+            console.log("[Seeding Report] Response", {
+                ok: response.ok,
+                status: response.status,
+                contentType: response.headers.get("Content-Type"),
+                requestId: request_id
+            });
+
+            if (!response.ok) {
+                var error_message = "The server could not render the report PDF.";
+                try {
+                    var error_text = await response.text();
+                    if (error_text) {
+                        try {
+                            var error_data = JSON.parse(error_text);
+                            error_message = error_data.detail || error_data.error || error_text;
+                        } catch (parse_error) {
+                            error_message = error_text;
+                        }
+                    }
+                } catch (error) {
+                    error_message = error.message || error_message;
+                }
+                console.error("[Seeding Report] Failed", {
+                    status: response.status,
+                    requestId: request_id,
+                    message: error_message
+                });
+                throw new Error(error_message);
+            }
+
+            var blob = await response.blob();
+            console.log("[Seeding Report] Downloading PDF", {
+                bytes: blob.size,
+                requestId: request_id
+            });
+            var url = URL.createObjectURL(blob);
+            var filename = `${your_team["abr"]}-${abbreviation}-seeding-report.pdf`.toLowerCase().replace(/[^a-z0-9.-]+/g, "-");
+            var link = document.createElement("a");
+            link.href = url;
+            link.download = filename;
+            document.body.append(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        }
+        async function build_seeding_report(location_answer) {
+            if (!your_ladder) {
+                alert("Load your team ladder before building a seeding report.");
+                return;
+            }
+
+            location_answer = String(location_answer || "").trim().toLowerCase();
+            if (!["home", "away"].includes(location_answer)) {
+                alert("Choose Home Meet or Away Meet from the report menu.");
+                return;
+            }
+
+            try {
+                var report = collect_report_data(location_answer);
+                var has_entries = report.genders.some(gender =>
+                    gender.groups.some(group =>
+                        group.events.some(event => event.entries.length > 0)
+                    )
+                );
+
+                if (!has_entries) {
+                    alert("Select or seed swimmers before building the report.");
+                    return;
+                }
+
+                await download_report_pdf(report);
+            } catch (error) {
+                console.error(error);
+                alert(error.message || "Unable to build the seeding report.");
+            }
         }
         function css_var(name) {
             var root = document.documentElement;

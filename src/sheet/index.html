@@ -903,7 +903,7 @@
             var teams_title = title_chunks[at_index - 1] + title_chunks[at_index] + title_chunks[at_index + 1];
             var download_title = teams_title + " Scored Meet Program";
 
-            const response = await fetch("http://localhost:3000/render-pdf", {
+            const response = await fetch("/api/render-pdf", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ html: document.documentElement.outerHTML }),

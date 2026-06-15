@@ -5,7 +5,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
         <title>SeedMaster</title>
 
-        <script src="ENV.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
@@ -157,11 +156,12 @@
 
     <script>
         async function get_url(url, check_year = true) {
-            var response = await fetch(`http://localhost:3000/fetch-html?url=${encodeURIComponent(url)}`);
+            var response = await fetch(`/api/fetch-html?url=${encodeURIComponent(url)}`);
             var html = await response.text();
             var parser = new DOMParser();
             var doc = parser.parseFromString(html, "text/html");
-            if (check_year == true && doc.querySelector("select[name='year']").value.trim() == "") {
+            var has_year_in_url = new URL(url).searchParams.has("year");
+            if (check_year && !has_year_in_url && doc.querySelector("select[name='year']").value.trim() == "") {
                 return null
             } else {
                 return doc;
@@ -315,7 +315,7 @@
         }
         async function save_file(jsonObject, filename) {
             try {
-                const response = await fetch('save-json.php', {
+                const response = await fetch('/api/save-json', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

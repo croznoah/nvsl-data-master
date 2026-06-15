@@ -213,7 +213,6 @@
         </button>
     </div>
 
-    <script src="/ENV.js"></script>
     <script>
         var selected_data = {};
 
@@ -299,7 +298,7 @@
             results_display.innerHTML = '<div class="spinner"></div>';
 
             try {
-                var response = await fetch(`${ENV["server_base_url"]}/predict`, {
+                var response = await fetch(`/api/predict`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
