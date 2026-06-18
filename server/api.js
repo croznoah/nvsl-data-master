@@ -9,11 +9,83 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
 const FILES_DIR = path.join(ROOT, "public", "files");
 const MODELS_DIR = path.join(ROOT, "prediction", "models");
+const MODEL_CONFIG_PATH = path.join(ROOT, "prediction", "model-config.json");
+
+const STROKES = ["free", "back", "breast", "fly"];
+
+function loadModelManifest() {
+    try {
+        return JSON.parse(fs.readFileSync(MODEL_CONFIG_PATH, "utf8"));
+    } catch (error) {
+        console.warn(`[Model Loader] Could not load model config: ${error.message}`);
+        return {
+            feature_columns: STROKES.map((stroke) => `${stroke}_25m_best`),
+            target_type: "ratio",
+            ratio_bounds: [1.78, 2.4],
+        };
+    }
+}
+
+const modelManifest = loadModelManifest();
+const FEATURE_COLUMNS = modelManifest.feature_columns;
+const TARGET_TYPE = modelManifest.target_type;
+const RATIO_BOUNDS = modelManifest.ratio_bounds;
 
 const predictionSessions = {};
+const predictionMedians = {};
+
+function finiteNumber(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+}
+
+function loadPredictionMedians() {
+    for (const gender of ["boys", "girls"]) {
+        const mediansPath = path.join(MODELS_DIR, `${gender}-medians.json`);
+        try {
+            predictionMedians[gender] = JSON.parse(fs.readFileSync(mediansPath, "utf8"));
+            console.log(`[Model Loader] Loaded medians: ${gender}`);
+        } catch (error) {
+            predictionMedians[gender] = {};
+            console.warn(`[Model Loader] Could not load medians for ${gender}: ${error.message}`);
+        }
+    }
+}
+
+function normalizePredictionProfile(rawProfile, gender) {
+    const profile = rawProfile && typeof rawProfile === "object" ? rawProfile : {};
+    const medians = predictionMedians[gender] || {};
+    const normalized = {};
+
+    for (const featureName of FEATURE_COLUMNS) {
+        const value = finiteNumber(profile[featureName]);
+        normalized[featureName] = value !== null && value > 0
+            ? value
+            : (medians[featureName] ?? 0);
+    }
+
+    return normalized;
+}
+
+function convertModelOutput(strokeToPredict, normalizedProfile, modelOutput) {
+    if (TARGET_TYPE !== "ratio") {
+        return modelOutput;
+    }
+
+    const sourceFeature = `${strokeToPredict}_25m_best`;
+    const sourceTime = normalizedProfile[sourceFeature];
+    if (!Number.isFinite(sourceTime) || sourceTime <= 0) {
+        return modelOutput;
+    }
+
+    const [lowRatio, highRatio] = RATIO_BOUNDS;
+    const predictedRatio = Math.min(Math.max(modelOutput, lowRatio), highRatio);
+    return predictedRatio * sourceTime;
+}
 
 export async function loadPredictionModels() {
     console.log(`[Server] Searching for models in: ${MODELS_DIR}`);
+    loadPredictionMedians();
 
     try {
         const model_files = fs.readdirSync(MODELS_DIR).filter((file) => file.endsWith(".onnx"));
@@ -332,6 +404,9 @@ export function registerApiRoutes(app) {
                     error: "Request body must include 'stroke_to_predict', 'gender', and an array of 'profiles'.",
                 });
             }
+            if (!STROKES.includes(stroke_to_predict) || !["boys", "girls"].includes(gender)) {
+                return res.status(400).json({ error: "Invalid stroke_to_predict or gender." });
+            }
             if (profiles.length === 0) return res.json({ predictions: [] });
 
             const model_key = `${stroke_to_predict}-${gender}`;
@@ -341,28 +416,26 @@ export function registerApiRoutes(app) {
                 return res.status(404).json({ error: `Model not found for criteria: '${model_key}'.` });
             }
 
-            const feature_columns = [
-                "free_25m_best", "free_25m_avg", "free_25m_std", "free_25m_count",
-                "back_25m_best", "back_25m_avg", "back_25m_std", "back_25m_count",
-                "breast_25m_best", "breast_25m_avg", "breast_25m_std", "breast_25m_count",
-                "fly_25m_best", "fly_25m_avg", "fly_25m_std", "fly_25m_count",
-            ];
-
             const batch_size = profiles.length;
             const feature_data = [];
+            const normalizedProfiles = [];
 
             for (const profile of profiles) {
-                const profile_features = feature_columns.map((feature_name) =>
-                    profile[feature_name] !== undefined ? profile[feature_name] : -1
+                const normalizedProfile = normalizePredictionProfile(profile, gender);
+                normalizedProfiles.push(normalizedProfile);
+                feature_data.push(
+                    ...FEATURE_COLUMNS.map((feature_name) => normalizedProfile[feature_name])
                 );
-                feature_data.push(...profile_features);
             }
 
             const input_data = Float32Array.from(feature_data);
-            const input_tensor = new ort.Tensor("float32", input_data, [batch_size, 16]);
+            const input_tensor = new ort.Tensor("float32", input_data, [batch_size, FEATURE_COLUMNS.length]);
 
             const results = await session.run({ float_input: input_tensor });
-            const predictions = Array.from(results.variable.data);
+            const rawPredictions = Array.from(results.variable.data);
+            const predictions = rawPredictions.map((value, index) =>
+                convertModelOutput(stroke_to_predict, normalizedProfiles[index], value)
+            );
 
             return res.json({ predictions });
         } catch (error) {

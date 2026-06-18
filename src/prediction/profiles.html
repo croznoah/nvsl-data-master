@@ -361,8 +361,18 @@
                             empty_count++;
                         } else {
                             var ratio = final_profile[`${stroke}_50m_best`] / final_profile[`${stroke}_25m_best`];
-                            if (ratio <= 1.6) {
-                                console.log(`${swimmer_id} - 25M ${stroke} time is ${ratio}x 50M ${stroke} time`, fetched_urls[stroke]);
+                            if (ratio < 1.78 || ratio > 2.4) {
+                                console.log(
+                                    `${swimmer_id} - rejected ${stroke} age-up pair (ratio ${ratio.toFixed(3)})`,
+                                    fetched_urls[stroke]
+                                );
+                                for (let distance of Object.keys(profile[stroke])) {
+                                    final_profile[`${stroke}_${distance}_best`] = -1;
+                                    final_profile[`${stroke}_${distance}_avg`] = -1;
+                                    final_profile[`${stroke}_${distance}_std`] = -1;
+                                    final_profile[`${stroke}_${distance}_count`] = 0;
+                                }
+                                empty_count++;
                             }
                         }
                     }

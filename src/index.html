@@ -952,6 +952,36 @@
         .unavailable-label > div:hover {
             background-color: var(--str1);
         }
+        .availability-count-value {
+            cursor: default !important;
+            color: var(--txt2);
+            font-weight: 650;
+            white-space: nowrap;
+        }
+        .availability-count-value:hover {
+            background-color: transparent !important;
+        }
+        #availability-modal .availability-title {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            row-gap: 4px;
+            min-width: 260px;
+        }
+        #availability-modal .availability-title h1 {
+            margin: 0px;
+            line-height: 1.2;
+        }
+        #availability-modal #availability-total-count {
+            display: block;
+            color: var(--txt1);
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.2px;
+            text-align: center;
+        }
         #person-details {
             z-index: 999999;
         }
@@ -1270,7 +1300,10 @@
                         <div>Back</div>
                     </button>
                 </div>
-                <h1>Change Availability</h1>
+                <div class="availability-title">
+                    <h1>Change Availability</h1>
+                    <div id="availability-total-count">0 Swimmers from ladder</div>
+                </div>
                 <div></div>
             </div>
         </div>
@@ -1334,6 +1367,14 @@
                                         <div class="upload-details">
                                             <span class="details-title">Upload Date</span>
                                             <span class="details-info" id="ladder-date">N/A</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="upload-details">
+                                            <span class="details-title">Swimmers</span>
+                                            <span class="details-info" id="ladder-swimmer-count">N/A</span>
                                         </div>
                                     </td>
                                 </tr>
@@ -1624,6 +1665,49 @@
         init_theme();
         var all_swimmers_sorted = [];
 
+        function get_ladder_swimmers() {
+            var all_swimmers = new Set();
+            if (!your_ladder) {
+                return [];
+            }
+
+            for (let gender of Object.keys(your_ladder)) {
+                for (let age of Object.keys(your_ladder[gender])) {
+                    for (let stroke of Object.keys(your_ladder[gender][age])) {
+                        for (let distance of Object.keys(your_ladder[gender][age][stroke])) {
+                            for (let item of your_ladder[gender][age][stroke][distance]) {
+                                all_swimmers.add(item[1]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return [...all_swimmers].sort();
+        }
+
+        function swimmer_count_text(count) {
+            var plural = count == 1 ? "" : "s";
+            return `${count} Swimmer${plural} from ladder`;
+        }
+
+        function update_ladder_swimmer_count() {
+            var count_text = your_ladder ? swimmer_count_text(get_ladder_swimmers().length) : "N/A";
+            var ladder_count = document.querySelector("#ladder-swimmer-count");
+            var availability_count = document.querySelector("#availability-total-count");
+            var availability_list_count = document.querySelector("#availability-list-total-count");
+
+            if (ladder_count) {
+                ladder_count.innerText = count_text;
+            }
+            if (availability_count && your_ladder) {
+                availability_count.innerText = count_text;
+            }
+            if (availability_list_count && your_ladder) {
+                availability_list_count.innerText = count_text;
+            }
+        }
+
         function availability_menu(action) {
             var menu = document.querySelector("#availability-modal");
             if (action == "open") {
@@ -1632,21 +1716,9 @@
                 var table_container = document.querySelector("#availability-table");
                 table_container.innerHTML = "";
 
-                if (all_swimmers_sorted.length == 0) {
-                    var all_swimmers = new Set();
-                    for (let gender of Object.keys(your_ladder)) {
-                        for (let age of Object.keys(your_ladder[gender])) {
-                            for (let stroke of Object.keys(your_ladder[gender][age])) {
-                                for (let distance of Object.keys(your_ladder[gender][age][stroke])) {
-                                    for (let item of your_ladder[gender][age][stroke][distance]) {
-                                        all_swimmers.add(item[1]);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    all_swimmers_sorted = [...all_swimmers].sort();
-                }
+                all_swimmers_sorted = get_ladder_swimmers();
+                document.querySelector("#availability-total-count").innerText = swimmer_count_text(all_swimmers_sorted.length);
+                update_ladder_swimmer_count();
 
                 var available_wrapper = document.createElement("div");
                 available_wrapper.setAttribute("class", "column-wrapper");
@@ -1725,6 +1797,14 @@
             unavailable_list.append(unavailable_tbody);
 
             main_tbody.innerHTML = `
+                <tr>
+                    <td colspan="100" style="padding-right: 0px;">
+                        <div class="unavailable-label">
+                            <span>Ladder Swimmers</span>
+                            <div class="availability-count-value" id="availability-list-total-count">${swimmer_count_text(all_swimmers_sorted.length)}</div>
+                        </div>
+                    </td>
+                </tr>
                 <tr>
                     <td class="search-wrapper">
                         <input onkeyup="search_ava(this.value)" class="search" placeholder="Search Swimmers">
@@ -2008,9 +2088,11 @@
             ladder["Date"] = formated_data;
             your_ladder = {...ladder};
             delete your_ladder["Date"];
+            all_swimmers_sorted = [];
             document.querySelector(".avalibilty-btn").style.display = "";
             document.querySelector(".delete-btn").style.display = "";
             document.querySelector("#ladder-date").innerText = ladder["Date"];
+            update_ladder_swimmer_count();
 
             // import_supa();
 
@@ -2202,8 +2284,10 @@
                 document.querySelector(".delete-btn").style.display = "";
                 document.querySelector("#ladder-date").innerText = your_ladder["Date"];
                 delete your_ladder["Date"];
+                update_ladder_swimmer_count();
             } else {
                 your_ladder = null;
+                update_ladder_swimmer_count();
             }
             update_upload_ladder_button();
         }
@@ -2213,11 +2297,15 @@
                 document.querySelector(".avalibilty-btn").style.display = "none";
                 document.querySelector(".ava-warning").style.display = "none";
                 your_ladder = null;
+                all_swimmers_sorted = [];
+                update_ladder_swimmer_count();
             } else {
                 var ladder_string = localStorage.getItem("yourladder-" + your_team_id);
                 if (ladder_string) {
                     your_ladder = JSON.parse(ladder_string);
                     delete your_ladder["Date"];
+                    all_swimmers_sorted = [];
+                    update_ladder_swimmer_count();
 
                     button.setAttribute("checked", "true");
                     document.querySelector(".avalibilty-btn").style.display = "";
@@ -3671,19 +3759,24 @@
                     for (raw_group of Object.keys(finalAssignments)) {
                         var group_id = raw_group.toLowerCase().replace(/\s/g, "");
                         var gender_id = gender.toLowerCase();
+                        var home_team_id = your_team["abr"].toLowerCase();
                         var row = document.querySelector(`.row[group-id="${group_id}"][gender-id="${gender_id}"]`);
                         var column_contents = row.querySelector(".column[relay]").querySelector("TBODY");
+                        if (column_contents.querySelector(`tr[yourteam][team="${home_team_id}"]`)) {
+                            continue;
+                        }
+
                         var relay_members = finalAssignments[raw_group];
                         var total_time = relay_members.reduce((total, subarray) => total + parse_time(subarray[0]), 0);
 
-                        column_contents.querySelectorAll(`tr[team='${your_team["abr"]}']`).forEach(row => { row.remove() });
+                        column_contents.querySelectorAll(`tr[team='${home_team_id}']`).forEach(row => { row.remove() });
                         column_contents.querySelectorAll("tr[onclick]").forEach(row => { row.setAttribute("selected", "true"); });
                         column_contents.querySelectorAll("td[rowspan='4']").forEach(column => { column.style.borderBottom = ""; });
 
                         relay_members.forEach((item, i) => {
                             if (i == 0) {
                                 column_contents.innerHTML += `
-                                    <tr yourteam onmouseover="hover_relay(this, 'add')" onmouseout="hover_relay(this, 'remove')" team="${your_team["abr"].toLowerCase()}" selected="true" onclick="select_relay(this.parentElement, '${your_team["abr"].toLowerCase()}')">
+                                    <tr yourteam onmouseover="hover_relay(this, 'add')" onmouseout="hover_relay(this, 'remove')" team="${home_team_id}" selected="true" onclick="select_relay(this.parentElement, '${home_team_id}')">
                                         <td rowspan="4">${format_time(total_time)}</td>
                                         <td rowspan="4" id="points"></td>
                                         <td rowspan="4">${your_team["abr"]}</td>
@@ -3694,7 +3787,7 @@
                                 `;
                             } else {
                                 column_contents.innerHTML += `
-                                    <tr yourteam onmouseover="hover_relay(this, 'add')" onmouseout="hover_relay(this, 'remove')" team="${your_team["abr"].toLowerCase()}" selected="true" onclick="select_relay(this.parentElement, '${your_team["abr"].toLowerCase()}')">
+                                    <tr yourteam onmouseover="hover_relay(this, 'add')" onmouseout="hover_relay(this, 'remove')" team="${home_team_id}" selected="true" onclick="select_relay(this.parentElement, '${home_team_id}')">
                                         <td>${item[2]}</td>
                                         <td>${item[0]}</td>
                                         <td colspan="2">${item[1]}</td>

@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js" integrity="sha512-ml/QKfG3+Yes6TwOzQb7aCNtJF4PUyha6R3w8pSTo/VJSywl7ZreYvvtUso7fKevpsI+pYVVwnu82YO0q3V6eg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js" integrity="sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F" crossorigin="anonymous"></script>
 </head>
 <body>
     <style>
@@ -124,6 +125,46 @@
             letter-spacing: -0.3px;
             color: var(--txt2);
             line-height: 1.3;
+        }
+        .ocr-progress {
+            width: min(680px, calc(100vw - 48px));
+            margin: 40px auto 20px;
+            padding: 22px;
+            border-radius: 12px;
+            border: 1px solid var(--str1);
+            background-color: var(--bg2);
+            display: flex;
+            flex-direction: column;
+            row-gap: 14px;
+        }
+        .ocr-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
+            color: var(--txt1);
+            font-size: 16px;
+            font-weight: 650;
+            letter-spacing: -0.3px;
+        }
+        .ocr-progress-percent {
+            color: var(--txt2);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .ocr-progress-bar {
+            height: 12px;
+            overflow: hidden;
+            border-radius: 999px;
+            background-color: var(--str1);
+            border: 1px solid var(--str2);
+        }
+        .ocr-progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: inherit;
+            background-color: var(--accentbg);
+            transition: width 160ms ease;
         }
         #pdf-output {
             --bg1: #FFFFFF;
@@ -443,12 +484,13 @@
             "November",
             "December"
         ];
+        var ocr_team_context = new Set();
         function importpdf(input) {
             var file = input.files[0];
             var pdftitle = String(file.name).substring(0, String(file.name).toLocaleLowerCase().indexOf(".pdf"));
             if (file != undefined && file.type=="application/pdf") {
                 var pdfdreader = new FileReader();
-                pdfdreader.readAsDataURL(file);
+                pdfdreader.readAsArrayBuffer(file);
                 pdfdreader.onload = () => {
                     var pdffile = pdfdreader.result;
                     extracttext(pdffile);
@@ -457,7 +499,7 @@
         }
         async function extracttext(file) {
             extractedtxt = [];
-            var pdf = await pdfjsLib.getDocument(file).promise;
+            var pdf = await pdfjsLib.getDocument({data: new Uint8Array(file.slice(0))}).promise;
             var pages = pdf.numPages;
             final_line = [];
             for (i = 1; i <= pages; i++) {
@@ -490,7 +532,510 @@
                 });
             }
 
-            importsheet(extractedtxt);
+            if (has_text_layer_meet_data(extractedtxt)) {
+                importsheet(extractedtxt);
+            } else {
+                await extractocr(file);
+            }
+        }
+        function has_text_layer_meet_data(pdf_lines) {
+            return pdf_lines.some(line => line[0] && String(line[0]).includes("Event"));
+        }
+        function set_status(message) {
+            var subtitle = document.querySelector(".sheet-subtitle");
+            if (subtitle) {
+                subtitle.innerText = message;
+            }
+        }
+        function show_ocr_progress(message, percent) {
+            var progress = document.querySelector(".ocr-progress");
+            if (progress == null) {
+                var features = document.querySelector(".features-wrapper");
+                if (features) features.remove();
+
+                var upload_label = document.querySelector(`label[for="file-upload"]`);
+                if (upload_label) upload_label.remove();
+
+                progress = document.createElement("DIV");
+                progress.className = "ocr-progress";
+                progress.innerHTML = `
+                    <div class="ocr-progress-header">
+                        <div class="ocr-progress-message"></div>
+                        <div class="ocr-progress-percent"></div>
+                    </div>
+                    <div class="ocr-progress-bar">
+                        <div class="ocr-progress-fill"></div>
+                    </div>
+                `;
+
+                var subtitle = document.querySelector(".sheet-subtitle");
+                subtitle.after(progress);
+            }
+
+            var safe_percent = Math.max(0, Math.min(100, Math.round(percent)));
+            progress.querySelector(".ocr-progress-message").innerText = message;
+            progress.querySelector(".ocr-progress-percent").innerText = `${safe_percent}%`;
+            progress.querySelector(".ocr-progress-fill").style.width = `${safe_percent}%`;
+            set_status(message);
+        }
+        async function extractocr(file) {
+            if (!window.Tesseract) {
+                alert("OCR could not load. Please check your network connection and try again.");
+                return;
+            }
+
+            show_ocr_progress("No text layer found. Preparing OCR...", 2);
+            var pdf = await pdfjsLib.getDocument({data: new Uint8Array(file.slice(0))}).promise;
+            var metadata_title = await get_pdf_title(pdf);
+            var ocr_lines = [];
+            show_ocr_progress("Loading OCR engine...", 5);
+            var worker = await Tesseract.createWorker("eng");
+
+            try {
+                for (let page_number = 1; page_number <= pdf.numPages; page_number++) {
+                    var page_start = 8 + ((page_number - 1) / pdf.numPages) * 84;
+                    var page_done = 8 + (page_number / pdf.numPages) * 84;
+                    show_ocr_progress(`Rendering page ${page_number} of ${pdf.numPages}...`, page_start);
+                    var page = await pdf.getPage(page_number);
+                    var viewport = page.getViewport({scale: 6});
+                    var canvas = document.createElement("canvas");
+                    var context = canvas.getContext("2d");
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+
+                    await page.render({canvasContext: context, viewport: viewport}).promise;
+
+                    show_ocr_progress(`Preparing page ${page_number} of ${pdf.numPages} for OCR...`, page_start + ((page_done - page_start) * 0.25));
+                    var left_half = prepare_ocr_half(canvas, "left");
+                    var right_half = prepare_ocr_half(canvas, "right");
+
+                    show_ocr_progress(`OCR scanning page ${page_number} of ${pdf.numPages}...`, page_start + ((page_done - page_start) * 0.45));
+                    var left_result = await worker.recognize(left_half);
+                    var right_result = await worker.recognize(right_half);
+
+                    ocr_lines.push(...left_result.data.text.split("\n"));
+                    ocr_lines.push(...right_result.data.text.split("\n"));
+                    show_ocr_progress(`Finished page ${page_number} of ${pdf.numPages}.`, page_done);
+                }
+            } finally {
+                await worker.terminate();
+            }
+
+            show_ocr_progress("Parsing scored meet sheet...", 96);
+            var parsed = parse_meet_maestro_ocr_lines(ocr_lines);
+            if (parsed.length == 0) {
+                alert("OCR finished, but no scored heat-sheet events could be parsed.");
+                set_status("Upload an A-Meet Heat Sheet with seed times");
+                return;
+            }
+
+            show_ocr_progress("Rendering scored meet sheet...", 100);
+            sheet_title = metadata_title || guess_ocr_sheet_title(ocr_lines);
+            sheet_data = parsed;
+            team_data = new Set();
+            sheet_data.forEach(event => {
+                event["heats"].flat().forEach(entry => {
+                    if (entry["team"]) {
+                        team_data.add(entry["team"].toUpperCase());
+                    }
+                });
+            });
+            sheet_score = {};
+            [...team_data].filter(name => name != "").forEach(name => sheet_score[name] = 0);
+            render_sheet(sheet_data, ocr_lines.map(line => [line]));
+        }
+        function prepare_ocr_half(canvas, half) {
+            var width = canvas.width / 2;
+            var height = canvas.height;
+            var half_canvas = document.createElement("canvas");
+            var half_context = half_canvas.getContext("2d");
+            half_canvas.width = width;
+            half_canvas.height = height;
+
+            if (half == "left") {
+                half_context.drawImage(canvas, 0, 0, width, height, 0, 0, width, height);
+            } else {
+                half_context.drawImage(canvas, width, 0, width, height, 0, 0, width, height);
+            }
+
+            var image_data = half_context.getImageData(0, 0, half_canvas.width, half_canvas.height);
+            var data = image_data.data;
+            for (let i = 0; i < data.length; i += 4) {
+                var gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                var contrasted = Math.max(0, Math.min(255, (gray - 128) * 2 + 128));
+                data[i] = contrasted;
+                data[i + 1] = contrasted;
+                data[i + 2] = contrasted;
+            }
+            half_context.putImageData(image_data, 0, 0);
+
+            return half_canvas;
+        }
+        function parse_meet_maestro_ocr_lines(lines) {
+            var clean_lines = lines
+                .map(line => normalize_ocr_line(line))
+                .filter(line => line != "");
+            ocr_team_context = infer_ocr_team_context(clean_lines);
+            var events = [];
+            var event_data = null;
+            var current_heat = null;
+            var relay_mode = false;
+
+            for (let i = 0; i < clean_lines.length; i++) {
+                var line = clean_lines[i];
+                var event_header = parse_meet_maestro_event_header(line);
+
+                if (event_header != null) {
+                    if (event_data != null) {
+                        events.push(event_data);
+                    }
+
+                    event_data = {
+                        "number": event_header["number"],
+                        "label": event_header["label"],
+                        "heats": []
+                    };
+                    current_heat = null;
+                    relay_mode = event_header["label"].includes("Relay");
+                    continue;
+                }
+
+                if (event_data == null) {
+                    continue;
+                }
+
+                var heat_header = line.match(/^Heat\s+\d+\s+of\s+\d+/i);
+                if (heat_header != null) {
+                    current_heat = [];
+                    event_data["heats"].push(current_heat);
+                    continue;
+                }
+
+                if (current_heat == null) {
+                    continue;
+                }
+
+                if (relay_mode) {
+                    var relay_entry = parse_meet_maestro_relay_entry(line);
+                    if (relay_entry != null) {
+                        current_heat.push(relay_entry);
+                        var swimmer_line_1 = clean_lines[i + 1] || "";
+                        var swimmer_line_2 = clean_lines[i + 2] || "";
+                        relay_entry["swimmers"].push(...parse_relay_swimmers(swimmer_line_1));
+                        relay_entry["swimmers"].push(...parse_relay_swimmers(swimmer_line_2));
+                        if (parse_relay_swimmers(swimmer_line_1).length > 0) i++;
+                        if (parse_relay_swimmers(swimmer_line_2).length > 0) i++;
+                    }
+                } else {
+                    var individual_entry = parse_meet_maestro_individual_entry(line);
+                    if (individual_entry != null) {
+                        current_heat.push(individual_entry);
+                    }
+                }
+            }
+
+            if (event_data != null) {
+                events.push(event_data);
+            }
+
+            events.forEach(event => {
+                if (!event["label"].includes("Relay")) {
+                    event["heats"] = event["heats"].map(fill_missing_individual_lanes);
+                }
+            });
+
+            return events.filter(event => event["heats"].some(heat => heat.length > 0));
+        }
+        function fill_missing_individual_lanes(heat) {
+            var entries_by_lane = new Map();
+            heat.forEach(entry => {
+                entries_by_lane.set(Number(entry["lane"]), entry);
+            });
+
+            var filled_heat = [];
+            for (let lane = 1; lane <= 6; lane++) {
+                if (entries_by_lane.has(lane)) {
+                    filled_heat.push(entries_by_lane.get(lane));
+                } else {
+                    filled_heat.push({
+                        "team": "",
+                        "age": "",
+                        "name": "",
+                        "display-time": "",
+                        "time": 99999999,
+                        "lane": lane,
+                        "points": ""
+                    });
+                }
+            }
+
+            return filled_heat;
+        }
+        function normalize_ocr_line(line) {
+            return String(line || "")
+                .replace(/[|]/g, "I")
+                .replace(/[“”]/g, "\"")
+                .replace(/[‘’]/g, "'")
+                .replace(/\bP\s*L\b/gi, "PL")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+        function parse_meet_maestro_event_header(line) {
+            var match = line.match(/^#\s*(\d+)\s+(.+)$/);
+            if (match == null) {
+                return null;
+            }
+
+            var label = match[2]
+                .replace(/\b(\d+)m\b/gi, "$1M")
+                .replace(/\bFreestyle\b/gi, "Freestyle")
+                .replace(/\bBackstroke\b/gi, "Backstroke")
+                .replace(/\bBreaststroke\b/gi, "Breaststroke")
+                .replace(/\bButterfly\b/gi, "Butterfly")
+                .replace(/\s+/g, " ")
+                .trim();
+
+            return {"number": match[1], "label": label};
+        }
+        function parse_meet_maestro_individual_entry(line) {
+            var match = line.match(/^(\d+)\s+(.+?)\s+(\d{1,2})\s+(.+?)\s+([0-9OIlS:,\.\s]+|NT)$/i);
+            if (match == null) {
+                return null;
+            }
+
+            var name_parts = parse_ocr_name(match[2].trim());
+            if (name_parts == null) {
+                return null;
+            }
+
+            var team = normalize_ocr_team(match[4].trim());
+            var display_time = normalize_ocr_time(match[5]);
+            if (!is_valid_display_time(display_time)) {
+                return null;
+            }
+
+            return {
+                "team": team,
+                "age": match[3],
+                "name": `${name_parts["last"]}, ${name_parts["first"]}`,
+                "display-time": display_time,
+                "time": display_time == "NT" ? 99999999 : parse_time(display_time),
+                "lane": match[1],
+                "points": ""
+            };
+        }
+        function parse_meet_maestro_relay_entry(line) {
+            var match = line.match(/^(\d+)\s+(.+?)\s+([0-9OIlS:,\.\s]+|NT)$/i);
+            if (match == null) {
+                return null;
+            }
+
+            var lane = match[1];
+            var team_text = match[2].trim();
+            var display_time = normalize_ocr_time(match[3]);
+            if (!is_valid_display_time(display_time)) {
+                return null;
+            }
+
+            var team = normalize_ocr_team(team_text);
+
+            return {
+                "swimmers": [],
+                "points": "",
+                "time": display_time == "NT" ? 99999999 : parse_time(display_time),
+                "display-time": display_time,
+                "lane": parseInt(lane),
+                "team": team
+            };
+        }
+        function parse_ocr_name(name_text) {
+            if (name_text.includes(",")) {
+                var comma_index = name_text.indexOf(",");
+                var last = clean_ocr_name(name_text.substring(0, comma_index));
+                var first = clean_ocr_name(name_text.substring(comma_index + 1));
+                if (last != "" && first != "") {
+                    return {"first": first, "last": last};
+                }
+            }
+
+            var words = clean_ocr_name(name_text).split(/\s+/).filter(word => word != "");
+            if (words.length < 2) {
+                return null;
+            }
+
+            return {
+                "last": words[0],
+                "first": words.slice(1).join(" ")
+            };
+        }
+        function clean_ocr_name(name_text) {
+            return String(name_text || "")
+                .replace(/[^A-Za-z' -]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+        function normalize_ocr_time(time_text) {
+            var time = String(time_text || "")
+                .toUpperCase()
+                .replace(/O/g, "0")
+                .replace(/[IL]/g, "1")
+                .replace(/S/g, "5")
+                .replace(",", ".")
+                .replace(/\s+/g, "")
+                .trim();
+            if (time == "NT") {
+                return time;
+            }
+
+            var leading_colon = time.match(/^:(\d)(\d{2}\.\d+)$/);
+            if (leading_colon != null) {
+                return `${leading_colon[1]}:${leading_colon[2]}`;
+            }
+
+            if (/^\d{3,4}$/.test(time)) {
+                return `${time.substring(0, time.length - 2)}.${time.substring(time.length - 2)}`;
+            }
+
+            return time;
+        }
+        function is_valid_display_time(time) {
+            return time == "NT" || /^(?:\d+:)?\d+\.\d+$/.test(time);
+        }
+        function normalize_ocr_team(team_text) {
+            var exact_team = get_team(team_text, true);
+            if (exact_team != null && (ocr_team_context.size == 0 || ocr_team_context.has(exact_team))) {
+                return exact_team;
+            }
+
+            var fuzzy_team = get_team(team_text, false);
+            if (fuzzy_team != team_text && (ocr_team_context.size == 0 || ocr_team_context.has(fuzzy_team))) {
+                return fuzzy_team;
+            }
+
+            var tokens = team_text.split(/\s+/).filter(token => token != "");
+            for (let i = tokens.length - 1; i >= 0; i--) {
+                var token = tokens[i].replace(/[^A-Za-z]/g, "");
+                if (token == "") continue;
+
+                var direct = get_team(token, true);
+                if (direct != null && (ocr_team_context.size == 0 || ocr_team_context.has(direct))) {
+                    return direct;
+                }
+
+                if (/^[ABC][A-Z]{1,4}$/.test(token)) {
+                    var suffix = token.substring(1);
+                    var suffix_team = get_team(suffix, true);
+                    if (suffix_team != null && (ocr_team_context.size == 0 || ocr_team_context.has(suffix_team))) {
+                        return suffix_team;
+                    }
+                }
+            }
+
+            var known_abrs = [];
+            if (ocr_team_context.size > 0) {
+                known_abrs = [...ocr_team_context];
+            } else {
+                for (let division of Object.keys(teams)) {
+                    for (let full_name of Object.keys(teams[division])) {
+                        known_abrs.push(teams[division][full_name]["abr"]);
+                    }
+                }
+            }
+            known_abrs.sort((a, b) => b.length - a.length);
+
+            for (let token of tokens) {
+                var clean_token = token.replace(/[^A-Za-z]/g, "").toUpperCase();
+                if (clean_token.length < 2) continue;
+
+                for (let abr of known_abrs) {
+                    if (clean_token.startsWith(abr) && clean_token.length <= abr.length + 1) {
+                        return abr;
+                    }
+                    if (/^[ABC]/.test(clean_token)) {
+                        var suffix = clean_token.substring(1);
+                        if (suffix.startsWith(abr) && suffix.length <= abr.length + 1) {
+                            return abr;
+                        }
+                    }
+                }
+            }
+
+            return team_text;
+        }
+        function infer_ocr_team_context(lines) {
+            var context = new Set();
+            var searchable_text = lines.join(" ").toLowerCase();
+
+            for (let division of Object.keys(teams)) {
+                for (let full_name of Object.keys(teams[division])) {
+                    var team = teams[division][full_name];
+                    var name_words = full_name.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+                    var name_matches = name_words.length == 1
+                        ? name_words.some(word => new RegExp(`\\b${escape_regex(word)}\\b`, "i").test(searchable_text))
+                        : name_words.every(word => new RegExp(`\\b${escape_regex(word)}\\b`, "i").test(searchable_text));
+                    if (name_matches) {
+                        context.add(team["abr"]);
+                    }
+                }
+            }
+
+            return context;
+        }
+        function escape_regex(string) {
+            return String(string).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        }
+        function parse_relay_swimmers(line) {
+            var swimmers = [];
+            var regex = /\d\)\s*([A-Za-z][A-Za-z' -]+,\s*[A-Za-z][A-Za-z' -]+)\s*\((\d{1,2})\)/g;
+            var match;
+
+            while ((match = regex.exec(line)) != null) {
+                swimmers.push({
+                    "name": match[1].replace(/\s+/g, " ").trim(),
+                    "age": match[2]
+                });
+            }
+
+            return swimmers;
+        }
+        function guess_ocr_sheet_title(lines) {
+            for (let line of lines) {
+                var clean_line = normalize_ocr_line(line);
+                var title_match = clean_line.match(/A Meet .+? \d{1,2}\/\d{1,2}\/\d{4}/i);
+                if (title_match != null) {
+                    return title_match[0];
+                }
+            }
+
+            for (let line of lines) {
+                var clean_line = normalize_ocr_line(line);
+                if (/Heat Sheet/i.test(clean_line) && /Meet/i.test(clean_line)) {
+                    return clean_line.replace(/^Heat Sheet\s*/i, "").trim();
+                }
+            }
+
+            return "Scored Meet Program";
+        }
+        async function get_pdf_title(pdf) {
+            try {
+                var metadata = await pdf.getMetadata();
+                var title = metadata && metadata.info ? metadata.info.Title : "";
+                if (!title) {
+                    return "";
+                }
+
+                title = title
+                    .replace(/\s*_+\s*Meet Maestro.*$/i, "")
+                    .replace(/\s*\|\s*Meet Maestro.*$/i, "")
+                    .replace(/\b(\d{2})_(\d{2})_(\d{4})\b/g, "$1/$2/$3")
+                    .replace(/\s+/g, " ")
+                    .trim();
+
+                return title;
+            } catch (error) {
+                console.warn("Could not read PDF metadata title:", error);
+                return "";
+            }
         }
         function importsheet(pdf_lines) {
             sheet_title = pdf_lines[1].join(" ").replace(">", "");
@@ -753,23 +1298,20 @@
                     relay_mode = false;
                 }
 
-                var all_entries = event["heats"].flat().map(entry => entry["time"]);
-                var sorted_times = [...new Set(all_entries)].sort((a, b) => a - b);
+                if (sheet_title.includes("Todd Potts")) {
+                    var points = [32, 26, 24, 22, 20, 18, 14, 10, 8, 6, 4, 2];
+                } else if (relay_mode == false) {
+                    var points = [5, 3, 1];
+                } else {
+                    var points = [5];
+                }
+
+                score_event_entries(event["heats"].flat(), points);
 
                 for (let heat of event["heats"]) {
                     for (let entry of heat) {
-                        if (sheet_title.includes("Todd Potts")) {
-                            var points = [32, 26, 24, 22, 20, 18, 14, 10, 8, 6, 4, 2];
-                        } else if (relay_mode == false) {
-                            var points = [5, 3, 1];
-                        } else {
-                            var points = [5];
-                        }
-
-                        var time_index = sorted_times.indexOf(entry["time"]);
-                        if (time_index < points.length) {
-                            entry["points"] = points[time_index];
-                            sheet_score[entry["team"].toUpperCase()] += points[time_index];
+                        if (entry["team"] && entry["points"]) {
+                            sheet_score[entry["team"].toUpperCase()] += entry["points"];
                         }
                     }
 
@@ -823,15 +1365,16 @@
                             }
 
                             let swimmers_html = "";
-                            entry["swimmers"].forEach((swimmer, index) => {
+                            var relay_swimmers = entry["swimmers"].length > 0 ? entry["swimmers"] : [{"name": "", "age": ""}];
+                            relay_swimmers.forEach((swimmer, index) => {
                                 swimmers_html += `
                                     <tr team="${entry["team"].toLowerCase()}">
-                                        ${index === 0 ? `<td style="${style}" rowspan="${entry["swimmers"].length}">${entry["lane"]}</td>` : ""}
+                                        ${index === 0 ? `<td style="${style}" rowspan="${relay_swimmers.length}">${entry["lane"]}</td>` : ""}
                                         <td style="border-right: 1px solid var(--str2);">${format_name(swimmer["name"])}</td>
                                         <td style="border-radius: 0px; border-right: 1px solid var(--str2);">${swimmer["age"]}</td>
-                                        ${index === 0 ? `<td style="${style}" rowspan="${entry["swimmers"].length}">${entry["team"]}</td>` : ""}
-                                        ${index === 0 ? `<td style="${style}" rowspan="${entry["swimmers"].length}">${entry["display-time"]}</td>` : ""}
-                                        ${index === 0 ? `<td class="points" hidden style="${style}" rowspan="${entry["swimmers"].length}">${entry["points"]}</td>` : ""}
+                                        ${index === 0 ? `<td style="${style}" rowspan="${relay_swimmers.length}">${entry["team"]}</td>` : ""}
+                                        ${index === 0 ? `<td style="${style}" rowspan="${relay_swimmers.length}">${entry["display-time"]}</td>` : ""}
+                                        ${index === 0 ? `<td class="points" hidden style="${style}" rowspan="${relay_swimmers.length}">${entry["points"]}</td>` : ""}
                                     </tr>
                                 `;
                             });
@@ -845,6 +1388,45 @@
 
                 wrapper.append(container);
             });
+        }
+        function score_event_entries(entries, points) {
+            var scoring_entries = entries
+                .filter(entry => entry["team"] && entry["time"] != 99999999)
+                .sort((a, b) => a["time"] - b["time"]);
+
+            entries.forEach(entry => entry["points"] = "");
+
+            var place_index = 0;
+            var entry_index = 0;
+            while (entry_index < scoring_entries.length) {
+                var tied_entries = [scoring_entries[entry_index]];
+                var tied_time = scoring_entries[entry_index]["time"];
+                entry_index++;
+
+                while (entry_index < scoring_entries.length && scoring_entries[entry_index]["time"] == tied_time) {
+                    tied_entries.push(scoring_entries[entry_index]);
+                    entry_index++;
+                }
+
+                var tied_points_total = 0;
+                for (let offset = 0; offset < tied_entries.length; offset++) {
+                    tied_points_total += points[place_index + offset] || 0;
+                }
+
+                var tied_points = tied_points_total / tied_entries.length;
+                tied_entries.forEach(entry => {
+                    entry["points"] = tied_points > 0 ? format_points(tied_points) : "";
+                });
+
+                place_index += tied_entries.length;
+            }
+        }
+        function format_points(points) {
+            if (Number.isInteger(points)) {
+                return points;
+            }
+
+            return Number(points.toFixed(2));
         }
         function format_name(string) {
             return string.split(",").reverse().join(" ");
