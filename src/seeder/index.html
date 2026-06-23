@@ -702,15 +702,7 @@
         .column tr[predicted="true"] > td:first-child {
             color: grey;
             font-style: italic;
-        }
-        .dot {
-            position: relative;
-            right: -4px;
-            display: inline-block;
-            height: 10px;
-            width: 10px;
-            background-color: mediumorchid;
-            border-radius: 10px;
+            box-shadow: inset 10px 0 0 0 mediumorchid;
         }
         #predict-btn[disabled="true"] {
             color: rgba(127, 127, 127, 0.8);
@@ -970,6 +962,36 @@
         }
         #person-details {
             z-index: 999999;
+        }
+        #details-progress {
+            display: none;
+            width: 100%;
+            max-width: 380px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: auto;
+            text-align: center;
+            align-self: center;
+        }
+        #details-progress h1 {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--txt1);
+            margin: 0px 0px 6px;
+            letter-spacing: -1px;
+        }
+        #details-progress .loading-label {
+            font-size: 21px;
+            font-weight: 500;
+            color: var(--txt2);
+            letter-spacing: -0.4px;
+            margin: 0px 0px 24px;
+        }
+        #details-progress .outer {
+            width: 100%;
+            max-width: 300px;
         }
         .content {
             padding: 40px;
@@ -1698,8 +1720,11 @@
 
     <div class="modal content" id="person-details">
         <div id="details-progress">
-            <h1>Loading Data</h1>
-            <svg style="margin: 10px auto;" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><style>.spinner_6kVp{transform-origin:center;animation:spinner_irSm .75s infinite linear}@keyframes spinner_irSm{100%{transform:rotate(360deg)}}</style><path fill="var(--txt2)" d="M10.72,19.9a8,8,0,0,1-6.5-9.79A7.77,7.77,0,0,1,10.4,4.16a8,8,0,0,1,9.49,6.52A1.54,1.54,0,0,0,21.38,12h.13a1.37,1.37,0,0,0,1.38-1.54,11,11,0,1,0-12.7,12.39A1.54,1.54,0,0,0,12,21.34h0A1.47,1.47,0,0,0,10.72,19.9Z" class="spinner_6kVp"/></svg>
+            <h1>0%</h1>
+            <div class="loading-label">Loading Data</div>
+            <div class="outer">
+                <div class="inner" style="width: 0%;"></div>
+            </div>
         </div>
         <div class="details-top">
             <div class="details-header">
@@ -1833,6 +1858,18 @@
         }
         init_theme();
         var all_swimmers_sorted = [];
+
+        function update_details_progress(percentage, label = "Loading Data") {
+            var progress_el = document.querySelector("#details-progress");
+            if (progress_el) {
+                var title_el = progress_el.querySelector("h1");
+                var label_el = progress_el.querySelector(".loading-label");
+                var bar_el = progress_el.querySelector(".inner");
+                if (title_el) title_el.innerText = `${Math.round(percentage)}%`;
+                if (label_el) label_el.innerText = label;
+                if (bar_el) bar_el.style.width = `${percentage}%`;
+            }
+        }
 
         function get_ladder_swimmers() {
             var all_swimmers = new Set();
@@ -3057,9 +3094,6 @@
                 seed_all_option.innerHTML = `
                     <div class="nav-text">
                         <div>Seed All Age Groups</div>
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M4.5 22V17M4.5 7V2M2 4.5H7M2 19.5H7M13 3L11.2658 7.50886C10.9838 8.24209 10.8428 8.60871 10.6235 8.91709C10.4292 9.1904 10.1904 9.42919 9.91709 9.62353C9.60871 9.8428 9.24209 9.98381 8.50886 10.2658L4 12L8.50886 13.7342C9.24209 14.0162 9.60871 14.1572 9.91709 14.3765C10.1904 14.5708 10.4292 14.8096 10.6235 15.0829C10.8428 15.3913 10.9838 15.7579 11.2658 16.4911L13 21L14.7342 16.4911C15.0162 15.7579 15.1572 15.3913 15.3765 15.0829C15.5708 14.8096 15.8096 14.5708 16.0829 14.3765C16.3913 14.1572 16.7579 14.0162 17.4911 13.7342L22 12L17.4911 10.2658C16.7579 9.98381 16.3913 9.8428 16.0829 9.62353C15.8096 9.42919 15.5708 9.1904 15.3765 8.91709C15.1572 8.60871 15.0162 8.24209 14.7342 7.50886L13 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                        </svg>
                     </div>
                 `;
                 document.querySelector(".data-nav .nav-items").append(seed_all_option);
@@ -4129,8 +4163,9 @@
             return `hsl(${(hash % 360)}, ${100}%, ${85}%)`;
         }
         async function relay_details(gender, group, relay_type) {
-            document.querySelector("#details-progress").style.display = "grid";
+            document.querySelector("#details-progress").style.display = "flex";
             document.querySelectorAll("#person-details > *:not(#details-progress)").forEach(element => { element.style.display = "none"; });
+            update_details_progress(0, "Initiating relay data fetch...");
 
             let relay_group;
             if (group == "8 & Under") {
@@ -4168,10 +4203,23 @@
             var table = document.querySelector("#relay-details-table");
             table.innerHTML = "";
 
-            for (const team_name of Object.keys(selected_data["results"])) {
+            const teams = Object.keys(selected_data["results"]);
+            let total_urls = 0;
+            teams.forEach(team_name => {
+                total_urls += selected_data["results"][team_name].length;
+            });
+
+            let fetched_urls = 0;
+            update_details_progress(0, "Fetching relay history...");
+
+            for (const team_name of teams) {
                 relay_data_for_chart[team_name] = {};
                 var promises = selected_data["results"][team_name].map(nvsl_url => {
-                    return get_url(nvsl_url, false);
+                    return get_url(nvsl_url, false).then(doc => {
+                        fetched_urls++;
+                        update_details_progress(fetched_urls / total_urls * 100, `Fetching relay history (${fetched_urls}/${total_urls})...`);
+                        return doc;
+                    });
                 });
 
                 var results = await Promise.all(promises);
@@ -4472,7 +4520,6 @@
                 var predicted_time = predictions[i].toFixed(2);
                 new_tr.querySelector("td").innerHTML = `
                     ${format_time(predicted_time)}
-                    <span class="dot"></span>
                 `;
 
                 var last_element = null;
@@ -4670,8 +4717,9 @@
             }
         }
         async function person_details(name, swimmer_id, gender, button, team_abbr = "") {
-            document.querySelector("#details-progress").style.display = "grid";
+            document.querySelector("#details-progress").style.display = "flex";
             document.querySelectorAll("#person-details > *:not(#details-progress)").forEach(element => { element.style.display = "none"; });
+            update_details_progress(0, "Initiating swimmer details fetch...");
             document.querySelector("#person-name").innerText = name;
             document.querySelector(".person-bg").style.backgroundColor = string_bg(name);
             document.querySelector(".person-bg").innerText = name.match(/(\b\S)?/g).join("").match(/(^\S|\S$)?/g).join("").toUpperCase();
@@ -4693,7 +4741,31 @@
 
             try {
                 if (swimtopia_history) {
-                    var payload = await fetch_parklawn_person_history(swimmer_id);
+                    let progress = 0;
+                    update_details_progress(0, "Connecting to SwimTopia...");
+                    
+                    const progress_interval = setInterval(() => {
+                        if (progress < 90) {
+                            if (progress < 30) {
+                                progress += 10;
+                            } else if (progress < 75) {
+                                progress += 5;
+                            } else {
+                                progress += 1;
+                            }
+                            update_details_progress(progress, "Fetching history from SwimTopia...");
+                        }
+                    }, 150);
+
+                    var payload;
+                    try {
+                        payload = await fetch_parklawn_person_history(swimmer_id);
+                    } finally {
+                        clearInterval(progress_interval);
+                    }
+                    update_details_progress(100, "Normalizing SwimTopia history...");
+                    await new Promise(r => setTimeout(r, 150));
+
                     person_age = payload.swimmer?.age;
                     document.querySelector("#person-age").innerText = person_age ? person_age + " Years Old" : "";
                     document.querySelector("#person-gender").innerText = payload.swimmer?.gender || gender.replace(/s$/, "");
@@ -4702,9 +4774,15 @@
                         add_person_history_entry(person_data, row_data, entry);
                     }
                 } else {
+                    let completed = 0;
+                    update_details_progress(0, "Connecting to NVSL...");
                     const promises = stroke_names.map(stroke => {
                         const nvsl_url = `https://www.mynvsl.com/leaders?post=2&fname=blank&lname=blank&sid=${swimmer_id}&stid=${strokes[stroke]}`;
-                        return get_url(nvsl_url, false).then(doc => ({ "stroke": stroke, "doc": doc }));
+                        return get_url(nvsl_url, false).then(doc => {
+                            completed++;
+                            update_details_progress((completed / stroke_names.length) * 100, `Fetching ${stroke} times...`);
+                            return { "stroke": stroke, "doc": doc };
+                        });
                     });
 
                     const results = await Promise.all(promises);

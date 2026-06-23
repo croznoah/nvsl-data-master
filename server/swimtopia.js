@@ -286,16 +286,41 @@ async function mapLimit(items, limit, mapper) {
     return results;
 }
 
+// Simple in-memory cache for SwimTopia roster
+let cachedRoster = null;
+let cachedRosterTime = 0;
+const ROSTER_CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+
+// Simple in-memory cache for Swimmer Histories
+const swimmerHistoryCache = new Map();
+const HISTORY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+export function clearSwimtopiaCache() {
+    cachedRoster = null;
+    cachedRosterTime = 0;
+    swimmerHistoryCache.clear();
+}
+
 export async function getParklawnSwimtopiaLadder({
     token,
     today = new Date(),
     fetchImpl = fetch,
 } = {}) {
+    // Clear cache to ensure we get fresh data when manually importing/refreshing the ladder
+    if (fetchImpl === fetch) {
+        clearSwimtopiaCache();
+    }
+
     const roster = await paginatedSwimtopiaFetch(`/mobile/organizations/${PARKLAWN_SWIMTOPIA_ORG_ID}/organization-users`, {
         token,
         params: { include: "affiliations" },
         fetchImpl,
     });
+
+    if (fetchImpl === fetch) {
+        cachedRoster = roster;
+        cachedRosterTime = Date.now();
+    }
 
     const affiliationsByUser = new Map();
     for (const affiliation of roster.included.filter((record) => record.type === "athleteAffiliation")) {
@@ -375,11 +400,29 @@ export async function getParklawnSwimmerHistory({
         throw error;
     }
 
-    const roster = await paginatedSwimtopiaFetch(`/mobile/organizations/${PARKLAWN_SWIMTOPIA_ORG_ID}/organization-users`, {
-        token,
-        params: { include: "affiliations" },
-        fetchImpl,
-    });
+    const now = Date.now();
+    if (fetchImpl === fetch) {
+        const cached = swimmerHistoryCache.get(String(athleteId));
+        if (cached && (now - cached.timestamp) < HISTORY_CACHE_TTL) {
+            return cached.payload;
+        }
+    }
+
+    let roster;
+    if (fetchImpl === fetch && cachedRoster && (now - cachedRosterTime) < ROSTER_CACHE_TTL) {
+        roster = cachedRoster;
+    } else {
+        roster = await paginatedSwimtopiaFetch(`/mobile/organizations/${PARKLAWN_SWIMTOPIA_ORG_ID}/organization-users`, {
+            token,
+            params: { include: "affiliations" },
+            fetchImpl,
+        });
+        if (fetchImpl === fetch) {
+            cachedRoster = roster;
+            cachedRosterTime = now;
+        }
+    }
+
     const athlete = roster.data.find((user) => String(user.id) === String(athleteId));
     if (!athlete) {
         const error = new Error("That swimmer was not found in the Parklawn SwimTopia roster.");
@@ -445,7 +488,7 @@ export async function getParklawnSwimmerHistory({
         return a.seconds - b.seconds;
     });
 
-    return {
+    const result = {
         swimmer: {
             id: athlete.id,
             name: athleteName(athlete.attributes),
@@ -458,6 +501,15 @@ export async function getParklawnSwimmerHistory({
             rawResultEntries: history.length,
         },
     };
+
+    if (fetchImpl === fetch) {
+        swimmerHistoryCache.set(String(athleteId), {
+            payload: result,
+            timestamp: now,
+        });
+    }
+
+    return result;
 }
 
 export async function swimtopiaPasswordLogin({ username, password, fetchImpl = fetch } = {}) {
