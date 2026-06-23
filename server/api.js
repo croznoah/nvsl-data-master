@@ -7,9 +7,7 @@ import { fileURLToPath } from "url";
 import {
     getParklawnSwimtopiaLadder,
     getParklawnSwimmerHistory,
-    probeSwimtopiaApi,
     redactToken,
-    swimtopiaApiFetch,
     swimtopiaPasswordLogin,
 } from "./swimtopia.js";
 
@@ -385,37 +383,7 @@ export function registerApiRoutes(app) {
         }
     });
 
-    app.post("/api/swimtopia/probe", async (req, res) => {
-        try {
-            const { token, organizationId } = req.body || {};
-            const results = await probeSwimtopiaApi({ token, organizationId });
-            return res.json({ results });
-        } catch (error) {
-            console.error("[SwimTopia Probe Error]", error.message);
-            return res.status(error.status || 500).json({
-                error: error.message || "SwimTopia probe failed.",
-                detail: error.payload,
-            });
-        }
-    });
 
-    app.post("/api/swimtopia/fetch", async (req, res) => {
-        try {
-            const { token, path: apiPath, params } = req.body || {};
-            if (!apiPath || typeof apiPath !== "string" || !apiPath.startsWith("/mobile/")) {
-                return res.status(400).json({ error: "path must start with /mobile/." });
-            }
-
-            const payload = await swimtopiaApiFetch(apiPath, { token, params });
-            return res.json(payload);
-        } catch (error) {
-            console.error("[SwimTopia Fetch Error]", error.message);
-            return res.status(error.status || 500).json({
-                error: error.message || "SwimTopia fetch failed.",
-                detail: error.payload,
-            });
-        }
-    });
 
     app.post("/api/swimtopia/parklawn-ladder", async (req, res) => {
         try {
