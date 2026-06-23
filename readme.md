@@ -11,7 +11,12 @@ A tools suite for NVSL swim meet roster management, time predictions, meet sheet
 - **npm** (comes packaged with Node.js)
 
 ### Installation Steps
-1. Clone this repository.
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/croznoah/nvsl-data-master.git
+
+   cd nvsl-data-master
+   ```
 2. In the project root directory, install dependencies:
    ```bash
    npm install
