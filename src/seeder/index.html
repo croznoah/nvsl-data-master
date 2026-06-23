@@ -447,57 +447,44 @@
                 overflow: hidden;
             }
         }
-        #seeding-popup {
-            box-shadow: 0px -4px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -4px rgba(0, 0, 0, 0.1);
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            column-gap: 16px;
-            padding: 15px;
-            background-color: var(--bg1);
-            border: 1px solid var(--str2);
-            border-radius: 12px;
-            align-items: center;
-            font-size: 18px;
-            font-weight: 500;
-            letter-spacing: -0.3px;
+        #indeterminate-loader {
             position: fixed;
-            left: 50%;
-            bottom: 12px;
-            z-index: 9999;
-            transition: 0.24s ease;
-            transform: translate(-50%, calc(15px + 100%));
-        }
-        #seeding-popup[active="true"] {
-            transform: translateX(-50%);
-        }
-        #seeding-popup > svg {
-            height: 20px;
-            width: 20px;
-            color: grey;
-            margin-left: 16px;
-            margin-right: 6px;
-        }
-        #precentage {
-            font-feature-settings: "tnum";
-            font-weight: 650;
-            letter-spacing: -0.3px;
-            font-size: 50px;
-            color: var(--txt2);
-        }
-        .seeding-outer {
-            margin-top: 4px;
-            width: 300px;
-            border-radius: 3px;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            width: 100%;
+            z-index: 100000;
+            background-color: var(--str2);
             overflow: hidden;
-            background-color: var(--bg2);
-            border: 1px solid var(--str2);
+            display: none;
         }
-        #seeding-bar {
-            width: 0px;
-            height: 10px;
-            border-radius: inherit;
+        #indeterminate-loader[active="true"] {
+            display: block;
+        }
+        #indeterminate-loader::after {
+            content: '';
+            position: absolute;
             background-color: var(--txt1);
-            transition: width 0.10s ease;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 30%;
+            border-radius: 2px;
+            animation: indeterminate-load 1.2s infinite ease-in-out;
+        }
+        @keyframes indeterminate-load {
+            0% {
+                left: -30%;
+                width: 30%;
+            }
+            50% {
+                width: 40%;
+            }
+            100% {
+                left: 100%;
+                width: 30%;
+            }
         }
         #data {
             padding-top: 0px;
@@ -534,6 +521,10 @@
         }
         .nav-items:last-child {
             justify-content: end;
+        }
+        .nav-items:last-child .nav-menu {
+            left: auto;
+            right: 0px;
         }
         .nav-option {
             position: relative;
@@ -876,7 +867,6 @@
         }
         .inner {
             height: inherit;
-            border-radius: inherit;
             background-color: var(--txt1);
             transition: 0.16s ease width;
             width: 0px;
@@ -1420,6 +1410,42 @@
             pointer-events: auto;
             transform: translate(-50%, -50%);
         }
+        #teams-table:has(#progress[active="true"]) .teams-panel {
+            display: none !important;
+        }
+        #progress {
+            display: none;
+            width: 100%;
+            max-width: 380px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: auto;
+            text-align: center;
+            align-self: center;
+        }
+        #progress[active="true"] {
+            display: flex;
+        }
+        #progress .loading-label {
+            font-size: 21px;
+            font-weight: 500;
+            color: var(--txt2);
+            letter-spacing: -0.4px;
+            margin: 0px 0px 24px;
+        }
+        #progress h1 {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--txt1);
+            margin: 0px 0px 6px;
+            letter-spacing: -1px;
+        }
+        #teams-table #progress .outer {
+            width: 100%;
+            max-width: 300px;
+        }
     </style>
 
     <div class="modal content" id="availability-modal">
@@ -1481,6 +1507,15 @@
                     <button id="get-btn" onclick="scrape_data()">
                         <div>Generate Ladder</div>
                     </button>
+                </div>
+                <div id="progress" active="false">
+                    <div class="progress" id="scraping-progress">
+                        <h1>0.0%</h1>
+                        <div class="loading-label">Generating Tables</div>
+                        <div class="outer">
+                            <div class="inner"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1547,14 +1582,7 @@
         </div>
     </div>
 
-    <div class="modal content" id="progress">
-        <div class="progress" id="scraping-progress">
-            <h1>0.0%</h1>
-            <div class="outer">
-                <div class="inner"></div>
-            </div>
-        </div>
-    </div>
+
 
     <div class="modal" id="swimtopia-login-modal" onclick="if(event.target === this) close_swimtopia_login_modal()">
         <form class="swimtopia-login-card" id="swimtopia-login-form" method="post" action="#">
@@ -1575,15 +1603,7 @@
         </form>
     </div>
 
-    <div id="seeding-popup">
-        <div id="precentage">0%</div>
-        <div class="popup-content">
-            <div id="seeding-title">Auto Seeding...</div>
-            <div class="seeding-outer">
-                <div id="seeding-bar"></div>
-            </div>
-        </div>
-    </div>
+    <div id="indeterminate-loader"></div>
 
     <div class="modal content" id="data" gender="Boys">
         <div class="data-nav">
@@ -1669,6 +1689,7 @@
                     </div>
                 </div>
             </div>
+            <div class="nav-items" id="right-nav-items"></div>
         </div>
 
         <div class="table" id="table-1"></div>
@@ -2672,7 +2693,6 @@
             document.querySelector("#current-rate-label").innerText = this_year + " Swim Rate";
             document.querySelector("#last-rate-label").innerText = (this_year - 1) + " Swim Rate";
 
-            document.querySelector("#home").setAttribute("active", "false");
             document.querySelector("#progress").setAttribute("active", "true");
 
             var team_id = selected_data["team_id"];
@@ -3069,10 +3089,11 @@
                         </div>
                     </div>
                 `;
-                document.querySelector(".data-nav .nav-items").append(build_report_option);
+                document.querySelector("#right-nav-items").append(build_report_option);
             }
 
             document.querySelector("#progress").setAttribute("active", "false");
+            document.querySelector("#home").setAttribute("active", "false");
             document.querySelector("#data").setAttribute("active", "true");
 
             all_seedings = {};
@@ -3502,13 +3523,18 @@
         async function auto_seed_gender() {
             var gender = document.querySelector("#data").getAttribute("gender");
 
-            for (call in all_seedings[gender]) {
-                var inputs = all_seedings[gender][call];
+            document.querySelector("#indeterminate-loader").setAttribute("active", "true");
+            try {
+                for (call in all_seedings[gender]) {
+                    var inputs = all_seedings[gender][call];
 
-                await auto_seed(inputs[0], inputs[1], inputs[2]);
+                    await auto_seed(inputs[0], inputs[1], inputs[2], true);
+                }
+            } finally {
+                document.querySelector("#indeterminate-loader").setAttribute("active", "false");
             }
         }
-        function auto_seed(gender, groups, element) {
+        function auto_seed(gender, groups, element, keepLoader = false) {
             if (seeding == true) {
                 return;
             }
@@ -3528,14 +3554,8 @@
                 swimmerDB[your_team["abr"]] = {};
                 swimmerDB[abbreviation] = {};
 
-                var offset = document.querySelector(".data-nav").offsetHeight + 12;
-                document.querySelector("#data").scrollTop = parent.offsetTop - offset;
-
                 seeding = true;
-                document.querySelector("#precentage").innerText = "0%";
-                document.querySelector("#seeding-bar").style.width = "0%";
-                document.querySelector("#seeding-popup").setAttribute("active", "true");
-                document.querySelector("#seeding-title").innerText = `Auto seeding ${String(display_list).toLowerCase()} ${gender.toLowerCase()}...`;
+                document.querySelector("#indeterminate-loader").setAttribute("active", "true");
 
                 for (let group in render_data[gender]) {
                     for (let stroke in render_data[gender][group]) {
@@ -4011,8 +4031,7 @@
                     worker.onmessage = function(e) {
                         const { type, progress, lineups } = e.data;
                         if (type === "progress") {
-                            document.querySelector("#precentage").innerText = Math.round(progress * 100) + "%";
-                            document.querySelector("#seeding-bar").style.width = (progress * 100) + "%";
+                            // Indeterminate loader - progress updates not shown
                         } else if (type === "done") {
                             groupList.forEach(raw_group => {
                                 var group_id = raw_group.toLowerCase().replace(/\s/g, "");
@@ -4032,12 +4051,19 @@
                             render_lineup(lineups[abbreviation], parent.parentElement);
 
                             seeding = false;
+                            if (!keepLoader) {
+                                document.querySelector("#indeterminate-loader").setAttribute("active", "false");
+                            }
                             worker.terminate();
                             resolve();
                         }
                     }
                     worker.onerror = function(e) {
                         console.error(`Error in worker at ${e.filename}:${e.lineno}: ${e.message}`);
+                        if (!keepLoader) {
+                            document.querySelector("#indeterminate-loader").setAttribute("active", "false");
+                        }
+                        seeding = false;
                         resolve();
                     }
 
@@ -4064,7 +4090,6 @@
             calc_score(parent.parentElement.parentElement.parentElement);
         }
         function render_lineup(lineup, parent_element) {
-            document.querySelector("#seeding-popup").setAttribute("active", "false");
 
             var strokes = ["Freestyle", "Backstroke", "Breaststroke", "Butterfly"];
             for (group of Object.keys(lineup)) {
