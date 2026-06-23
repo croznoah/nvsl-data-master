@@ -4,6 +4,14 @@ import ort from "onnxruntime-node";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import {
+    getParklawnSwimtopiaLadder,
+    getParklawnSwimmerHistory,
+    probeSwimtopiaApi,
+    redactToken,
+    swimtopiaApiFetch,
+    swimtopiaPasswordLogin,
+} from "./swimtopia.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
@@ -354,6 +362,89 @@ function buildSeedingReportPdf(report) {
 }
 
 export function registerApiRoutes(app) {
+    app.post("/api/swimtopia/login", async (req, res) => {
+        try {
+            const { username, password } = req.body || {};
+            const tokenResponse = await swimtopiaPasswordLogin({ username, password });
+
+            return res.json({
+                access_token: tokenResponse.access_token,
+                refresh_token: tokenResponse.refresh_token,
+                token_type: tokenResponse.token_type || "Bearer",
+                expires_in: tokenResponse.expires_in,
+                created_at: tokenResponse.created_at,
+                scope: tokenResponse.scope,
+                redacted_access_token: redactToken(tokenResponse.access_token),
+            });
+        } catch (error) {
+            console.error("[SwimTopia Login Error]", error.message);
+            return res.status(error.status || 500).json({
+                error: error.message || "SwimTopia login failed.",
+                detail: error.payload,
+            });
+        }
+    });
+
+    app.post("/api/swimtopia/probe", async (req, res) => {
+        try {
+            const { token, organizationId } = req.body || {};
+            const results = await probeSwimtopiaApi({ token, organizationId });
+            return res.json({ results });
+        } catch (error) {
+            console.error("[SwimTopia Probe Error]", error.message);
+            return res.status(error.status || 500).json({
+                error: error.message || "SwimTopia probe failed.",
+                detail: error.payload,
+            });
+        }
+    });
+
+    app.post("/api/swimtopia/fetch", async (req, res) => {
+        try {
+            const { token, path: apiPath, params } = req.body || {};
+            if (!apiPath || typeof apiPath !== "string" || !apiPath.startsWith("/mobile/")) {
+                return res.status(400).json({ error: "path must start with /mobile/." });
+            }
+
+            const payload = await swimtopiaApiFetch(apiPath, { token, params });
+            return res.json(payload);
+        } catch (error) {
+            console.error("[SwimTopia Fetch Error]", error.message);
+            return res.status(error.status || 500).json({
+                error: error.message || "SwimTopia fetch failed.",
+                detail: error.payload,
+            });
+        }
+    });
+
+    app.post("/api/swimtopia/parklawn-ladder", async (req, res) => {
+        try {
+            const { token } = req.body || {};
+            const payload = await getParklawnSwimtopiaLadder({ token });
+            return res.json(payload);
+        } catch (error) {
+            console.error("[SwimTopia Ladder Error]", error.message);
+            return res.status(error.status || 500).json({
+                error: error.message || "SwimTopia ladder import failed.",
+                detail: error.payload,
+            });
+        }
+    });
+
+    app.post("/api/swimtopia/parklawn-swimmer-history", async (req, res) => {
+        try {
+            const { token, athleteId } = req.body || {};
+            const payload = await getParklawnSwimmerHistory({ token, athleteId });
+            return res.json(payload);
+        } catch (error) {
+            console.error("[SwimTopia Swimmer History Error]", error.message);
+            return res.status(error.status || 500).json({
+                error: error.message || "SwimTopia swimmer history import failed.",
+                detail: error.payload,
+            });
+        }
+    });
+
     app.get("/api/fetch-html", async (req, res) => {
         const target_url = req.query.url;
 

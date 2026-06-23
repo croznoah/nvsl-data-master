@@ -25,17 +25,9 @@
             margin: 0px;
             overflow-x: hidden;
             background-color: var(--bg1);
-            display: flex;
         }
         :root {
             --accentbg: #4285F4;
-        }
-        h1 {
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: -0.4px;
-            margin-block: 20px;
-            text-align: center;
         }
         button {
             height: 48px;
@@ -62,95 +54,209 @@
             height: 18px;
             width: 18px;
         }
-        .main {
-            height: 100dvh;
-            width: 100dvw;
-            padding: 40px;
+        .setup {
+            width: 100%;
+        }
+        .main-wrapper {
+            width: 100%;
+            min-height: 100vh;
             display: grid;
-            grid-template-columns: 1fr;
-            grid-template-rows: 1fr auto;
-            row-gap: 16px;
-            justify-items: center;
+            grid-template-columns: 1fr 500px;
         }
-        .panel {
+        .setup-content {
             display: flex;
-            column-gap: 10px;
-            width: fit-content;
+            justify-content: center;
+            align-items: center;
+            padding: 48px 40px;
+            width: 100%;
         }
+        .setup-panel {
+            background-color: var(--bg1);
+            border: 1px solid var(--str2);
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 580px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            row-gap: 24px;
+        }
+        .setup-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 18px;
+            background-color: #141414;
+            color: white;
+            display: grid;
+            place-items: center;
+            margin-bottom: 8px;
+        }
+        .setup-logo svg {
+            width: 32px;
+            height: 32px;
+        }
+        .setup-panel-header {
+            display: flex;
+            flex-direction: column;
+            row-gap: 8px;
+        }
+        .setup-panel-header h1.sheet-title {
+            margin: 0px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--txt1);
+        }
+        .setup-panel-header p.sheet-subtitle {
+            margin: 0px;
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1.45;
+            letter-spacing: -0.2px;
+            color: var(--txt2);
+        }
+        .action-buttons {
+            display: flex;
+            column-gap: 12px;
+            justify-content: center;
+            width: 100%;
+        }
+        .main-progress-container {
+            display: flex;
+            flex-direction: column;
+            row-gap: 8px;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--txt2);
+        }
+        .progress-bar-track {
+            width: 100%;
+            height: 8px;
+            background-color: var(--bg2);
+            border-radius: 9999px;
+            border: 1px solid var(--str2);
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--txt1);
+            border-radius: 9999px;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .side-menu {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            border-left: 1px solid var(--str2);
+            background-color: var(--bg2);
+        }
+
         #terminal {
+            flex-grow: 1;
             overflow-x: hidden;
             overflow-y: auto;
-            height: 100%;
-            width: 100%;
             background-color: var(--bg2);
-            border: 1px solid var(--str2);
-            border-radius: 5px;
-            padding-bottom: 9px;
+            padding: 24px 32px;
+            text-align: left;
+            font-family: "JetBrains Mono", monospace;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.02);
+            height: 100%;
         }
         #terminal > a {
             display: block;
             font-weight: 500;
+            font-size: 13px;
+            font-family: "JetBrains Mono", monospace;
             color: var(--txt2);
             margin: 0px;
-            padding: 3px 12px;
+            padding: 4px 0px;
+            line-height: 1.5;
+            word-break: break-all;
+            border-bottom: 1px solid rgba(var(--rgb), 0.03);
         }
         #terminal > a[title] {
             font-weight: 700;
             color: var(--txt1);
+            font-size: 14px;
+            border-bottom: none;
+            margin-top: 8px;
         }
         #terminal > a[error] {
             font-weight: 700;
-            color: red;
+            color: #ff4a4a;
         }
         #terminal > a[success] {
             font-weight: 700;
-            color: #59b259;
+            color: #2ec866;
         }
         #terminal > a[link] {
             color: var(--accentbg);
             text-decoration: underline;
         }
-        .progress {
-            top: 0px;
-            position: sticky;
-            width: 100%;
-            height: 16px;
-            background-color: var(--bg2);
-            border-bottom: 1px solid var(--str2);
-            margin-bottom: 12px;
-        }
-        #inner {
-            height: inherit;
-            background-color: var(--txt1);
-            transition: 0.24s ease width;
-            width: 0px;
+        @media (max-width: 950px) {
+            .main-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .side-menu {
+                border-left: none;
+                border-top: 1px solid var(--str2);
+                height: 500px;
+            }
         }
     </style>
 
-    <div class="main">
-        <div id="terminal">
-            <div class="progress">
-                <div id="inner"></div>
+    <div class="setup">
+        <div class="main-wrapper">
+            <div class="setup-content">
+                <div class="setup-panel">
+                    <div class="setup-logo">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 7V4C4 3.44772 4.44772 3 5 3H19C19.5523 3 20 3.44772 20 4V7M4 17V20C4 20.5523 4.44772 21 5 21H19C19.5523 21 20 20.5523 20 20V17M4 12H20M20 7V17M4 7V17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="setup-panel-header">
+                        <h1 class="sheet-title">Annual Setup</h1>
+                        <p class="sheet-subtitle">Scrape upcoming meet dates and division teams from MyNVSL</p>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="scrape-btn" onclick="start_scraping()">
+                            <div>Start Scraping</div>
+                        </button>
+                    </div>
+
+                    <div class="main-progress-container" id="main-progress-container" style="display: none;">
+                        <div class="progress-info">
+                            <span id="progress-status">Initializing...</span>
+                            <span id="progress-percent">0%</span>
+                        </div>
+                        <div class="progress-bar-track">
+                            <div id="main-progress-fill" class="progress-bar-fill"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <a title>
-                Welcome to SeedMaster!
-                <br><br>
-                At the beginning of each year, the system must gather the upcoming A-Meet dates and a list of the updated team divisions. Use the bottons below to automaticlly scrape this data and save it into files which are required to run the main application.
-            </a>
-        </div>
-        <div class="panel">
-            <button onclick="scrape_teams()">
-                <div>Get Teams</div>
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-            <button onclick="scrape_schedule()">
-                <div>Get Schedule</div>
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
+
+            <div class="side-menu">
+
+                <div id="terminal">
+                    <a title="System Ready">
+                        Welcome to SeedMaster!
+                        <br><br>
+                        Click "Start Scraping" on the left to begin gathering division teams and meet schedule dates from MyNVSL. Status updates and detailed execution logs will appear here in real-time.
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -167,6 +273,48 @@
                 return doc;
             }
         }
+        var current_phase = 'idle';
+
+
+        async function start_scraping() {
+            const btn = document.getElementById("scrape-btn");
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
+            btn.style.cursor = "not-allowed";
+            btn.querySelector("div").innerText = "Scraping...";
+
+            const term = document.querySelector("#terminal");
+            term.innerHTML = "";
+
+            const progContainer = document.getElementById("main-progress-container");
+            progContainer.style.display = "flex";
+            progress(0);
+
+            try {
+                // Phase 1: Schedule Scraping
+                await scrape_schedule();
+
+                // Phase 2: Teams Scraping
+                await scrape_teams();
+
+                current_phase = 'idle';
+                document.querySelector("#main-progress-fill").style.width = "100%";
+                document.querySelector("#progress-percent").innerText = "100%";
+                document.querySelector("#progress-status").innerText = "Scraping Completed!";
+                log("<br>All tasks completed successfully!", "success");
+            } catch (err) {
+                console.error(err);
+                current_phase = 'idle';
+                document.querySelector("#progress-status").innerText = "Error encountered.";
+                log("<br>Setup encountered an error: " + err.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                btn.style.cursor = "pointer";
+                btn.querySelector("div").innerText = "Start Scraping";
+            }
+        }
+
         function log(message, type = false) {
             var a = document.createElement("A");
             if (type) {
@@ -182,9 +330,25 @@
             document.querySelector("#terminal").scrollTop = document.querySelector("#terminal").scrollHeight;
         }
         function progress(decimal) {
-            document.querySelector("#inner").style.width = Math.min(Math.max(0, (decimal * 100)), 100) + "%";
+            let overall = 0;
+            let status = "";
+            if (current_phase === 'schedule') {
+                overall = decimal * 0.2; // 0% to 20%
+                status = `Scraping Schedule: ${Math.round(decimal * 100)}%`;
+            } else if (current_phase === 'teams') {
+                overall = 0.2 + (decimal * 0.8); // 20% to 100%
+                status = `Scraping Teams: ${Math.round(decimal * 100)}%`;
+            } else {
+                overall = decimal;
+                status = "Initializing...";
+            }
+            
+            document.querySelector("#main-progress-fill").style.width = Math.min(Math.max(0, (overall * 100)), 100) + "%";
+            document.querySelector("#progress-percent").innerText = Math.round(overall * 100) + "%";
+            document.querySelector("#progress-status").innerText = status;
         }
         async function scrape_schedule() {
+            current_phase = 'schedule';
             log("<br>Scraping Schedule", "success");
             log("<br>");
             progress(0);
@@ -234,6 +398,7 @@
             await save_file(schedule, "schedule");
         }
         async function scrape_teams() {
+            current_phase = 'teams';
             log("<br>Scraping Teams", "success");
             progress(0);
             let teams = {};
