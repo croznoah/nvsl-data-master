@@ -17,9 +17,10 @@ A tools suite for NVSL swim meet roster management, time predictions, meet sheet
 
    cd nvsl-data-master
    ```
-2. In the project root directory, install dependencies:
+2. In the project root directory, install dependencies and allow install scripts:
    ```bash
    npm install
+   npm approve-scripts --allow-scripts-pending
    ```
 
 ### Running the Application
