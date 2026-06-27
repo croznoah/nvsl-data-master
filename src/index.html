@@ -67,28 +67,6 @@
             transition: background-image var(--transition-speed) ease;
         }
 
-        /* Glowing Blobs */
-        .bg-glow {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(66, 133, 244, 0.08) 0%, rgba(66, 133, 244, 0) 70%);
-            z-index: 2;
-            pointer-events: none;
-            filter: blur(60px);
-            transition: all var(--transition-speed) ease;
-        }
-        .bg-glow-1 {
-            top: -100px;
-            left: -100px;
-        }
-        .bg-glow-2 {
-            bottom: -100px;
-            right: -100px;
-            background: radial-gradient(circle, rgba(57, 211, 140, 0.06) 0%, rgba(57, 211, 140, 0) 70%);
-        }
-
         .container {
             position: relative;
             z-index: 3;
@@ -233,9 +211,6 @@
     </style>
 </head>
 <body>
-    <div class="bg-glow bg-glow-1"></div>
-    <div class="bg-glow bg-glow-2"></div>
-
     <div class="container">
         <div class="logo-container">
             <img src="/logo.png" alt="NVSL Data Master Logo">

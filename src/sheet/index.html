@@ -573,6 +573,7 @@
         async function extracttext(file) {
             extractedtxt = [];
             var pdf = await pdfjsLib.getDocument({data: new Uint8Array(file.slice(0))}).promise;
+            var metadata_title = await get_pdf_title(pdf);
             var pages = pdf.numPages;
             final_line = [];
             for (i = 1; i <= pages; i++) {
@@ -605,14 +606,49 @@
                 });
             }
 
-            if (has_text_layer_meet_data(extractedtxt)) {
+            // Expose globally for testing/debugging
+            window.extractedtxt = extractedtxt;
+
+            var doc_type = has_text_layer_meet_data(extractedtxt);
+            if (doc_type === "hy-tek") {
                 importsheet(extractedtxt);
+            } else if (doc_type === "meet-maestro") {
+                var text_lines = extractedtxt.map(line => line.join(" "));
+                var success = import_meet_maestro_text(text_lines, metadata_title);
+                if (!success) {
+                    await extractocr(file);
+                }
             } else {
                 await extractocr(file);
             }
         }
         function has_text_layer_meet_data(pdf_lines) {
-            return pdf_lines.some(line => line[0] && String(line[0]).includes("Event"));
+            var is_hytek = pdf_lines.some(line => line[0] && String(line[0]).includes("Event"));
+            var is_meetmaestro = pdf_lines.some(line => line[0] && (String(line[0]) === "#" || String(line[0]).startsWith("#")));
+            if (is_hytek) return "hy-tek";
+            if (is_meetmaestro) return "meet-maestro";
+            return null;
+        }
+        function import_meet_maestro_text(text_lines, metadata_title) {
+            var parsed = parse_meet_maestro_ocr_lines(text_lines);
+            if (parsed.length == 0) {
+                return false;
+            }
+
+            sheet_title = metadata_title || guess_ocr_sheet_title(text_lines);
+            sheet_data = parsed;
+            team_data = new Set();
+            sheet_data.forEach(event => {
+                event["heats"].flat().forEach(entry => {
+                    if (entry["team"]) {
+                        team_data.add(entry["team"].toUpperCase());
+                    }
+                });
+            });
+            sheet_score = {};
+            [...team_data].filter(name => name != "").forEach(name => sheet_score[name] = 0);
+            render_sheet(sheet_data, text_lines.map(line => [line]));
+            return true;
         }
         function set_status(message) {
             var subtitle = document.querySelector(".sheet-subtitle");
@@ -744,6 +780,9 @@
 
             return half_canvas;
         }
+        function is_relay_event(label) {
+            return label.includes("Relay") || label.includes("Mixed Age");
+        }
         function parse_meet_maestro_ocr_lines(lines) {
             var clean_lines = lines
                 .map(line => normalize_ocr_line(line))
@@ -769,7 +808,7 @@
                         "heats": []
                     };
                     current_heat = null;
-                    relay_mode = event_header["label"].includes("Relay");
+                    relay_mode = is_relay_event(event_header["label"]);
                     continue;
                 }
 
@@ -812,7 +851,7 @@
             }
 
             events.forEach(event => {
-                if (!event["label"].includes("Relay")) {
+                if (!is_relay_event(event["label"])) {
                     event["heats"] = event["heats"].map(fill_missing_individual_lanes);
                 }
             });
@@ -882,6 +921,11 @@
             }
 
             var team = normalize_ocr_team(match[4].trim());
+            var valid_abr = get_team(team, true);
+            if (valid_abr != null) {
+                ocr_team_context.add(valid_abr);
+            }
+
             var display_time = normalize_ocr_time(match[5]);
             if (!is_valid_display_time(display_time)) {
                 return null;
@@ -1033,6 +1077,17 @@
                 }
             }
 
+            // Smart assumption fallback: if we have a context of seen abbreviations,
+            // check if any token in the team text matches a seen abbreviation.
+            if (ocr_team_context.size > 0) {
+                for (let token of tokens) {
+                    var clean_token = token.replace(/[^A-Za-z]/g, "").toUpperCase();
+                    if (ocr_team_context.has(clean_token)) {
+                        return clean_token;
+                    }
+                }
+            }
+
             return team_text;
         }
         function infer_ocr_team_context(lines) {
@@ -1059,12 +1114,19 @@
         }
         function parse_relay_swimmers(line) {
             var swimmers = [];
-            var regex = /\d\)\s*([A-Za-z][A-Za-z' -]+,\s*[A-Za-z][A-Za-z' -]+)\s*\((\d{1,2})\)/g;
+            var regex = /\d\s*\)\s*([A-Za-z][A-Za-z'\. -]+,\s*[A-Za-z][A-Za-z'\. -]+)\s*\((\d{1,2})\)/g;
             var match;
 
             while ((match = regex.exec(line)) != null) {
+                var name = match[1].replace(/\s+/g, " ").trim();
+                var comma_idx = name.indexOf(",");
+                if (comma_idx !== -1) {
+                    var last = clean_ocr_name(name.substring(0, comma_idx));
+                    var first = clean_ocr_name(name.substring(comma_idx + 1));
+                    name = last + ", " + first;
+                }
                 swimmers.push({
-                    "name": match[1].replace(/\s+/g, " ").trim(),
+                    "name": name,
                     "age": match[2]
                 });
             }
@@ -1289,7 +1351,7 @@
 
             team_data = new Set();
             sheet_data.forEach(event => {
-                if (event["label"].includes("Relay")) {
+                if (is_relay_event(event["label"])) {
                     relay_mode = true;
                     var indexes_db = entry_indexes["relay"];
                 } else {
@@ -1365,7 +1427,7 @@
                     <div>${event["label"]}</div>
                 </div>`;
 
-                if (event["label"].includes("Relay")) {
+                if (is_relay_event(event["label"])) {
                     relay_mode = true;
                 } else {
                     relay_mode = false;
