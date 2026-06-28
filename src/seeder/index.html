@@ -689,6 +689,9 @@
         .column tr[yourteam] {
             background-color: var(--bg1);
         }
+        .column tr[plain] {
+            background-color: var(--bg1);
+        }
         .column tr[person] {
             cursor: pointer;
         }
@@ -899,6 +902,196 @@
             justify-items: center;
             grid-template-rows: auto 1fr;
             overflow: hidden;
+        }
+        #relay-editor-modal {
+            z-index: 999997;
+            display: grid;
+            place-items: center;
+            background-color: rgba(var(--rgb), 0.12);
+            backdrop-filter: blur(10px);
+            transform: none !important;
+            transition: opacity 0.24s ease !important;
+        }
+        #relay-editor-modal[active="true"] {
+            transform: none !important;
+        }
+        .relay-editor-card {
+            width: fit-content;
+            max-width: min(1280px, calc(100vw - 40px));
+            max-height: calc(100dvh - 40px);
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: auto auto 1fr;
+            row-gap: 16px;
+            padding: 22px;
+            border-radius: 8px;
+            border: 1px solid var(--str2);
+            background-color: var(--bg1);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+        }
+        .relay-editor-header {
+            display: grid;
+            grid-template-columns: 48px 1fr 48px;
+            align-items: center;
+            column-gap: 10px;
+        }
+        .relay-editor-header button {
+            margin: 0px;
+        }
+        .relay-editor-header h1 {
+            margin: 0px;
+            font-size: 22px;
+            line-height: 1.2;
+        }
+        .relay-editor-summary {
+            display: grid;
+            place-items: center;
+            row-gap: 4px;
+            padding: 10px 0px 4px;
+        }
+        #relay-editor-computed-time {
+            color: var(--txt1);
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.8px;
+        }
+        #relay-editor-fastest-time {
+            color: grey;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+        }
+        #relay-editor-table-wrapper {
+            position: relative;
+            width: 100%;
+            overflow: auto;
+        }
+        #relay-editor-tables {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            width: max-content;
+            min-width: min-content;
+        }
+        #relay-editor-tables .table-wrapper {
+            flex: none;
+        }
+        #relay-editor-tables td {
+            vertical-align: middle;
+        }
+        #relay-editor-tables tr[relay-option] {
+            cursor: pointer;
+        }
+        #relay-editor-tables tr[relay-option]:hover {
+            background-color: var(--bg2);
+        }
+        #relay-editor-tables td[person] {
+            cursor: pointer;
+        }
+        #relay-editor-tables td[disabled] {
+            color: red;
+            text-decoration: line-through;
+        }
+        #relay-editor-tables td[hover] {
+            text-decoration: underline wavy 1.5px;
+        }
+        #relay-editor-tables td[selected="true"] {
+            background-color: #39d38c;
+            border-color: #33be7e;
+            color: white;
+        }
+        .relay-editor-hover {
+            z-index: 1000000;
+            pointer-events: none;
+            position: absolute;
+            border: 2px solid var(--txt1);
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 2px 2px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        .relay-editor-hover[inuse="true"] {
+            display: block;
+        }
+        .relay-auto-btn {
+            margin: 8px 0px 0px;
+            height: 48px;
+            max-height: 0px;
+            padding: 0px 18px;
+            opacity: 0;
+            overflow: hidden;
+            pointer-events: none;
+            transform: translateY(-6px);
+            transition: 0.22s ease max-height, 0.22s ease opacity, 0.22s ease transform, 0.22s ease margin;
+        }
+        .relay-auto-btn[active="true"] {
+            max-height: 48px;
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0px);
+            margin-top: 12px;
+        }
+        .relay-title-cell {
+            position: relative;
+            padding-right: 56px !important;
+        }
+        .relay-title-text {
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        .relay-lock-btn {
+            height: 49px;
+            width: 50px;
+            display: grid;
+            place-items: center;
+            color: var(--txt1);
+            cursor: pointer;
+            position: absolute;
+            right: 0px;
+            top: 0px;
+            border-left: 1px solid var(--str2);
+        }
+        .relay-lock-btn:hover {
+            background-color: var(--bg2);
+        }
+        .relay-lock-btn[relay-locked="true"] {
+            background-color: var(--txt1);
+            color: var(--bg1);
+        }
+        .relay-lock-btn > svg {
+            height: 18px;
+            width: 18px;
+        }
+        .relay-predict-btn {
+            width: 50.5px;
+            height: 50px;
+            border-left: 1px solid var(--str2);
+            display: grid;
+            place-items: center;
+            position: absolute;
+            right: 0px;
+            top: 0px;
+            color: var(--txt1);
+        }
+        .relay-predict-btn:hover {
+            background-color: var(--bg2);
+        }
+        .relay-predict-btn > svg {
+            height: 18px;
+            width: 18px;
+        }
+        .relay-predict-btn[disabled="true"] {
+            color: rgba(127, 127, 127, 0.8);
+            pointer-events: none;
+        }
+        .relay-option-name {
+            display: grid;
+            row-gap: 3px;
+        }
+        .relay-option-name span {
+            color: var(--txt2);
+            font-size: 12px;
+            font-weight: 650;
         }
         #availability-table {
             height: 100%;
@@ -1489,6 +1682,31 @@
             </div>
         </div>
         <div class="table" id="availability-table"></div>
+    </div>
+
+    <div class="modal" id="relay-editor-modal" onclick="if(event.target === this) close_relay_editor()">
+        <div class="relay-editor-card">
+            <div class="relay-editor-header">
+                <button sqr onclick="close_relay_editor()">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <h1 id="relay-editor-title">Parklawn Relay</h1>
+                <div></div>
+            </div>
+            <div class="relay-editor-summary">
+                <div id="relay-editor-computed-time">--.--</div>
+                <div id="relay-editor-fastest-time">Fastest --.--</div>
+                <button class="relay-auto-btn" id="relay-editor-auto-btn" onclick="auto_relay_editor()">
+                    <div>Optimize Around Locked Swimmers</div>
+                </button>
+            </div>
+            <div id="relay-editor-table-wrapper">
+                <div id="relay-editor-tables"></div>
+                <div class="relay-editor-hover" inuse="false"></div>
+            </div>
+        </div>
     </div>
 
     <div class="modal" id="home" active="true">
@@ -2202,6 +2420,55 @@
         function swimtopia_token() {
             return sessionStorage.getItem("swimtopia-poc-token") || "";
         }
+        async function copy_swimtopia_auth() {
+            var access_token = sessionStorage.getItem("swimtopia-poc-token") || "";
+            var refresh_token = sessionStorage.getItem("swimtopia-poc-refresh-token") || "";
+
+            if (!access_token) {
+                throw new Error("No SwimTopia access token found. Sign in with the SwimTopia import first.");
+            }
+
+            var payload = {
+                generated_at: new Date().toISOString(),
+                access_token,
+                refresh_token,
+                headers: {
+                    Authorization: access_token.toLowerCase().startsWith("bearer ") ? access_token : `Bearer ${access_token}`,
+                    Accept: "application/vnd.api+json",
+                    "Content-Type": "application/vnd.api+json",
+                    "User-Agent": "SwimTopiaMobile/6.6.0",
+                },
+                endpoints: {
+                    parklawn_roster: "/mobile/organizations/27626/organization-users?include=affiliations",
+                    parklawn_calendar_events: "/mobile/organizations/27626/calendar-events",
+                },
+            };
+            var text = JSON.stringify(payload, null, 2);
+
+            try {
+                if (!navigator.clipboard?.writeText) {
+                    throw new Error("Clipboard API is unavailable.");
+                }
+                await navigator.clipboard.writeText(text);
+                return `Copied SwimTopia auth payload with ${access_token.length} character access token. Treat it like a password.`;
+            } catch (error) {
+                console.log("SwimTopia auth payload:");
+                console.log(text);
+
+                var textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.style.position = "fixed";
+                textarea.style.left = "-9999px";
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                document.execCommand("copy");
+                textarea.remove();
+
+                return `Printed SwimTopia auth payload to the console. Clipboard fallback was also attempted. Treat it like a password.`;
+            }
+        }
+        window.copy_swimtopia_auth = copy_swimtopia_auth;
         function set_swimtopia_login_status(message, is_error = false) {
             var status = document.querySelector("#swimtopia-login-status");
             status.innerText = message;
@@ -2672,6 +2939,488 @@
             "11-12": {"id": 3, "ages": [11, 12], "distance": 50, "relay": [["Backstroke", "50"], ["Breaststroke", "50"], ["Butterfly", "50"], ["Freestyle", "50"]]},
             "13-14": {"id": 4, "ages": [13, 14], "distance": 50, "relay": [["Backstroke", "50"], ["Breaststroke", "50"], ["Butterfly", "50"], ["Freestyle", "50"]]},
             "15-18": {"id": 5, "ages": [15, 16, 17, 18], "distance": 50, "relay": [["Backstroke", "50"], ["Breaststroke", "50"], ["Butterfly", "50"], ["Freestyle", "50"]]}
+        }
+        parklawn_relay_state = {};
+        function relay_state_key(gender, group) {
+            return `${gender}|||${group}`;
+        }
+        function relay_type_for_group(group) {
+            var config = age_groups[group]["relay"];
+            return config.every(item => item[0] == "Freestyle") ? "Freestyle" : "Medley";
+        }
+        function relay_total_distance(group) {
+            return age_groups[group]["relay"].reduce((total, current) => total + Number(current[1]), 0);
+        }
+        function relay_source_distance_time(time, source_distance, relay_distance) {
+            var raw_time = parse_time(time);
+            var source = Number(source_distance);
+            var target = Number(relay_distance);
+            if (!source || !target || Number.isNaN(raw_time)) {
+                return raw_time;
+            }
+            return raw_time * (target / source);
+        }
+        function relay_candidate_key(entry) {
+            return swimmer_key(entry);
+        }
+        function relay_time_label(time) {
+            return Number.isFinite(time) ? format_time(time) : "--.--";
+        }
+        function relay_edit_icon_svg() {
+            return `
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11 3.99998H6.8C5.11984 3.99998 4.27976 3.99998 3.63803 4.32696C3.07354 4.61458 2.6146 5.07353 2.32698 5.63801C2 6.27975 2 7.11983 2 8.79998V17.2C2 18.8801 2 19.7202 2.32698 20.362C2.6146 20.9264 3.07354 21.3854 3.63803 21.673C4.27976 22 5.11984 22 6.8 22H15.2C16.8802 22 17.7202 22 18.362 21.673C18.9265 21.3854 19.3854 20.9264 19.673 20.362C20 19.7202 20 18.8801 20 17.2V13M7.99997 16H9.67452C10.1637 16 10.4083 16 10.6385 15.9447C10.8425 15.8957 11.0376 15.8149 11.2166 15.7053C11.4184 15.5816 11.5914 15.4086 11.9373 15.0627L21.5 5.49998C22.3284 4.67156 22.3284 3.32841 21.5 2.49998C20.6716 1.67156 19.3284 1.67155 18.5 2.49998L8.93723 12.0627C8.59133 12.4086 8.41838 12.5816 8.29469 12.7834C8.18504 12.9624 8.10423 13.1574 8.05523 13.3615C7.99997 13.5917 7.99997 13.8363 7.99997 14.3255V16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+        function relay_history_icon_svg() {
+            return `
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 7H4.6C4.03995 7 3.75992 7 3.54601 7.10899C3.35785 7.20487 3.20487 7.35785 3.10899 7.54601C3 7.75992 3 8.03995 3 8.6V19.4C3 19.9601 3 20.2401 3.10899 20.454C3.20487 20.6422 3.35785 20.7951 3.54601 20.891C3.75992 21 4.03995 21 4.6 21H9M9 21H15M9 21L9 4.6C9 4.03995 9 3.75992 9.10899 3.54601C9.20487 3.35785 9.35785 3.20487 9.54601 3.10899C9.75992 3 10.0399 3 10.6 3L13.4 3C13.9601 3 14.2401 3 14.454 3.10899C14.6422 3.20487 14.7951 3.35785 14.891 3.54601C15 3.75992 15 4.03995 15 4.6V21M15 11H19.4C19.9601 11 20.2401 11 20.454 11.109C20.6422 11.2049 20.7951 11.3578 20.891 11.546C21 11.7599 21 12.0399 21 12.6V19.4C21 19.9601 21 20.2401 20.891 20.454C20.7951 20.6422 20.6422 20.7951 20.454 20.891C20.2401 21 19.9601 21 19.4 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+        function relay_lock_icon_svg(locked = false) {
+            if (locked) {
+                return `
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17 11V8C17 5.23858 14.7614 3 12 3C9.23858 3 7 5.23858 7 8V11M8.8 21H15.2C16.8802 21 17.7202 21 18.362 20.673C18.9265 20.3854 19.3854 19.9265 19.673 19.362C20 18.7202 20 17.8802 20 16.2V15.8C20 14.1198 20 13.2798 19.673 12.638C19.3854 12.0735 18.9265 11.6146 18.362 11.327C17.7202 11 16.8802 11 15.2 11H8.8C7.11984 11 6.27976 11 5.63803 11.327C5.07354 11.6146 4.6146 12.0735 4.32698 12.638C4 13.2798 4 14.1198 4 15.8V16.2C4 17.8802 4 18.7202 4.32698 19.362C4.6146 19.9265 5.07354 20.3854 5.63803 20.673C6.27976 21 7.11984 21 8.8 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                `;
+            }
+
+            return `
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 11V8C7 5.23858 9.23858 3 12 3C14.419 3 16.4367 4.71776 16.9 7M8.8 21H15.2C16.8802 21 17.7202 21 18.362 20.673C18.9265 20.3854 19.3854 19.9265 19.673 19.362C20 18.7202 20 17.8802 20 16.2V15.8C20 14.1198 20 13.2798 19.673 12.638C19.3854 12.0735 18.9265 11.6146 18.362 11.327C17.7202 11 16.8802 11 15.2 11H8.8C7.11984 11 6.27976 11 5.63803 11.327C5.07354 11.6146 4.6146 12.0735 4.32698 12.638C4 13.2798 4 14.1198 4 15.8V16.2C4 17.8802 4 18.7202 4.32698 19.362C4.6146 19.9265 5.07354 20.3854 5.63803 20.673C6.27976 21 7.11984 21 8.8 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+        function get_relay_candidates(gender, group, team_abr) {
+            var config = age_groups[group]["relay"];
+            return config.map((leg, leg_index) => {
+                var stroke = leg[0];
+                var relay_distance = leg[1];
+                var best_by_swimmer_distance = {};
+                var event_data = render_data?.[gender]?.[group]?.[stroke] || {};
+
+                for (let source_distance of Object.keys(event_data)) {
+                    if (Number(relay_distance) == 50 && Number(source_distance) == 25) continue;
+
+                    for (let entry of event_data[source_distance]) {
+                        if (entry[7] != team_abr) continue;
+                        var key = relay_candidate_key(entry);
+                        var raw_time = parse_time(entry[0]);
+                        if (Number.isNaN(raw_time)) continue;
+
+                        var candidate = {
+                            key,
+                            id: `${key}|||${source_distance}`,
+                            nameId: entry[1].toLowerCase().replace(/\s/g, ""),
+                            name: entry[1],
+                            time: entry[0],
+                            rawTime: raw_time,
+                            comparisonTime: relay_source_distance_time(entry[0], source_distance, relay_distance),
+                            sourceDistance: Number(source_distance),
+                            relayDistance: Number(relay_distance),
+                            stroke,
+                            legIndex: leg_index
+                        };
+
+                        var distance_key = `${key}|||${source_distance}`;
+                        if (!best_by_swimmer_distance[distance_key] || candidate.rawTime < best_by_swimmer_distance[distance_key].rawTime) {
+                            best_by_swimmer_distance[distance_key] = candidate;
+                        }
+                    }
+                }
+
+                return Object.values(best_by_swimmer_distance).sort((a, b) => a.rawTime - b.rawTime);
+            });
+        }
+        function relay_assignment_totals(assignment) {
+            return assignment.reduce((totals, candidate) => {
+                if (!candidate) {
+                    totals.raw = Infinity;
+                    totals.comparison = Infinity;
+                } else {
+                    totals.raw += candidate.rawTime;
+                    totals.comparison += candidate.comparisonTime;
+                }
+                return totals;
+            }, { raw: 0, comparison: 0 });
+        }
+        function find_fastest_relay_assignment(candidates_by_leg, locked_assignment = []) {
+            var best_assignment = null;
+            var best_time = Infinity;
+            var current = [];
+            var used = new Set();
+
+            function search(leg_index, total_time) {
+                if (total_time >= best_time) return;
+                if (leg_index == candidates_by_leg.length) {
+                    best_time = total_time;
+                    best_assignment = [...current];
+                    return;
+                }
+
+                var locked_candidate = locked_assignment[leg_index];
+                if (locked_candidate) {
+                    if (used.has(locked_candidate.key)) return;
+                    used.add(locked_candidate.key);
+                    current[leg_index] = locked_candidate;
+                    search(leg_index + 1, total_time + locked_candidate.rawTime);
+                    used.delete(locked_candidate.key);
+                    current[leg_index] = null;
+                    return;
+                }
+
+                for (let candidate of candidates_by_leg[leg_index]) {
+                    if (used.has(candidate.key)) continue;
+                    used.add(candidate.key);
+                    current[leg_index] = candidate;
+                    search(leg_index + 1, total_time + candidate.rawTime);
+                    used.delete(candidate.key);
+                    current[leg_index] = null;
+                }
+            }
+
+            if (candidates_by_leg.some(leg => leg.length == 0)) {
+                return { assignment: [], raw: Infinity, comparison: Infinity };
+            }
+
+            search(0, 0);
+            var assignment = best_assignment || [];
+            var totals = relay_assignment_totals(assignment);
+            return { assignment, raw: totals.raw, comparison: totals.comparison };
+        }
+        function build_relay_data(gender, group, team_abr) {
+            var candidates = get_relay_candidates(gender, group, team_abr);
+            var fastest = find_fastest_relay_assignment(candidates);
+            return {
+                gender,
+                group,
+                team: team_abr,
+                relayType: relay_type_for_group(group),
+                totalDistance: relay_total_distance(group),
+                config: age_groups[group]["relay"],
+                candidates,
+                locked: [],
+                autoVisible: false,
+                fastest,
+                baselineAssignment: [...fastest.assignment],
+                current: {
+                    assignment: [...fastest.assignment],
+                    raw: fastest.raw,
+                    comparison: fastest.comparison
+                }
+            };
+        }
+        function update_relay_current_totals(relay_data_item) {
+            var totals = relay_assignment_totals(relay_data_item.current.assignment);
+            relay_data_item.current.raw = totals.raw;
+            relay_data_item.current.comparison = totals.comparison;
+        }
+        function relay_prediction_icon_svg() {
+            return `
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13.1218 14.8446L18.0004 21.9999M10.879 14.8446L6.00041 21.9999M14.0004 13.2C14.0004 14.3045 13.105 15.2 12.0004 15.2C10.8958 15.2 10.0004 14.3045 10.0004 13.2C10.0004 12.0954 10.8958 11.2 12.0004 11.2C13.105 11.2 14.0004 12.0954 14.0004 13.2ZM17.1489 4.53225L5.36462 7.68984C5.09414 7.76232 4.95889 7.79855 4.86969 7.87888C4.79122 7.94953 4.73713 8.04321 4.71518 8.14649C4.69022 8.26391 4.72646 8.39915 4.79893 8.66964L5.67892 11.9538C5.7514 12.2243 5.78763 12.3595 5.86796 12.4487C5.93861 12.5272 6.03229 12.5813 6.13557 12.6032C6.25299 12.6282 6.38823 12.5919 6.65871 12.5195L18.443 9.36188L17.1489 4.53225ZM21.7928 9.49958C20.7109 9.78949 20.1699 9.93444 19.7002 9.83461C19.2871 9.74679 18.9124 9.53045 18.6298 9.21657C18.3085 8.85975 18.1635 8.31878 17.8736 7.23684L17.7183 6.65728C17.4284 5.57535 17.2835 5.03438 17.3833 4.56471C17.4711 4.15158 17.6875 3.77686 18.0013 3.49425C18.3582 3.17296 18.8991 3.02801 19.9811 2.7381C20.2515 2.66562 20.3868 2.62939 20.5042 2.65434C20.6075 2.6763 20.7012 2.73038 20.7718 2.80885C20.8521 2.89806 20.8884 3.0333 20.9609 3.30379L22.3585 8.51979C22.431 8.79027 22.4672 8.92551 22.4422 9.04293C22.4203 9.14621 22.3662 9.23989 22.2877 9.31055C22.1985 9.39087 22.0633 9.42711 21.7928 9.49958ZM3.50212 12.33L4.85441 11.9677C5.1249 11.8952 5.26014 11.8589 5.34935 11.7786C5.42782 11.708 5.4819 11.6143 5.50386 11.511C5.52881 11.3936 5.49258 11.2583 5.4201 10.9879L5.05775 9.63556C4.98528 9.36508 4.94904 9.22983 4.86872 9.14063C4.79806 9.06216 4.70438 9.00807 4.6011 8.98612C4.48368 8.96116 4.34844 8.9974 4.07796 9.06988L2.72566 9.43222C2.45518 9.5047 2.31993 9.54094 2.23073 9.62126C2.15226 9.69191 2.09817 9.78559 2.07622 9.88888C2.05126 10.0063 2.0875 10.1415 2.15998 10.412L2.52232 11.7643C2.5948 12.0348 2.63104 12.17 2.71136 12.2592C2.78201 12.3377 2.87569 12.3918 2.97898 12.4138C3.09639 12.4387 3.23163 12.4025 3.50212 12.33Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `;
+        }
+        function relay_candidate_unavailable(relay_data_item, leg_index, candidate) {
+            return relay_data_item.current.assignment.some((item, index) => index != leg_index && item?.key == candidate.key);
+        }
+        function relay_lock_cell(relay_data_item, leg_index) {
+            var locked = Boolean(relay_data_item.locked?.[leg_index]);
+            return `
+                <div class="relay-lock-btn" relay-locked="${locked}" onclick="event.stopPropagation(); toggle_relay_lock(${leg_index})">
+                    ${relay_lock_icon_svg(locked)}
+                </div>
+            `;
+        }
+        function relay_has_locks(relay_data_item) {
+            return Boolean(relay_data_item.locked?.some(item => item));
+        }
+        function relay_same_assignment(left = [], right = []) {
+            if (left.length != right.length) return false;
+            return left.every((item, index) => item?.id == right[index]?.id);
+        }
+        function relay_auto_label(relay_data_item) {
+            return relay_has_locks(relay_data_item)
+                ? "Optimize Around Locked Swimmers"
+                : "Show Fastest Combination";
+        }
+        function relay_should_show_auto(relay_data_item) {
+            if (!relay_has_locks(relay_data_item)) {
+                return !relay_same_assignment(relay_data_item.current.assignment, relay_data_item.fastest.assignment);
+            }
+
+            var baseline = relay_data_item.baselineAssignment || relay_data_item.fastest.assignment;
+            if (relay_same_assignment(relay_data_item.current.assignment, baseline)) return false;
+            return relay_data_item.autoVisible;
+        }
+        function update_relay_auto_button(relay_data_item) {
+            var button = document.querySelector("#relay-editor-auto-btn");
+            button.querySelector("div").innerText = relay_auto_label(relay_data_item);
+            button.setAttribute("active", relay_should_show_auto(relay_data_item) ? "true" : "false");
+        }
+        function render_relay_candidate_rows(relay_data_item, leg_index, candidates) {
+            var html = "";
+
+            for (let row = 0; row < candidates.length; row++) {
+                var candidate = candidates[row];
+                html += `<tr relay-option>`;
+                var selected = relay_data_item.current.assignment[leg_index]?.id == candidate.id ? "true" : "false";
+                var selected_attr = selected == "true" ? ` selected="true"` : "";
+                var disabled = selected == "false" && relay_candidate_unavailable(relay_data_item, leg_index, candidate) ? " disabled" : "";
+                var hover = `onmouseenter="hover_person('${candidate.nameId}', 'add', 'relay')" onmouseleave="hover_person('${candidate.nameId}', 'remove', 'relay')"`;
+                html += `
+                    <td person="${candidate.nameId}" ${hover} onclick="select_relay_editor_candidate(${leg_index}, '${candidate.id}')"${selected_attr}${disabled}>${candidate.time}</td>
+                    <td person="${candidate.nameId}" ${hover} onclick="select_relay_editor_candidate(${leg_index}, '${candidate.id}')"${selected_attr}${disabled}>${html_escape(candidate.name)}</td>
+                `;
+                html += `</tr>`;
+            }
+
+            return html;
+        }
+        function relay_predict_header(gender, stroke, has_source_candidates) {
+            if (!has_source_candidates) return "";
+            return `
+                <div class="relay-predict-btn" onclick="event.stopPropagation(); predict_relay_source_times('${stroke}', '${gender}')">
+                    ${relay_prediction_icon_svg()}
+                </div>
+            `;
+        }
+        function render_relay_rows(column_contents, relay_data_item, options = {}) {
+            var team_id = relay_data_item.team.toLowerCase();
+            var assignment = relay_data_item.current.assignment;
+            var selected = options.selected ? ` selected="true"` : "";
+            var your_atr = options.your ? " yourteam" : "";
+            var plain_atr = options.plain ? " plain" : "";
+            var selectable = options.selectable !== false;
+            var rows = "";
+
+            for (let i = 0; i < relay_data_item.config.length; i++) {
+                var candidate = assignment[i] || null;
+                var stroke = relay_data_item.config[i][0];
+                var leg_time = candidate ? candidate.time : "";
+                var leg_name = candidate ? candidate.name : "";
+                var onclick = selectable ? `onclick="select_relay(this.parentElement.parentElement, '${team_id}')"` : "";
+                var row_onclick = selectable ? " onclick" : "";
+
+                if (i == 0) {
+                    var icon_cell = "";
+                    if (options.editor) {
+                        icon_cell = `
+                            <td onclick="event.stopPropagation(); open_relay_editor('${relay_data_item.gender}', '${relay_data_item.group}')" style="width: 50px;" rowspan="4">
+                                ${relay_edit_icon_svg()}
+                            </td>
+                        `;
+                    } else if (options.history) {
+                        icon_cell = `
+                            <td onclick="event.stopPropagation(); relay_details('${relay_data_item.gender}', '${relay_data_item.group}', '${relay_data_item.relayType}')" style="width: 50px;" rowspan="4">
+                                ${relay_history_icon_svg()}
+                            </td>
+                        `;
+                    }
+
+                    rows += `
+                        <tr${your_atr}${plain_atr} onmouseover="hover_relay(this, 'add')" onmouseout="hover_relay(this, 'remove')" team="${team_id}"${selected}${row_onclick}>
+                            <td ${onclick} style="border-bottom: none;" rowspan="4">${relay_time_label(relay_data_item.current.comparison)}</td>
+                            <td ${onclick} style="border-bottom: none;" rowspan="4" id="points" points-column></td>
+                            <td ${onclick} style="border-bottom: none;" rowspan="4">${relay_data_item.team}</td>
+                            <td ${onclick}>${stroke}</td>
+                            <td ${onclick}>${leg_time}</td>
+                            <td ${onclick}>${html_escape(leg_name)}</td>
+                            ${icon_cell}
+                        </tr>
+                    `;
+                } else {
+                    rows += `
+                        <tr${your_atr}${plain_atr} onmouseover="hover_relay(this, 'add')" onmouseout="hover_relay(this, 'remove')" team="${team_id}"${selected}${row_onclick}>
+                            <td ${onclick}>${stroke}</td>
+                            <td ${onclick}>${leg_time}</td>
+                            <td ${onclick}${options.editor || options.history ? "" : ` colspan="2"`}>${html_escape(leg_name)}</td>
+                        </tr>
+                    `;
+                }
+            }
+
+            column_contents.innerHTML += rows;
+        }
+        function render_relay_editor_table(relay_data_item) {
+            update_relay_current_totals(relay_data_item);
+            document.querySelector("#relay-editor-computed-time").innerText = relay_time_label(relay_data_item.current.raw);
+            document.querySelector("#relay-editor-fastest-time").innerText = `Fastest ${relay_time_label(relay_data_item.fastest.raw)}`;
+            update_relay_auto_button(relay_data_item);
+
+            var tables = document.querySelector("#relay-editor-tables");
+            var html = "";
+
+            for (let leg_index = 0; leg_index < relay_data_item.config.length; leg_index++) {
+                var leg = relay_data_item.config[leg_index];
+                var exact_candidates = relay_data_item.candidates[leg_index].filter(candidate => candidate.sourceDistance == candidate.relayDistance);
+                var source_candidates = relay_data_item.candidates[leg_index].filter(candidate => candidate.sourceDistance != candidate.relayDistance);
+                var title_contents = `${leg[1]}M ${leg[0]}`;
+
+                html += `
+                    <div class="table-wrapper">
+                        <table class="column">
+                            <tbody>
+                                <tr title="">
+                                    <td class="relay-title-cell" relay-locked="${Boolean(relay_data_item.locked?.[leg_index])}" colspan="100">
+                                        <span class="relay-title-text">${title_contents}</span>
+                                        ${relay_lock_cell(relay_data_item, leg_index)}
+                                    </td>
+                                </tr>
+                                <tr key>
+                                    <td>Time</td>
+                                    <td>Name</td>
+                                </tr>
+                                ${render_relay_candidate_rows(relay_data_item, leg_index, exact_candidates)}
+                `;
+
+                if (source_candidates.length > 0) {
+                    html += `
+                                <tr title="">
+                                    <td class="relay-title-cell" relay-locked="${Boolean(relay_data_item.locked?.[leg_index])}" colspan="100">
+                                        <span class="relay-title-text">${source_candidates[0].sourceDistance}M ${leg[0]}${relay_predict_header(relay_data_item.gender, leg[0], true)}</span>
+                                        ${relay_lock_cell(relay_data_item, leg_index)}
+                                    </td>
+                                </tr>
+                                <tr key>
+                                    <td>Time</td>
+                                    <td>Name</td>
+                                </tr>
+                                ${render_relay_candidate_rows(relay_data_item, leg_index, source_candidates)}
+                    `;
+                }
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            tables.innerHTML = html;
+            requestAnimationFrame(refresh_relay_editor_hover);
+        }
+        function open_relay_editor(gender, group) {
+            var key = relay_state_key(gender, group);
+            var relay_data_item = parklawn_relay_state[key];
+            if (!relay_data_item) return;
+
+            parklawn_relay_state.active = key;
+            document.querySelector("#relay-editor-title").innerText = `${gender} ${group} ${relay_data_item.relayType} Relay`;
+            render_relay_editor_table(relay_data_item);
+            var wrapper = document.querySelector("#relay-editor-table-wrapper");
+            if (!wrapper._relay_hover_refresh_bound) {
+                wrapper.addEventListener("scroll", () => requestAnimationFrame(refresh_relay_editor_hover));
+                window.addEventListener("resize", () => requestAnimationFrame(refresh_relay_editor_hover));
+                wrapper._relay_hover_refresh_bound = true;
+            }
+            document.querySelector("#relay-editor-modal").setAttribute("active", "true");
+        }
+        function close_relay_editor() {
+            document.querySelector("#relay-editor-modal").setAttribute("active", "false");
+            parklawn_relay_state.active = null;
+        }
+        function normalize_relay_locks(relay_data_item, previous_locks) {
+            relay_data_item.locked = relay_data_item.config.map((leg, index) => {
+                var previous = previous_locks?.[index];
+                if (!previous) return null;
+                return relay_data_item.candidates[index].find(candidate => candidate.id == previous.id) || previous;
+            });
+        }
+        function mark_relay_auto_needed(relay_data_item) {
+            relay_data_item.autoVisible = true;
+        }
+        function toggle_relay_lock(leg_index) {
+            var relay_data_item = parklawn_relay_state[parklawn_relay_state.active];
+            if (!relay_data_item) return;
+
+            if (relay_data_item.locked?.[leg_index]) {
+                relay_data_item.locked[leg_index] = null;
+            } else {
+                relay_data_item.locked[leg_index] = relay_data_item.current.assignment[leg_index] || null;
+            }
+
+            mark_relay_auto_needed(relay_data_item);
+            render_relay_editor_table(relay_data_item);
+        }
+        function auto_relay_editor() {
+            var relay_data_item = parklawn_relay_state[parklawn_relay_state.active];
+            if (!relay_data_item) return;
+
+            var result = find_fastest_relay_assignment(relay_data_item.candidates, relay_data_item.locked || []);
+            relay_data_item.current.assignment = result.assignment;
+            relay_data_item.baselineAssignment = [...result.assignment];
+            relay_data_item.autoVisible = false;
+            update_relay_current_totals(relay_data_item);
+            render_relay_editor_table(relay_data_item);
+            update_parklawn_relay_rows(relay_data_item);
+        }
+        async function predict_relay_source_times(stroke, gender) {
+            var active_key = parklawn_relay_state.active;
+            var relay_data_item = parklawn_relay_state[active_key];
+            if (!relay_data_item) return;
+
+            await predict_times(stroke, gender);
+
+            var previous_assignment = relay_data_item.current.assignment;
+            var previous_locks = relay_data_item.locked;
+            var previous_auto_visible = relay_data_item.autoVisible;
+            var previous_baseline = relay_data_item.baselineAssignment;
+            var refreshed = build_relay_data(relay_data_item.gender, relay_data_item.group, relay_data_item.team);
+            normalize_relay_locks(refreshed, previous_locks);
+            refreshed.autoVisible = previous_auto_visible;
+            refreshed.baselineAssignment = refreshed.config.map((leg, index) => {
+                var previous = previous_baseline?.[index];
+                if (!previous) return refreshed.fastest.assignment[index] || null;
+                return refreshed.candidates[index].find(candidate => candidate.id == previous.id) || previous;
+            });
+            refreshed.current.assignment = refreshed.config.map((leg, index) => {
+                var previous = previous_assignment[index];
+                if (!previous) return refreshed.fastest.assignment[index] || null;
+                return refreshed.candidates[index].find(candidate => candidate.id == previous.id) || previous;
+            });
+            update_relay_current_totals(refreshed);
+            parklawn_relay_state[active_key] = refreshed;
+            render_relay_editor_table(refreshed);
+            update_parklawn_relay_rows(refreshed);
+        }
+        function select_relay_editor_candidate(leg_index, candidate_id) {
+            var relay_data_item = parklawn_relay_state[parklawn_relay_state.active];
+            if (!relay_data_item) return;
+
+            var candidate = relay_data_item.candidates[leg_index].find(item => item.id == candidate_id);
+            if (!candidate) return;
+
+            if (relay_candidate_unavailable(relay_data_item, leg_index, candidate)) return;
+
+            relay_data_item.current.assignment[leg_index] = candidate;
+            if (relay_data_item.locked?.[leg_index]) {
+                relay_data_item.locked[leg_index] = candidate;
+                mark_relay_auto_needed(relay_data_item);
+            } else {
+                mark_relay_auto_needed(relay_data_item);
+            }
+            update_relay_current_totals(relay_data_item);
+            render_relay_editor_table(relay_data_item);
+            update_parklawn_relay_rows(relay_data_item);
+        }
+        function update_parklawn_relay_rows(relay_data_item) {
+            var group_id = relay_data_item.group.toLowerCase().replace(/\s/g, "");
+            var gender_id = relay_data_item.gender.toLowerCase();
+            var row = document.querySelector(`.row[group-id="${group_id}"][gender-id="${gender_id}"]`);
+            var column_contents = row?.querySelector(".column[relay]")?.querySelector("TBODY");
+            if (!column_contents) return;
+
+            var team_id = relay_data_item.team.toLowerCase();
+            var was_selected = column_contents.querySelector(`tr[team="${team_id}"]`)?.getAttribute("selected") == "true";
+            column_contents.querySelectorAll(`tr[team="${team_id}"]`).forEach(row => row.remove());
+            render_relay_rows(column_contents, relay_data_item, { your: true, editor: true, selected: was_selected });
+            calc_score(row);
         }
         this_year = Number(new Date().getFullYear());
         function actual_event_distance(group, event) {
@@ -3332,99 +4081,46 @@
                         row.append(wrap_table(column));
                     }
 
+                    var total_distance = relay_total_distance(group);
+                    var relay_type = relay_type_for_group(group);
+
+                    var column = document.createElement("TABLE");
+                    column.setAttribute("class", "column");
+                    column.setAttribute("relay", "");
+                    var column_contents = document.createElement("TBODY");
+
+                    column_contents.innerHTML += `
+                        <tr title>
+                            <td colspan="100">${total_distance}M ${relay_type} Relay</td>
+                        </tr>
+                        <tr key>
+                            <td>Time</td>
+                            <td points-column>Points</td>
+                            <td>Team</td>
+                            <td>Stroke</td>
+                            <td>Time</td>
+                            <td colspan="2">Name</td>
+                        </tr>
+                    `;
+
+                    var opponent_relay = build_relay_data(gender, group, abbreviation);
+                    render_relay_rows(column_contents, opponent_relay, {
+                        history: true,
+                        selectable: Boolean(your_ladder),
+                        plain: !your_ladder
+                    });
+                    relay_data[gender][group][abbreviation] = opponent_relay.current.comparison;
+
                     if (your_ladder) {
-                        var config = age_groups[group]["relay"];
-                        var total_distance = config.reduce((total, current) => total + parseInt(current[1]), 0);
-                        if (config.every(item => item[0] == "Freestyle")) {
-                            var relay_type = "Freestyle";
-                        } else {
-                            var relay_type = "Medley";
-                        }
+                        var parklawn_relay = build_relay_data(gender, group, your_team["abr"]);
+                        parklawn_relay_state[relay_state_key(gender, group)] = parklawn_relay;
 
-                        var column = document.createElement("TABLE");
-                        column.setAttribute("class", "column");
-                        column.setAttribute("relay", "");
-                        var column_contents = document.createElement("TBODY");
-
-                        column_contents.innerHTML += `
-                            <tr title>
-                                <td colspan="100">${total_distance}M ${relay_type} Relay</td>
-                            </tr>
-                            <tr key>
-                                <td>Time</td>
-                                <td>Points</td>
-                                <td>Team</td>
-                                <td>Stroke</td>
-                                <td>Time</td>
-                                <td colspan="2">Name</td>
-                            </tr>
-                        `;
-
-                        let relay_members = [];
-                        let used_swimmers = new Set();
-                        let total_time = 0;
-
-                        for (let leg of config) {
-                            let stroke = leg[0];
-                            let distance = leg[1];
-                            let best_time = Infinity;
-                            let best_swimmer = null;
-
-                            if (render_data[gender][group][stroke] && render_data[gender][group][stroke][distance]) {
-                                for (let swimmer of render_data[gender][group][stroke][distance]) {
-                                    if (swimmer[7] !== abbreviation || used_swimmers.has(swimmer[1])) continue;
-
-                                    let time_val = parse_time(swimmer[0]);
-                                    if (time_val < best_time) {
-                                        best_time = time_val;
-                                        best_swimmer = swimmer;
-                                    }
-                                }
-                            }
-
-                            if (best_swimmer) {
-                                relay_members.push(best_swimmer);
-                                used_swimmers.add(best_swimmer[1]);
-                                total_time += best_time;
-                            }
-                        }
-
-                        if (relay_members.length == 4) {
-                            relay_members.forEach((item, i) => {
-                                var onclick = `onclick="select_relay(this.parentElement.parentElement, '${abbreviation.toLowerCase()}')"`;
-                                if (i == 0) {
-                                    column_contents.innerHTML += `
-                                        <tr onmouseover="hover_relay(this, 'add')" onmouseout="hover_relay(this, 'remove')" team="${abbreviation.toLowerCase()}" onclick>
-                                            <td ${onclick} style="border-bottom: none;" rowspan="4">${format_time(total_time)}</td>
-                                            <td ${onclick} style="border-bottom: none;" rowspan="4" id="points"></td>
-                                            <td ${onclick} style="border-bottom: none;" rowspan="4">${abbreviation}</td>
-                                            <td ${onclick}>${config[i][0]}</td>
-                                            <td ${onclick}>${item[0]}</td>
-                                            <td ${onclick} >${item[1]}</td>
-                                            <td onclick="relay_details('${gender}', '${group}', '${relay_type}')" style="width: 50px;" rowspan="4">
-                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M9 7H4.6C4.03995 7 3.75992 7 3.54601 7.10899C3.35785 7.20487 3.20487 7.35785 3.10899 7.54601C3 7.75992 3 8.03995 3 8.6V19.4C3 19.9601 3 20.2401 3.10899 20.454C3.20487 20.6422 3.35785 20.7951 3.54601 20.891C3.75992 21 4.03995 21 4.6 21H9M9 21H15M9 21L9 4.6C9 4.03995 9 3.75992 9.10899 3.54601C9.20487 3.35785 9.35785 3.20487 9.54601 3.10899C9.75992 3 10.0399 3 10.6 3L13.4 3C13.9601 3 14.2401 3 14.454 3.10899C14.6422 3.20487 14.7951 3.35785 14.891 3.54601C15 3.75992 15 4.03995 15 4.6V21M15 11H19.4C19.9601 11 20.2401 11 20.454 11.109C20.6422 11.2049 20.7951 11.3578 20.891 11.546C21 11.7599 21 12.0399 21 12.6V19.4C21 19.9601 21 20.2401 20.891 20.454C20.7951 20.6422 20.6422 20.7951 20.454 20.891C20.2401 21 19.9601 21 19.4 21H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                                </svg>
-                                            </td>
-                                        </tr>
-                                    `;
-                                } else {
-                                    column_contents.innerHTML += `
-                                        <tr onmouseover="hover_relay(this, 'add')" onmouseout="hover_relay(this, 'remove')" team="${abbreviation.toLowerCase()}" onclick>
-                                            <td ${onclick}>${config[i][0]}</td>
-                                            <td ${onclick}>${item[0]}</td>
-                                            <td ${onclick}>${item[1]}</td>
-                                        </tr>
-                                    `;
-                                }
-                            });
-                        }
-
-                        column.append(column_contents);
-                        row.append(wrap_table(column));
-
-                        relay_data[gender][group][abbreviation] = total_time;
+                        render_relay_rows(column_contents, parklawn_relay, { your: true, editor: true });
+                        relay_data[gender][group][your_team["abr"]] = parklawn_relay.current.comparison;
                     }
+
+                    column.append(column_contents);
+                    row.append(wrap_table(column));
 
                     var seeding_ages = [...seeding_ages];
                     no_append = false;
@@ -4079,10 +4775,9 @@
 
                             console.log(lineups);
 
-                            seedRelays();
-
                             render_lineup(lineups[your_team["abr"]], parent.parentElement);
                             render_lineup(lineups[abbreviation], parent.parentElement);
+                            select_seeded_group_relays(gender, groupList, parent.parentElement);
 
                             seeding = false;
                             if (!keepLoader) {
@@ -4122,6 +4817,20 @@
             }
 
             calc_score(parent.parentElement.parentElement.parentElement);
+        }
+        function select_seeded_group_relays(gender, groups, parent_element) {
+            groups.forEach(group => {
+                var group_id = group.toLowerCase().replace(/\s/g, "");
+                var gender_id = gender.toLowerCase();
+                var row = parent_element.querySelector(`.row[group-id="${group_id}"][gender-id="${gender_id}"]`);
+                var relay_parent = row?.querySelector(".column[relay]");
+                if (!relay_parent) return;
+
+                relay_parent.querySelectorAll("tr[onclick]").forEach(row => {
+                    row.setAttribute("selected", "true");
+                });
+                calc_score(row);
+            });
         }
         function render_lineup(lineup, parent_element) {
 
@@ -5112,13 +5821,59 @@
             document.querySelector("#person-details").setAttribute("active", "false");
             document.querySelector(".data-nav").setAttribute("active", "true");
         }
-        function hover_person(name_id, action) {
+        active_relay_hover_name_id = null;
+        function hover_person(name_id, action, scope = "main") {
             clear_hover_styles();
             if (action == "add") {
-                document.querySelectorAll(`tr[person="${name_id}"]`).forEach(row => {
-                    hover_styles([row]);
-                });
+                if (scope == "relay") {
+                    active_relay_hover_name_id = name_id;
+                    hover_relay_editor_person(name_id);
+                } else {
+                    active_relay_hover_name_id = null;
+                    document.querySelectorAll(`.row [person="${name_id}"]`).forEach(element => {
+                        element.setAttribute("hover", "");
+                        if (element.matches("tr")) {
+                            hover_styles([element]);
+                        }
+                    });
+                }
             }
+        }
+        function refresh_relay_editor_hover() {
+            if (!active_relay_hover_name_id) return;
+            document.querySelectorAll(".relay-editor-hover[inuse='true']").forEach(element => {
+                element.setAttribute("inuse", "false");
+            });
+            document.querySelectorAll(`#relay-editor-tables [hover]`).forEach(element => {
+                element.removeAttribute("hover");
+            });
+            hover_relay_editor_person(active_relay_hover_name_id);
+        }
+        function hover_relay_editor_person(name_id) {
+            var rows = [...document.querySelectorAll(`#relay-editor-tables [person="${name_id}"]`)]
+                .map(element => element.closest("tr"))
+                .filter((row, index, rows) => row && rows.indexOf(row) == index);
+
+            rows.forEach(row => {
+                var cells = [...row.querySelectorAll(`[person="${name_id}"]`)];
+                if (cells.length == 0) return;
+                cells.forEach(cell => cell.setAttribute("hover", ""));
+
+                var wrapper = document.querySelector("#relay-editor-table-wrapper");
+                var wrapper_rect = wrapper.getBoundingClientRect();
+                var first_rect = cells[0].getBoundingClientRect();
+                var last_rect = cells[cells.length - 1].getBoundingClientRect();
+                var hover_element = document.querySelector(".relay-editor-hover[inuse='false']");
+                if (!hover_element) {
+                    hover_element = document.createElement("div");
+                    hover_element.setAttribute("class", "relay-editor-hover");
+                    wrapper.append(hover_element);
+                }
+                var top = first_rect.top - wrapper_rect.top + wrapper.scrollTop;
+                var left = first_rect.left - wrapper_rect.left + wrapper.scrollLeft;
+                hover_element.setAttribute("style", `top: ${top}px; left: ${left}px; width: ${last_rect.right - first_rect.left}px; height: ${first_rect.height}px;`);
+                hover_element.setAttribute("inuse", "true");
+            });
         }
         function hover_styles(elements) {
             var first_element = elements[0];
@@ -5150,8 +5905,12 @@
             document.querySelectorAll(".tr-hover[inuse='true']").forEach(element => {
                 element.setAttribute("inuse", "false");
             });
-            document.querySelectorAll("tr[hover]").forEach(row => {
-                row.removeAttribute("hover");
+            document.querySelectorAll(".relay-editor-hover[inuse='true']").forEach(element => {
+                element.setAttribute("inuse", "false");
+            });
+            active_relay_hover_name_id = null;
+            document.querySelectorAll("[hover]").forEach(element => {
+                element.removeAttribute("hover");
             });
         }
         function hover_relay(element, action) {

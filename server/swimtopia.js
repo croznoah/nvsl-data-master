@@ -109,9 +109,27 @@ function ladderGender(swimtopiaGender) {
     return swimtopiaGender === "F" ? "Girls" : "Boys";
 }
 
-function isCurrentAthlete(user, affiliationsByUser) {
-    const attrs = user?.attributes || {};
+export function swimtopiaSeasonAge(athlete, today = new Date()) {
+    const attrs = athlete?.attributes || {};
+    const bornOn = attrs.bornOn;
+    if (bornOn) {
+        const birthDate = new Date(`${bornOn}T00:00:00`);
+        if (!Number.isNaN(birthDate.getTime())) {
+            const seasonYear = today.getFullYear();
+            const turnsThisYear = new Date(seasonYear, birthDate.getMonth(), birthDate.getDate());
+            let age = seasonYear - birthDate.getFullYear();
+            if (turnsThisYear >= new Date(seasonYear, 5, 1)) age--;
+            return age;
+        }
+    }
+
     const age = Number(attrs.age);
+    return Number.isFinite(age) ? age : null;
+}
+
+function isCurrentAthlete(user, affiliationsByUser, today = new Date()) {
+    const attrs = user?.attributes || {};
+    const age = swimtopiaSeasonAge(user, today);
     if (!attrs.bornOn || !Number.isFinite(age) || age < 5 || age > 18) return false;
     return (affiliationsByUser.get(user.id) || []).some((affiliation) =>
         affiliation.attributes?.isActive &&
@@ -120,12 +138,12 @@ function isCurrentAthlete(user, affiliationsByUser) {
     );
 }
 
-function addLadderEntry(ladder, athlete, result) {
+function addLadderEntry(ladder, athlete, result, today = new Date()) {
     const attrs = result.attributes || {};
     const stroke = STROKE_BY_CODE[Number(attrs.strokeCode)];
     const distance = Number(attrs.distance);
     const time = formatTimeInt(attrs.officialTimeInt);
-    const age = Number(athlete.attributes.age);
+    const age = swimtopiaSeasonAge(athlete, today);
     const gender = ladderGender(athlete.attributes.gender);
     const name = athleteName(athlete.attributes);
     const completedOn = attrs.completedOn || "";
@@ -330,7 +348,7 @@ export async function getParklawnSwimtopiaLadder({
         affiliationsByUser.get(userId).push(affiliation);
     }
 
-    const athletes = roster.data.filter((user) => isCurrentAthlete(user, affiliationsByUser));
+    const athletes = roster.data.filter((user) => isCurrentAthlete(user, affiliationsByUser, today));
     const athleteById = new Map(athletes.map((athlete) => [athlete.id, athlete]));
 
     const events = await paginatedSwimtopiaFetch(`/mobile/organizations/${PARKLAWN_SWIMTOPIA_ORG_ID}/calendar-events`, {
@@ -363,7 +381,7 @@ export async function getParklawnSwimtopiaLadder({
             }
         );
         for (const result of highestDistanceResultsByStroke(results.data || [])) {
-            if (addLadderEntry(ladder, athlete, result)) resultCount++;
+            if (addLadderEntry(ladder, athlete, result, today)) resultCount++;
         }
     });
 
