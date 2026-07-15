@@ -3,7 +3,9 @@ import test from "node:test";
 import {
     bearerValue,
     buildSwimtopiaProbePlan,
+    getParklawnMeetAbsences,
     getParklawnSwimtopiaLadder,
+    getParklawnSwimtopiaMeets,
     getParklawnSwimmerHistory,
     normalizeMeetLabel,
     PARKLAWN_SWIMTOPIA_ORG_ID,
@@ -258,6 +260,8 @@ test("getParklawnSwimtopiaLadder normalizes roster, times, meet, and availabilit
     });
 
     assert.equal(payload.meet.id, "meet-1");
+    assert.equal(payload.meets.length, 1);
+    assert.equal(payload.meets[0].id, "meet-1");
     assert.deepEqual(payload.unavailable, ["avalane"]);
     assert.equal(payload.stats.athletes, 1);
     assert.equal(payload.stats.resultEntries, 2);
@@ -286,6 +290,224 @@ test("getParklawnSwimtopiaLadder normalizes roster, times, meet, and availabilit
         false,
         "",
     ]);
+});
+
+test("getParklawnSwimtopiaMeets lists only today and future SwimMeet events", async () => {
+    const payload = await getParklawnSwimtopiaMeets({
+        token: "abc123",
+        today: new Date("2026-06-23T12:00:00-04:00"),
+        fetchImpl: async (url) => {
+            const parsed = new URL(url);
+            assert.equal(parsed.pathname, "/mobile/organizations/27626/calendar-events");
+            return jsonResponse({
+                data: [
+                    {
+                        type: "calendarEvent",
+                        id: "meet-past",
+                        attributes: {
+                            name: "A Meet Week 1",
+                            startAt: "2026-06-20T09:00:00.000-04:00",
+                            startDate: "2026-06-20",
+                            stiType: "SwimMeet",
+                            stage: "complete",
+                        },
+                    },
+                    {
+                        type: "calendarEvent",
+                        id: "meet-today",
+                        attributes: {
+                            name: "A Meet Today",
+                            startAt: "2026-06-23T09:00:00.000-04:00",
+                            startDate: "2026-06-23",
+                            stiType: "SwimMeet",
+                            stage: "pre-meet",
+                        },
+                    },
+                    {
+                        type: "calendarEvent",
+                        id: "meet-next",
+                        attributes: {
+                            name: "A Meet Week 2",
+                            startAt: "2026-06-27T09:00:00.000-04:00",
+                            startDate: "2026-06-27",
+                            stiType: "SwimMeet",
+                            stage: "pre-meet",
+                        },
+                    },
+                    {
+                        type: "calendarEvent",
+                        id: "practice-1",
+                        attributes: {
+                            name: "Practice",
+                            startAt: "2026-06-24T17:00:00.000-04:00",
+                            startDate: "2026-06-24",
+                            stiType: "Practice",
+                        },
+                    },
+                ],
+                meta: { count: 4 },
+            });
+        },
+    });
+
+    assert.equal(payload.meets.length, 2);
+    assert.equal(payload.meets[0].id, "meet-today");
+    assert.equal(payload.meets[1].id, "meet-next");
+    assert.equal(payload.upcomingMeetId, "meet-today");
+});
+
+test("getParklawnSwimtopiaLadder uses selected meetId for absences", async () => {
+    const responses = new Map([
+        ["/mobile/organizations/27626/organization-users", {
+            data: [{
+                type: "organizationUser",
+                id: "athlete-1",
+                attributes: {
+                    bornOn: "2015-01-01",
+                    firstName: "Ava",
+                    lastName: "Lane",
+                    gender: "F",
+                    age: 11,
+                    hasSwimHistory: false,
+                },
+            }],
+            included: [{
+                type: "athleteAffiliation",
+                id: "aff-1",
+                attributes: { isActive: true, isCurrent: true },
+                relationships: {
+                    organizationUser: { data: { type: "organizationUser", id: "athlete-1" } },
+                },
+            }],
+            meta: { count: 1 },
+        }],
+        ["/mobile/organizations/27626/calendar-events", {
+            data: [
+                {
+                    type: "calendarEvent",
+                    id: "meet-1",
+                    attributes: {
+                        name: "A Meet Week 1",
+                        startAt: "2026-06-20T09:00:00.000-04:00",
+                        startDate: "2026-06-20",
+                        stiType: "SwimMeet",
+                        stage: "complete",
+                    },
+                },
+                {
+                    type: "calendarEvent",
+                    id: "meet-2",
+                    attributes: {
+                        name: "A Meet Week 2",
+                        startAt: "2026-06-27T09:00:00.000-04:00",
+                        startDate: "2026-06-27",
+                        stiType: "SwimMeet",
+                        stage: "pre-meet",
+                    },
+                },
+            ],
+            meta: { count: 2 },
+        }],
+        ["/mobile/swim-meets/meet-1/swim-absences", {
+            data: [{
+                type: "swimAbsence",
+                id: "absence-1",
+                attributes: { isAttending: false },
+                relationships: {
+                    athlete: { data: { type: "organizationUser", id: "athlete-1" } },
+                },
+            }],
+            meta: { count: 1 },
+        }],
+        ["/mobile/swim-meets/meet-2/swim-absences", {
+            data: [],
+            meta: { count: 0 },
+        }],
+    ]);
+
+    const payload = await getParklawnSwimtopiaLadder({
+        token: "abc123",
+        meetId: "meet-1",
+        today: new Date("2026-06-23T12:00:00-04:00"),
+        fetchImpl: async (url) => {
+            const parsed = new URL(url);
+            const body = responses.get(parsed.pathname);
+            assert.ok(body, `Unexpected path ${parsed.pathname}`);
+            return jsonResponse(body);
+        },
+    });
+
+    assert.equal(payload.meet.id, "meet-1");
+    assert.deepEqual(payload.unavailable, ["avalane"]);
+    assert.equal(payload.meets.length, 1);
+    assert.equal(payload.meets[0].id, "meet-2");
+});
+
+test("getParklawnMeetAbsences returns unavailable swimmers for a meet", async () => {
+    const responses = new Map([
+        ["/mobile/organizations/27626/organization-users", {
+            data: [{
+                type: "organizationUser",
+                id: "athlete-1",
+                attributes: {
+                    bornOn: "2015-01-01",
+                    firstName: "Ava",
+                    lastName: "Lane",
+                    gender: "F",
+                    age: 11,
+                },
+            }],
+            included: [{
+                type: "athleteAffiliation",
+                id: "aff-1",
+                attributes: { isActive: true, isCurrent: true },
+                relationships: {
+                    organizationUser: { data: { type: "organizationUser", id: "athlete-1" } },
+                },
+            }],
+            meta: { count: 1 },
+        }],
+        ["/mobile/organizations/27626/calendar-events", {
+            data: [{
+                type: "calendarEvent",
+                id: "meet-1",
+                attributes: {
+                    name: "A Meet",
+                    startAt: "2026-06-27T09:00:00.000-04:00",
+                    startDate: "2026-06-27",
+                    stiType: "SwimMeet",
+                    stage: "pre-meet",
+                },
+            }],
+            meta: { count: 1 },
+        }],
+        ["/mobile/swim-meets/meet-1/swim-absences", {
+            data: [{
+                type: "swimAbsence",
+                id: "absence-1",
+                attributes: { isAttending: false },
+                relationships: {
+                    athlete: { data: { type: "organizationUser", id: "athlete-1" } },
+                },
+            }],
+            meta: { count: 1 },
+        }],
+    ]);
+
+    const payload = await getParklawnMeetAbsences({
+        token: "abc123",
+        meetId: "meet-1",
+        today: new Date("2026-06-23T12:00:00-04:00"),
+        fetchImpl: async (url) => {
+            const parsed = new URL(url);
+            const body = responses.get(parsed.pathname);
+            assert.ok(body, `Unexpected path ${parsed.pathname}`);
+            return jsonResponse(body);
+        },
+    });
+
+    assert.equal(payload.meet.id, "meet-1");
+    assert.deepEqual(payload.unavailable, ["avalane"]);
 });
 
 test("getParklawnSwimmerHistory returns all SwimTopia history with meet labels", async () => {

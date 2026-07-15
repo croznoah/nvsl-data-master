@@ -1370,6 +1370,121 @@
             color: var(--txt2);
             font-weight: 600;
         }
+        .meet-dropdown {
+            position: relative;
+            min-width: 0;
+            max-width: 220px;
+            justify-self: end;
+        }
+        .meet-dropdown-trigger {
+            all: unset;
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 32px;
+            padding: 4px 8px 4px 10px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            column-gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            color: var(--txt2);
+            background-color: var(--bg2);
+            border: 1px solid var(--str2);
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.18s ease background-color, 0.18s ease border-color, 0.18s ease color;
+        }
+        .meet-dropdown-trigger:hover,
+        .meet-dropdown[open="true"] .meet-dropdown-trigger {
+            color: var(--txt1);
+            background-color: var(--bg1);
+            border-color: var(--str1);
+        }
+        .meet-dropdown-trigger > #ladder-meet {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: right;
+        }
+        .meet-dropdown-trigger > svg {
+            height: 14px;
+            width: 14px;
+            color: var(--txt2);
+            transition: 0.22s ease transform;
+            flex: none;
+        }
+        .meet-dropdown[open="true"] .meet-dropdown-trigger > svg {
+            transform: rotate(180deg);
+        }
+        #meet-dropdown-menu.meet-dropdown-menu {
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            min-width: 240px;
+            max-width: 320px;
+            z-index: 100000;
+            background-color: var(--bg1);
+            border: 1px solid var(--str2);
+            border-radius: 10px;
+            max-height: 280px;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.10);
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
+            transition: 0.22s ease opacity, 0.22s ease transform;
+        }
+        #meet-dropdown-menu.meet-dropdown-menu[active="true"] {
+            opacity: 1;
+            transform: translateY(0px);
+            pointer-events: auto;
+        }
+        #meet-dropdown-menu.meet-dropdown-menu > div {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            column-gap: 10px;
+            padding: 0px 14px;
+            min-height: 42px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            color: var(--txt2);
+            border-bottom: 1px solid var(--str2);
+            cursor: pointer;
+            transition: 0.18s ease background-color, 0.18s ease color;
+        }
+        #meet-dropdown-menu.meet-dropdown-menu > div:last-child {
+            border-bottom: none;
+        }
+        #meet-dropdown-menu.meet-dropdown-menu > div:hover {
+            background-color: var(--bg2);
+            color: var(--txt1);
+        }
+        #meet-dropdown-menu.meet-dropdown-menu > div[active="true"] {
+            background-color: var(--txt1);
+            color: var(--bg1);
+        }
+        #meet-dropdown-menu.meet-dropdown-menu > div > svg {
+            height: 14px;
+            width: 14px;
+            opacity: 0;
+        }
+        #meet-dropdown-menu.meet-dropdown-menu > div[active="true"] > svg {
+            opacity: 1;
+        }
+        #meet-dropdown-menu.meet-dropdown-menu > div[disabled="true"] {
+            cursor: default;
+            color: var(--txt2);
+            opacity: 0.7;
+        }
+        #meet-dropdown-menu.meet-dropdown-menu > div[disabled="true"]:hover {
+            background-color: transparent;
+            color: var(--txt2);
+        }
         .details-top {
             display: grid;
             grid-template-columns: auto 1fr;
@@ -1769,7 +1884,14 @@
                                     <td>
                                         <div class="upload-details">
                                             <span class="details-title">Imported For</span>
-                                            <span class="details-info" id="ladder-meet">N/A</span>
+                                            <div class="meet-dropdown" id="meet-dropdown">
+                                                <button type="button" class="meet-dropdown-trigger" onclick="meet_dropdown_toggle(event)">
+                                                    <div id="ladder-meet">N/A</div>
+                                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -2359,28 +2481,71 @@
                 document.querySelector(".ava-warning").style.display = "";
             }
         }
+        function format_meet_label(meet) {
+            if (!meet || !meet.name) return null;
+            var display_text = meet.name;
+            if (meet.startDate) {
+                var dateParts = meet.startDate.split("-");
+                if (dateParts.length === 3) {
+                    display_text += ` (${dateParts[1]}/${dateParts[2]})`;
+                } else {
+                    display_text += ` (${meet.startDate})`;
+                }
+            }
+            return display_text;
+        }
         function update_meet_details_ui(meet, date) {
             var meetElement = document.querySelector("#ladder-meet");
             if (!meetElement) return;
 
-            if (meet && meet.name) {
-                var display_text = meet.name;
-                if (meet.startDate) {
-                    var dateParts = meet.startDate.split("-");
-                    if (dateParts.length === 3) {
-                        display_text += ` (${dateParts[1]}/${dateParts[2]})`;
-                    } else {
-                        display_text += ` (${meet.startDate})`;
-                    }
-                }
-                meetElement.innerText = display_text;
+            selected_meet = meet && meet.id ? meet : null;
+            var label = format_meet_label(meet);
+            if (label) {
+                meetElement.innerText = label;
             } else if (date) {
                 meetElement.innerText = `Imported ${date}`;
             } else {
                 meetElement.innerText = "N/A";
             }
+            render_meet_dropdown_menu();
         }
-        function apply_imported_ladder(ladder, unavailable_list = [], meet = null) {
+        function apply_meet_availability(meet, unavailable_list) {
+            selected_meet = meet && meet.id ? meet : selected_meet;
+            if (meet) {
+                update_meet_details_ui(meet, null);
+            }
+
+            var ladder_string = localStorage.getItem("yourladder-" + your_team_id);
+            if (ladder_string) {
+                try {
+                    var stored = JSON.parse(ladder_string);
+                    if (meet) {
+                        stored["Meet"] = meet;
+                    }
+                    localStorage.setItem("yourladder-" + your_team_id, JSON.stringify(stored));
+                } catch (error) {
+                    console.warn("Could not persist selected meet:", error);
+                }
+            }
+
+            if (unavailable_list != null) {
+                unavailable = Array.isArray(unavailable_list) ? unavailable_list : [];
+                localStorage.setItem("yourladderavailability-" + your_team_id, JSON.stringify(unavailable));
+                update_unavailable_warning();
+                update_ladder_swimmer_count();
+
+                var availability_modal = document.querySelector("#availability-modal");
+                if (availability_modal?.getAttribute("active") == "true") {
+                    all_swimmers_sorted = get_ladder_swimmers();
+                    document.querySelector("#availability-total-count").innerText = swimmer_count_text(all_swimmers_sorted.length);
+                    render_availability_lists();
+                }
+            }
+        }
+        function persist_ladder_meet_metadata(meet, unavailable_list = null) {
+            apply_meet_availability(meet, unavailable_list);
+        }
+        function apply_imported_ladder(ladder, unavailable_list = [], meet = null, meets = null) {
             if (!ladder || !ladder["Boys"] || !ladder["Girls"]) {
                 window.alert("The imported ladder data is not in the expected format.");
                 return;
@@ -2396,6 +2561,9 @@
 
             if (meet) {
                 ladder["Meet"] = meet;
+            }
+            if (Array.isArray(meets)) {
+                available_meets = meets;
             }
 
             your_ladder = {...ladder};
@@ -2416,6 +2584,200 @@
         }
         var swimtopia_login_should_import = false;
         var swimtopia_import_interval = null;
+        var available_meets = [];
+        var selected_meet = null;
+        var open_meet_dropdown = null;
+        var meet_absences_loading = false;
+
+        function position_meet_dropdown_menu() {
+            var dropdown = document.querySelector("#meet-dropdown");
+            var menu = document.querySelector("#meet-dropdown-menu");
+            var trigger = dropdown?.querySelector(".meet-dropdown-trigger");
+            if (!dropdown || !menu || !trigger) return;
+
+            var rect = trigger.getBoundingClientRect();
+            var menu_width = Math.max(rect.width, 240);
+            var left = Math.min(rect.right - menu_width, window.innerWidth - menu_width - 8);
+            left = Math.max(8, left);
+            var top = rect.bottom + 6;
+            if (top + Math.min(menu.scrollHeight || 280, 280) > window.innerHeight - 8) {
+                top = Math.max(8, rect.top - 6 - Math.min(menu.scrollHeight || 280, 280));
+            }
+
+            menu.style.width = `${menu_width}px`;
+            menu.style.left = `${left}px`;
+            menu.style.top = `${top}px`;
+        }
+        function meet_dropdown_toggle(event) {
+            event.stopPropagation();
+            var dropdown = document.querySelector("#meet-dropdown");
+            var menu = document.querySelector("#meet-dropdown-menu");
+
+            if (menu.getAttribute("active") == "true") {
+                close_meet_dropdown();
+            } else {
+                close_meet_dropdown();
+                close_division_dropdown();
+                if (available_meets.length === 0 && swimtopia_token()) {
+                    load_swimtopia_meets();
+                }
+                render_meet_dropdown_menu();
+                position_meet_dropdown_menu();
+                menu.setAttribute("active", "true");
+                dropdown.setAttribute("open", "true");
+                setTimeout(() => {
+                    open_meet_dropdown = dropdown;
+                    document.body.setAttribute("onclick", "close_open_dropdowns(event)");
+                }, 220);
+            }
+        }
+        function close_meet_dropdown(event = false) {
+            var dropdown = document.querySelector("#meet-dropdown");
+            var menu = document.querySelector("#meet-dropdown-menu");
+            if (event != false && (dropdown?.contains(event.target) || menu?.contains(event.target))) {
+                return;
+            }
+
+            if (menu) {
+                menu.setAttribute("active", "false");
+            }
+            dropdown?.removeAttribute("open");
+            open_meet_dropdown = null;
+            if (open_division_dropdown == null) {
+                document.body.removeAttribute("onclick");
+            }
+        }
+        function close_open_dropdowns(event = false) {
+            close_meet_dropdown(event);
+            close_division_dropdown(event);
+        }
+        function render_meet_dropdown_menu() {
+            var menu = document.querySelector("#meet-dropdown-menu");
+            if (!menu) return;
+
+            if (!available_meets.length) {
+                var empty_label = swimtopia_token()
+                    ? (meet_absences_loading ? "Loading meets..." : "No upcoming meets")
+                    : "Sign in to SwimTopia to choose a meet";
+                menu.innerHTML = `
+                    <div disabled="true">
+                        <div>${empty_label}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            var selected_id = selected_meet?.id || null;
+            menu.innerHTML = available_meets.map((meet) => {
+                var label = format_meet_label(meet) || meet.name || "Meet";
+                var active = selected_id != null && String(meet.id) === String(selected_id) ? "true" : "false";
+                var safe_id = String(meet.id).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+                return `
+                    <div data-meet-id="${meet.id}" active="${active}" onclick="event.stopPropagation(); select_meet('${safe_id}')">
+                        <div>${label}</div>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                `;
+            }).join("");
+        }
+        async function refresh_meet_availability(meet, { showErrors = true } = {}) {
+            var token = swimtopia_token();
+            if (!token || !meet?.id) {
+                apply_meet_availability(meet, null);
+                return false;
+            }
+
+            meet_absences_loading = true;
+            var meet_label = document.querySelector("#ladder-meet");
+            var previous_label = meet_label?.innerText || "";
+            if (meet_label) {
+                meet_label.innerText = "Updating availability...";
+            }
+
+            try {
+                var response = await fetch("/api/swimtopia/parklawn-meet-absences", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({token, meetId: meet.id}),
+                });
+                var payload = await response.json();
+                if (!response.ok) {
+                    throw new Error(payload.error || "Could not load meet availability.");
+                }
+
+                apply_meet_availability(payload.meet || meet, payload.unavailable || []);
+                return true;
+            } catch (error) {
+                if (meet_label) {
+                    meet_label.innerText = previous_label;
+                }
+                apply_meet_availability(meet, null);
+                if (showErrors) {
+                    window.alert(error.message);
+                } else {
+                    console.warn(error.message);
+                }
+                return false;
+            } finally {
+                meet_absences_loading = false;
+            }
+        }
+        async function load_swimtopia_meets() {
+            var token = swimtopia_token();
+            if (!token) {
+                render_meet_dropdown_menu();
+                return;
+            }
+
+            try {
+                var response = await fetch("/api/swimtopia/parklawn-meets", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({token}),
+                });
+                var payload = await response.json();
+                if (!response.ok) {
+                    throw new Error(payload.error || "Could not load SwimTopia meets.");
+                }
+
+                available_meets = Array.isArray(payload.meets) ? payload.meets : [];
+                var selected_is_upcoming = selected_meet
+                    && available_meets.some((meet) => String(meet.id) === String(selected_meet.id));
+                if (!selected_is_upcoming) {
+                    selected_meet = available_meets.find((meet) => String(meet.id) === String(payload.upcomingMeetId))
+                        || available_meets[0]
+                        || null;
+                }
+
+                if (selected_meet) {
+                    update_meet_details_ui(selected_meet, null);
+                    if (localStorage.getItem("yourladder-" + your_team_id)) {
+                        await refresh_meet_availability(selected_meet, { showErrors: false });
+                    }
+                } else {
+                    render_meet_dropdown_menu();
+                }
+            } catch (error) {
+                console.warn(error.message);
+                render_meet_dropdown_menu();
+            }
+        }
+        async function select_meet(meetId) {
+            var meet = available_meets.find((item) => String(item.id) === String(meetId));
+            if (!meet) return;
+
+            close_meet_dropdown();
+            selected_meet = meet;
+            var meet_label = document.querySelector("#ladder-meet");
+            if (meet_label) {
+                meet_label.innerText = format_meet_label(meet) || meet.name || "Meet";
+            }
+            render_meet_dropdown_menu();
+
+            await refresh_meet_availability(meet, { showErrors: true });
+        }
 
         function swimtopia_token() {
             return sessionStorage.getItem("swimtopia-poc-token") || "";
@@ -2516,6 +2878,7 @@
                 }
 
                 document.querySelector("#swimtopia-login-modal").setAttribute("active", "false");
+                await load_swimtopia_meets();
 
                 if (swimtopia_login_should_import) {
                     swimtopia_login_should_import = false;
@@ -2536,7 +2899,7 @@
 
             var steps = [
                 "Loading Parklawn roster...",
-                "Finding the upcoming meet...",
+                "Loading SwimTopia meets...",
                 "Reading meet availability...",
                 "Collecting swimmer best times...",
                 "Building the ladder...",
@@ -2575,14 +2938,17 @@
                 var response = await fetch("/api/swimtopia/parklawn-ladder", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({token}),
+                    body: JSON.stringify({
+                        token,
+                        meetId: selected_meet?.id || null,
+                    }),
                 });
                 var payload = await response.json();
                 if (!response.ok) {
                     throw new Error(payload.error || "SwimTopia import failed.");
                 }
 
-                apply_imported_ladder(payload.ladder, payload.unavailable, payload.meet);
+                apply_imported_ladder(payload.ladder, payload.unavailable, payload.meet, payload.meets);
                 finish_swimtopia_import_progress(true);
             } catch (error) {
                 finish_swimtopia_import_progress(false);
@@ -2696,12 +3062,13 @@
             if (menu.getAttribute("active") == "true") {
                 close_division_dropdown();
             } else {
+                close_meet_dropdown();
                 close_division_dropdown();
                 menu.setAttribute("active", "true");
                 icon.style.transform = "rotate(180deg)";
                 setTimeout(() => {
                     open_division_dropdown = dropdown;
-                    document.body.setAttribute("onclick", "close_division_dropdown(event)");
+                    document.body.setAttribute("onclick", "close_open_dropdowns(event)");
                 }, 220);
             }
         }
@@ -2716,8 +3083,10 @@
             var menu = open_division_dropdown.querySelector(".division-dropdown-menu");
             menu.setAttribute("active", "false");
             open_division_dropdown.querySelector(".division-dropdown-trigger svg").style.transform = "";
-            document.body.removeAttribute("onclick");
             open_division_dropdown = null;
+            if (open_meet_dropdown == null) {
+                document.body.removeAttribute("onclick");
+            }
         }
         function select_division(division) {
             var menu = document.querySelector("#division-dropdown-menu");
@@ -2777,6 +3146,13 @@
             } else {
                 your_ladder = null;
                 update_ladder_swimmer_count();
+                update_meet_details_ui(null, null);
+            }
+
+            if (swimtopia_token()) {
+                load_swimtopia_meets();
+            } else {
+                render_meet_dropdown_menu();
             }
             update_ladder_import_button();
         }
@@ -6283,5 +6659,6 @@
             return value;
         }
     </script>
+    <div class="meet-dropdown-menu" id="meet-dropdown-menu"></div>
     </body>
 </html>

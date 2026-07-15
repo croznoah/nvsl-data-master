@@ -28,7 +28,7 @@ A tools suite for NVSL swim meet roster management, time predictions, meet sheet
 #### Development Mode
 To start the local development server:
 ```bash
-npm run dev
+npm start
 ```
 Once started, open **http://localhost:5173** in your web browser.
 

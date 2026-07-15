@@ -5,7 +5,9 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import {
+    getParklawnMeetAbsences,
     getParklawnSwimtopiaLadder,
+    getParklawnSwimtopiaMeets,
     getParklawnSwimmerHistory,
     redactToken,
     swimtopiaPasswordLogin,
@@ -387,13 +389,41 @@ export function registerApiRoutes(app) {
 
     app.post("/api/swimtopia/parklawn-ladder", async (req, res) => {
         try {
-            const { token } = req.body || {};
-            const payload = await getParklawnSwimtopiaLadder({ token });
+            const { token, meetId = null } = req.body || {};
+            const payload = await getParklawnSwimtopiaLadder({ token, meetId });
             return res.json(payload);
         } catch (error) {
             console.error("[SwimTopia Ladder Error]", error.message);
             return res.status(error.status || 500).json({
                 error: error.message || "SwimTopia ladder import failed.",
+                detail: error.payload,
+            });
+        }
+    });
+
+    app.post("/api/swimtopia/parklawn-meets", async (req, res) => {
+        try {
+            const { token } = req.body || {};
+            const payload = await getParklawnSwimtopiaMeets({ token });
+            return res.json(payload);
+        } catch (error) {
+            console.error("[SwimTopia Meets Error]", error.message);
+            return res.status(error.status || 500).json({
+                error: error.message || "SwimTopia meets fetch failed.",
+                detail: error.payload,
+            });
+        }
+    });
+
+    app.post("/api/swimtopia/parklawn-meet-absences", async (req, res) => {
+        try {
+            const { token, meetId } = req.body || {};
+            const payload = await getParklawnMeetAbsences({ token, meetId });
+            return res.json(payload);
+        } catch (error) {
+            console.error("[SwimTopia Meet Absences Error]", error.message);
+            return res.status(error.status || 500).json({
+                error: error.message || "SwimTopia meet absences fetch failed.",
                 detail: error.payload,
             });
         }

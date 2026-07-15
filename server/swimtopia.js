@@ -282,13 +282,50 @@ async function paginatedSwimtopiaFetch(pathname, {
     return { data, included, meta };
 }
 
-function pickUpcomingMeet(events, today = new Date()) {
-    const startOfToday = new Date(today);
-    startOfToday.setHours(0, 0, 0, 0);
-    return events
+function meetSortTime(event) {
+    return new Date(event.attributes?.startAt || event.attributes?.startDate || 0).getTime();
+}
+
+function startOfDay(date = new Date()) {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    return start;
+}
+
+function listSwimMeetEvents(events) {
+    return (events || [])
         .filter((event) => event.attributes?.stiType === "SwimMeet")
-        .filter((event) => new Date(event.attributes.startAt || event.attributes.startDate) >= startOfToday)
-        .sort((a, b) => new Date(a.attributes.startAt || a.attributes.startDate) - new Date(b.attributes.startAt || b.attributes.startDate))[0] || null;
+        .sort((a, b) => meetSortTime(a) - meetSortTime(b));
+}
+
+function listUpcomingSwimMeetEvents(events, today = new Date()) {
+    const todayStart = startOfDay(today).getTime();
+    return listSwimMeetEvents(events).filter((event) => meetSortTime(event) >= todayStart);
+}
+
+function serializeMeet(event) {
+    if (!event) return null;
+    return {
+        id: event.id,
+        name: event.attributes?.name,
+        startAt: event.attributes?.startAt,
+        startDate: event.attributes?.startDate,
+        stage: event.attributes?.stage,
+    };
+}
+
+function pickUpcomingMeet(events, today = new Date()) {
+    return listUpcomingSwimMeetEvents(events, today)[0] || null;
+}
+
+function pickMeet(events, meetId, today = new Date()) {
+    const upcoming = listUpcomingSwimMeetEvents(events, today);
+    if (meetId) {
+        const selected = upcoming.find((event) => String(event.id) === String(meetId))
+            || listSwimMeetEvents(events).find((event) => String(event.id) === String(meetId));
+        if (selected) return selected;
+    }
+    return pickUpcomingMeet(upcoming, today);
 }
 
 async function mapLimit(items, limit, mapper) {
@@ -319,29 +356,28 @@ export function clearSwimtopiaCache() {
     swimmerHistoryCache.clear();
 }
 
-export async function getParklawnSwimtopiaLadder({
-    token,
-    today = new Date(),
-    fetchImpl = fetch,
-} = {}) {
-    // Clear cache to ensure we get fresh data when manually importing/refreshing the ladder
-    if (fetchImpl === fetch) {
+async function loadParklawnRoster({ token, today = new Date(), fetchImpl = fetch, clearCache = false } = {}) {
+    if (clearCache && fetchImpl === fetch) {
         clearSwimtopiaCache();
     }
 
-    const roster = await paginatedSwimtopiaFetch(`/mobile/organizations/${PARKLAWN_SWIMTOPIA_ORG_ID}/organization-users`, {
-        token,
-        params: { include: "affiliations" },
-        fetchImpl,
-    });
-
-    if (fetchImpl === fetch) {
-        cachedRoster = roster;
-        cachedRosterTime = Date.now();
+    let roster = null;
+    if (fetchImpl === fetch && cachedRoster && (Date.now() - cachedRosterTime) < ROSTER_CACHE_TTL && !clearCache) {
+        roster = cachedRoster;
+    } else {
+        roster = await paginatedSwimtopiaFetch(`/mobile/organizations/${PARKLAWN_SWIMTOPIA_ORG_ID}/organization-users`, {
+            token,
+            params: { include: "affiliations" },
+            fetchImpl,
+        });
+        if (fetchImpl === fetch) {
+            cachedRoster = roster;
+            cachedRosterTime = Date.now();
+        }
     }
 
     const affiliationsByUser = new Map();
-    for (const affiliation of roster.included.filter((record) => record.type === "athleteAffiliation")) {
+    for (const affiliation of (roster.included || []).filter((record) => record.type === "athleteAffiliation")) {
         const userId = affiliation.relationships?.organizationUser?.data?.id;
         if (!userId) continue;
         if (!affiliationsByUser.has(userId)) affiliationsByUser.set(userId, []);
@@ -349,25 +385,90 @@ export async function getParklawnSwimtopiaLadder({
     }
 
     const athletes = roster.data.filter((user) => isCurrentAthlete(user, affiliationsByUser, today));
+    return { roster, athletes };
+}
+
+async function loadUnavailableForMeet({ token, meet, athletes, fetchImpl = fetch } = {}) {
+    if (!meet) return [];
+
     const athleteById = new Map(athletes.map((athlete) => [athlete.id, athlete]));
-
-    const events = await paginatedSwimtopiaFetch(`/mobile/organizations/${PARKLAWN_SWIMTOPIA_ORG_ID}/calendar-events`, {
-        token,
-        fetchImpl,
-    });
-    const upcomingMeet = pickUpcomingMeet(events.data, today);
-
-    const absences = upcomingMeet
-        ? await paginatedSwimtopiaFetch(`/mobile/swim-meets/${upcomingMeet.id}/swim-absences`, { token, fetchImpl })
-        : { data: [] };
-
+    const absences = await paginatedSwimtopiaFetch(`/mobile/swim-meets/${meet.id}/swim-absences`, { token, fetchImpl });
     const unavailable = [];
-    for (const absence of absences.data) {
+    for (const absence of absences.data || []) {
         if (absence.attributes?.isAttending !== false) continue;
         const athleteId = absence.relationships?.athlete?.data?.id;
         const athlete = athleteById.get(athleteId);
         if (athlete) unavailable.push(nameKey(athleteName(athlete.attributes)));
     }
+    return unavailable;
+}
+
+export async function getParklawnSwimtopiaMeets({
+    token,
+    today = new Date(),
+    fetchImpl = fetch,
+} = {}) {
+    const events = await paginatedSwimtopiaFetch(`/mobile/organizations/${PARKLAWN_SWIMTOPIA_ORG_ID}/calendar-events`, {
+        token,
+        fetchImpl,
+    });
+    const meets = listUpcomingSwimMeetEvents(events.data, today).map(serializeMeet);
+    const upcoming = serializeMeet(pickUpcomingMeet(events.data, today));
+    return { meets, upcomingMeetId: upcoming?.id || null };
+}
+
+export async function getParklawnMeetAbsences({
+    token,
+    meetId,
+    today = new Date(),
+    fetchImpl = fetch,
+} = {}) {
+    if (!meetId) {
+        const error = new Error("A SwimTopia meet id is required.");
+        error.status = 400;
+        throw error;
+    }
+
+    const { athletes } = await loadParklawnRoster({ token, today, fetchImpl });
+    const events = await paginatedSwimtopiaFetch(`/mobile/organizations/${PARKLAWN_SWIMTOPIA_ORG_ID}/calendar-events`, {
+        token,
+        fetchImpl,
+    });
+    const meet = pickMeet(events.data, meetId, today);
+    if (!meet || String(meet.id) !== String(meetId)) {
+        const error = new Error("SwimTopia meet not found.");
+        error.status = 404;
+        throw error;
+    }
+
+    const unavailable = await loadUnavailableForMeet({ token, meet, athletes, fetchImpl });
+    return {
+        meet: serializeMeet(meet),
+        unavailable,
+    };
+}
+
+export async function getParklawnSwimtopiaLadder({
+    token,
+    meetId = null,
+    today = new Date(),
+    fetchImpl = fetch,
+} = {}) {
+    // Clear cache to ensure we get fresh data when manually importing/refreshing the ladder
+    const { athletes } = await loadParklawnRoster({
+        token,
+        today,
+        fetchImpl,
+        clearCache: fetchImpl === fetch,
+    });
+
+    const events = await paginatedSwimtopiaFetch(`/mobile/organizations/${PARKLAWN_SWIMTOPIA_ORG_ID}/calendar-events`, {
+        token,
+        fetchImpl,
+    });
+    const selectedMeet = pickMeet(events.data, meetId, today);
+    const meets = listUpcomingSwimMeetEvents(events.data, today).map(serializeMeet);
+    const unavailable = await loadUnavailableForMeet({ token, meet: selectedMeet, athletes, fetchImpl });
 
     const ladder = { Boys: {}, Girls: {} };
     let resultCount = 0;
@@ -391,13 +492,8 @@ export async function getParklawnSwimtopiaLadder({
     return {
         ladder,
         unavailable,
-        meet: upcomingMeet ? {
-            id: upcomingMeet.id,
-            name: upcomingMeet.attributes?.name,
-            startAt: upcomingMeet.attributes?.startAt,
-            startDate: upcomingMeet.attributes?.startDate,
-            stage: upcomingMeet.attributes?.stage,
-        } : null,
+        meet: serializeMeet(selectedMeet),
+        meets,
         stats: {
             athletes: athletes.length,
             swimmersWithHistory: athletes.filter((athlete) => athlete.attributes?.hasSwimHistory).length,
